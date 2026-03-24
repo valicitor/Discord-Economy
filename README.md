@@ -12,21 +12,21 @@ Also by allowing trading, investing, and other deep economic actions players tha
 
 ### Custom Economy Bot TODO:
 #### Core Features:
-[ ] Basic currency tracking: Implement a system to track player balances.
-[ ] Basic gambling games: Add simple games like dice rolls or card games for players to gamble currency.
-[ ] Basic collect income/bank: Allow players to collect periodic income and deposit/withdraw from a bank.
-[ ] Basic inventory: Track player-owned items.
-[ ] Basic shop store/trading: Enable players to buy/sell items and trade with each other.
+- [ ] Basic currency tracking: Implement a system to track player balances.
+- [ ] Basic gambling games: Add simple games like dice rolls or card games for players to gamble currency.
+- [ ] Basic collect income/bank: Allow players to collect periodic income and deposit/withdraw from a bank.
+- [ ] Basic inventory: Track player-owned items.
+- [ ] Basic shop store/trading: Enable players to buy/sell items and trade with each other.
 
 #### Advanced Features:
-[ ] Businesses to replace Basic collect: Introduce player-owned businesses that generate income.
-[ ] Player-owned business store fronts: Allow players to set up shops to sell items to others.
-[ ] Inventory categories: Separate inventory into categories like Soldiers, Gear, Vehicles, etc.
-[ ] Maintenance costs: Add upkeep costs for inventory items to limit hoarding.
-[ ] Business locations and planet locations: Tie businesses to specific locations, affecting their performance.
-[ ] Bank interest rates: Introduce interest rates for deposited currency.
-[ ] Business stock market/investing: Allow players to invest in businesses and trade stocks.
-[ ] Loans: Enable players to take loans with interest.
+- [ ] Businesses to replace Basic collect: Introduce player-owned businesses that generate income.
+- [ ] Player-owned business store fronts: Allow players to set up shops to sell items to others.
+- [ ] Inventory categories: Separate inventory into categories like Soldiers, Gear, Vehicles, etc.
+- [ ] Maintenance costs: Add upkeep costs for inventory items to limit hoarding.
+- [ ] Business locations and planet locations: Tie businesses to specific locations, affecting their performance.
+- [ ] Bank interest rates: Introduce interest rates for deposited currency.
+- [ ] Business stock market/investing: Allow players to invest in businesses and trade stocks.
+- [ ] Loans: Enable players to take loans with interest.
 
 # Git Commands:
 
