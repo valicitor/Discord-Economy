@@ -206,5 +206,15 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-# Add config.py to prevent leaking sensitive tokens
+# Ignore Python cache files and folders
+__pycache__/
+*.py[cod]
+
+# Ignore virtual environment folders
+venv/
+
+# Ignore config.py
 config.py
+
+# Ignore environment files
+.env
