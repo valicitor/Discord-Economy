@@ -1,35 +1,23 @@
 import discord
 from discord import app_commands
-from infrastructure import UserRepository
-from application.helpers.ensure_user import ensure_user
+from infrastructure import UserRepository, ServerConfigRepository
+from application.helpers.ensure_user import ensure_users
 
 class PayCommand:
 
-    def __init__(self, user_repository: UserRepository = UserRepository(), interaction: discord.Interaction|None = None):
+    def __init__(self, server_config_repository: ServerConfigRepository = ServerConfigRepository(), user_repository: UserRepository = UserRepository(), interaction: discord.Interaction|None = None):
+        self.server_config_repository = server_config_repository
         self.user_repository = user_repository
         self.interaction = interaction
 
         return
 
     async def execute(self, guild_id: str, user_id: str, member_id: str, amount: app_commands.Range[int, 1, 100000000]) -> bool|None:
-        await ensure_user(user_id, guild_id, 0)
-        # Fetch sender data
+
+        await ensure_users(guild_id, [user_id, member_id], user_repository=self.user_repository, server_config_repository=self.server_config_repository, interaction=self.interaction)
+
         user_rec = await self.user_repository.get_by_id(user_id)
-
-        # Ensure the member has an account
-        await ensure_user(member_id, guild_id, 0)
-        # Fetch recipient data
         member_rec = await self.user_repository.get_by_id(member_id)
-
-        # Validate sender and recipient data
-        if user_rec is None:
-            if self.interaction != None and self.interaction.response.is_done():
-                await self.interaction.response.send_message(f"Payment failed. Please ensure you have an account and try again.", ephemeral=True)
-            return None
-        if member_rec is None:
-            if self.interaction != None and self.interaction.response.is_done():
-                await self.interaction.response.send_message(f"Payment failed. Please ensure the recipient has an account and try again.", ephemeral=True)
-            return None
 
         # Validate sufficient funds
         new_balance = int(user_rec['balance']) - amount

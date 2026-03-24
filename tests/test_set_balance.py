@@ -6,15 +6,17 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 import unittest
 import asyncio
-from application.commands.set_balance_command import SetBalanceCommand
-from application.queries.get_balance_query import GetBalanceQuery
-from infrastructure.persistence.user_repository import UserRepository
+from application import SetBalanceCommand
+from application import GetBalanceQuery
+from infrastructure import ServerConfigRepository
+from infrastructure import UserRepository
 
 class TestSetBalanceCommand(unittest.TestCase):
     def setUp(self):
+        self.server_config_repository = ServerConfigRepository()
         self.user_repository = UserRepository()
-        self.set_balance_command = SetBalanceCommand(self.user_repository)
-        self.get_balance_query = GetBalanceQuery(self.user_repository)
+        self.set_balance_command = SetBalanceCommand(server_config_repository=self.server_config_repository, user_repository=self.user_repository)
+        self.get_balance_query = GetBalanceQuery(server_config_repository=self.server_config_repository, user_repository=self.user_repository)
 
         self.entity1 = {
             "id": 1,
@@ -23,10 +25,12 @@ class TestSetBalanceCommand(unittest.TestCase):
         }
 
         # Add test user to the database
+        asyncio.run(self.server_config_repository.add({ 'id': self.entity1["guild_id"], 'starting_balance': 0, 'currency_symbol': '$', 'currency_emoji': '' }))
         asyncio.run(self.user_repository.add(self.entity1))
 
     def tearDown(self):
         # Remove test user from the database
+        asyncio.run(self.server_config_repository.delete({ 'id': self.entity1["guild_id"] }))
         asyncio.run(self.user_repository.delete(self.entity1))
 
     def test_add_balance(self):

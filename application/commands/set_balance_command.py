@@ -1,26 +1,20 @@
 import discord
 from discord import app_commands
-from infrastructure import UserRepository
+from infrastructure import UserRepository, ServerConfigRepository
 from application.helpers.ensure_user import ensure_user
 
 class SetBalanceCommand:
 
-    def __init__(self, user_repository: UserRepository = UserRepository(), interaction: discord.Interaction|None = None):
+    def __init__(self, server_config_repository: ServerConfigRepository = ServerConfigRepository(), user_repository: UserRepository = UserRepository(), interaction: discord.Interaction|None = None):
+        self.server_config_repository = server_config_repository
         self.user_repository = user_repository
         self.interaction = interaction
 
         return
 
     async def execute(self, guild_id: str, member_id: str, amount: app_commands.Range[int, 1, 100000000]) -> bool|None:
-        # Ensure the member has an account
-        await ensure_user(member_id, guild_id, 0)
-        # Fetch recipient data
-        member_rec = await self.user_repository.get_by_id(member_id)
 
-        # Validate recipient data
-        if member_rec is None:
-            await self.interaction.response.send_message(f"Payment failed. Please ensure the recipient has an account and try again.", ephemeral=True)
-            return None
+        await ensure_user(guild_id, member_id, user_repository=self.user_repository, server_config_repository=self.server_config_repository, interaction=self.interaction)
 
         # Update recipient balances
         member_entity = {

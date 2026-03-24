@@ -1,20 +1,20 @@
 import sys
 import os
 
-from infrastructure.persistence import user_repository
-
 # Add the project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import unittest
 import asyncio
-from application.queries.get_balance_query import GetBalanceQuery
-from infrastructure.persistence.user_repository import UserRepository
+from application import GetBalanceQuery
+from infrastructure import ServerConfigRepository
+from infrastructure import UserRepository
 
 class TestGetBalanceQuery(unittest.TestCase):
     def setUp(self):
+        self.server_config_repository = ServerConfigRepository()
         self.user_repository = UserRepository()
-        self.get_balance_query = GetBalanceQuery(self.user_repository)
+        self.get_balance_query = GetBalanceQuery(server_config_repository=self.server_config_repository, user_repository=self.user_repository)
 
         self.entity1 = {
             "id": 1,
@@ -28,11 +28,13 @@ class TestGetBalanceQuery(unittest.TestCase):
         }
 
         # Add test users to the database
+        asyncio.run(self.server_config_repository.add({ 'id': self.entity1["guild_id"], 'starting_balance': 0, 'currency_symbol': '$', 'currency_emoji': '' }))
         asyncio.run(self.user_repository.add(self.entity1))
         asyncio.run(self.user_repository.add(self.entity2))
 
     def tearDown(self):
         # Remove test users from the database
+        asyncio.run(self.server_config_repository.delete({ 'id': self.entity1["guild_id"] }))
         asyncio.run(self.user_repository.delete(self.entity1))
         asyncio.run(self.user_repository.delete(self.entity2))
 
