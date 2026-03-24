@@ -5,8 +5,8 @@ from application.helpers.ensure_user import ensure_user
 
 class SetBalanceCommand:
 
-    def __init__(self, interaction: discord.Interaction):
-        self.user_repository = UserRepository()
+    def __init__(self, user_repository: UserRepository = UserRepository(), interaction: discord.Interaction|None = None):
+        self.user_repository = user_repository
         self.interaction = interaction
 
         return

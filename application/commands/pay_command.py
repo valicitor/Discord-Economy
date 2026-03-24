@@ -5,8 +5,8 @@ from application.helpers.ensure_user import ensure_user
 
 class PayCommand:
 
-    def __init__(self, interaction: discord.Interaction):
-        self.user_repository = UserRepository()
+    def __init__(self, user_repository: UserRepository = UserRepository(), interaction: discord.Interaction|None = None):
+        self.user_repository = user_repository
         self.interaction = interaction
 
         return
@@ -23,18 +23,21 @@ class PayCommand:
 
         # Validate sender and recipient data
         if user_rec is None:
-            await self.interaction.response.send_message(f"Payment failed. Please ensure you have an account and try again.", ephemeral=True)
+            if self.interaction != None and self.interaction.response.is_done():
+                await self.interaction.response.send_message(f"Payment failed. Please ensure you have an account and try again.", ephemeral=True)
             return None
         if member_rec is None:
-            await self.interaction.response.send_message(f"Payment failed. Please ensure the recipient has an account and try again.", ephemeral=True)
+            if self.interaction != None and self.interaction.response.is_done():
+                await self.interaction.response.send_message(f"Payment failed. Please ensure the recipient has an account and try again.", ephemeral=True)
             return None
 
         # Validate sufficient funds
-        new_balance = int(user_rec[2]) - amount
+        new_balance = int(user_rec['balance']) - amount
         if new_balance < 0:
-            await self.interaction.response.send_message(f"Payment failed. Please ensure you have sufficient funds and try again.", ephemeral=True)
+            if self.interaction != None and self.interaction.response.is_done():
+                await self.interaction.response.send_message(f"Payment failed. Please ensure you have sufficient funds and try again.", ephemeral=True)
             return None
-        member_new_balance = int(member_rec[2]) + amount
+        member_new_balance = int(member_rec['balance']) + amount
 
         # Update sender balances
         user_entity = {

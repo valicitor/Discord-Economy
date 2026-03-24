@@ -18,38 +18,49 @@ class InventoryRepository(IInventoryRepository):
 
     def init_database(self):
         conn = sqlite3.connect(self.db_path)
-        c = conn.cursor()
-        c.execute('''
-            CREATE TABLE IF NOT EXISTS inventory (
-                user_id INTEGER NOT NULL,
-                guild_id INTEGER NOT NULL,
-                item_name TEXT NOT NULL,
-                quantity INTEGER NOT NULL DEFAULT 0,
-                PRIMARY KEY (user_id, guild_id, item_name)
-            )
-        ''')
-        conn.commit()
-        conn.close()
+        try:
+            c = conn.cursor()
+            c.execute('''
+                CREATE TABLE IF NOT EXISTS inventory (
+                    user_id INTEGER NOT NULL,
+                    guild_id INTEGER NOT NULL,
+                    item_name TEXT NOT NULL,
+                    quantity INTEGER NOT NULL DEFAULT 0,
+                    PRIMARY KEY (user_id, guild_id, item_name)
+                )
+            ''')
+            conn.commit()
+        finally:
+            conn.close()
 
     async def get_by_id(self, id: str):
-        with sqlite3.connect(self.db_path) as conn:
+        conn = sqlite3.connect(self.db_path)
+        try:
+            conn.row_factory = sqlite3.Row
             c = conn.cursor()
             c.execute('SELECT * FROM inventory WHERE user_id = ?', (id,))
-            return c.fetchone()
+            row = c.fetchone()
+            return dict(row) if row else None
+        finally:
+            conn.close()
 
     async def get_all(self, guild_id: str) -> List[dict]:
-        with sqlite3.connect(self.db_path) as conn:
+        conn = sqlite3.connect(self.db_path)
+        try:
             conn.row_factory = sqlite3.Row
             c = conn.cursor()
             c.execute('SELECT * FROM inventory WHERE guild_id = ?', (guild_id,))
             rows = c.fetchall()
             return [dict(row) for row in rows]
+        finally:
+            conn.close()
 
     async def list(self, guild_id: str) -> List[dict]:
         return await self.get_all(guild_id)
 
     async def add(self, entity: dict) -> bool:
-        with sqlite3.connect(self.db_path) as conn:
+        conn = sqlite3.connect(self.db_path)
+        try:
             c = conn.cursor()
             c.execute('''
                 INSERT INTO inventory (user_id, guild_id, item_name, quantity)
@@ -58,9 +69,12 @@ class InventoryRepository(IInventoryRepository):
             add_count = c.rowcount
             conn.commit()
             return add_count > 0
+        finally:
+            conn.close()
 
     async def update(self, entity: dict) -> bool:
-        with sqlite3.connect(self.db_path) as conn:
+        conn = sqlite3.connect(self.db_path)
+        try:
             c = conn.cursor()
             c.execute('''
                 UPDATE inventory
@@ -70,26 +84,37 @@ class InventoryRepository(IInventoryRepository):
             updated_count = c.rowcount
             conn.commit()
             return updated_count > 0
+        finally:
+            conn.close()
 
     async def delete(self, entity: dict) -> bool:
-        with sqlite3.connect(self.db_path) as conn:
+        conn = sqlite3.connect(self.db_path)
+        try:
             c = conn.cursor()
             c.execute('DELETE FROM inventory WHERE user_id = ? AND item_name = ? AND guild_id = ?', (entity['user_id'], entity['item_name'], entity['guild_id']))
             deleted_count = c.rowcount
             conn.commit()
             return deleted_count > 0
+        finally:
+            conn.close()
 
     async def delete_all(self, guild_id: str) -> int:
         """Delete all shop items for a guild and return the number of deleted records"""
-        with sqlite3.connect(self.db_path) as conn:
+        conn = sqlite3.connect(self.db_path)
+        try:
             c = conn.cursor()
             c.execute('DELETE FROM inventory WHERE guild_id = ?', (guild_id,))
             deleted_count = c.rowcount  # number of rows deleted
             conn.commit()
             return deleted_count
+        finally:
+            conn.close()
 
     async def exists(self, id: str, guild_id: str) -> bool:
-        with sqlite3.connect(self.db_path) as conn:
+        conn = sqlite3.connect(self.db_path)
+        try:
             c = conn.cursor()
             c.execute('SELECT 1 FROM inventory WHERE user_id = ? AND item_name = ? AND guild_id = ?', (str(id), str(guild_id), str(guild_id)))
             return c.fetchone() is not None
+        finally:
+            conn.close()
