@@ -13,10 +13,6 @@ class IRepository(ABC, Generic[T]):
         pass
 
     @abstractmethod
-    async def list(self, guild_id: str) -> List[T]:
-        pass
-
-    @abstractmethod
     async def add(self, entity: T) -> bool:
         pass
 

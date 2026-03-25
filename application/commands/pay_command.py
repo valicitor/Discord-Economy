@@ -1,20 +1,19 @@
 import discord
 from discord import app_commands
-from infrastructure import UserRepository, ServerConfigRepository
+from infrastructure import UserRepository
 from application.helpers.ensure_user import ensure_users
 
 class PayCommand:
 
-    def __init__(self, server_config_repository: ServerConfigRepository = ServerConfigRepository(), user_repository: UserRepository = UserRepository(), interaction: discord.Interaction|None = None):
-        self.server_config_repository = server_config_repository
-        self.user_repository = user_repository
+    def __init__(self, interaction: discord.Interaction|None = None):
+        self.user_repository = UserRepository()
         self.interaction = interaction
 
         return
 
     async def execute(self, guild_id: str, user_id: str, member_id: str, amount: app_commands.Range[int, 1, 100000000]) -> bool|None:
 
-        await ensure_users(guild_id, [user_id, member_id], user_repository=self.user_repository, server_config_repository=self.server_config_repository, interaction=self.interaction)
+        await ensure_users(guild_id, [user_id, member_id], interaction=self.interaction)
 
         user_rec = await self.user_repository.get_by_id(user_id)
         member_rec = await self.user_repository.get_by_id(member_id)
@@ -28,19 +27,11 @@ class PayCommand:
         member_new_balance = int(member_rec['balance']) + amount
 
         # Update sender balances
-        user_entity = {
-            'id': user_id,
-            'guild_id': guild_id,
-            'balance': new_balance
-        }
-        user_success = await self.user_repository.update(user_entity)
+        user_rec['balance'] = new_balance
+        user_success = await self.user_repository.update(user_rec)
 
         # Update recipient balances
-        member_entity = {
-            'id': member_id,
-            'guild_id': guild_id,
-            'balance': member_new_balance
-        }
-        member_success = await self.user_repository.update(member_entity)
+        member_rec['balance'] = member_new_balance
+        member_success = await self.user_repository.update(member_rec)
 
         return user_success and member_success

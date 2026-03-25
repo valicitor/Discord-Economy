@@ -1,23 +1,29 @@
 from infrastructure.interfaces.i_shop_items_repository import IShopItemsRepository
 from typing import List
 import sqlite3
+from threading import Lock
 
 class ShopItemsRepository(IShopItemsRepository):
     _instance = None  # Class-level instance token
+    _lock = Lock()  # Lock for thread-safe singleton
 
     def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super(ShopItemsRepository, cls).__new__(cls)
+        with cls._lock:
+            if not cls._instance:
+                cls._instance = super(ShopItemsRepository, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self, db_path='shop_items.db'):
+    def __init__(self, db_path=None):
         if not hasattr(self, '_initialized'):
-            self.db_path = db_path
+            self.db_path = db_path or 'shop_items.db'
             self.init_database()
             self._initialized = True  # Mark as initialized
+    
+    def _get_connection(self):
+        return sqlite3.connect(self.db_path, check_same_thread=False)
 
     def init_database(self):
-        conn = sqlite3.connect(self.db_path)
+        conn = self._get_connection()
         try:
             c = conn.cursor()
             c.execute('''
@@ -36,7 +42,7 @@ class ShopItemsRepository(IShopItemsRepository):
             conn.close()
 
     async def get_by_id(self, id: str):
-        conn = sqlite3.connect(self.db_path)
+        conn = self._get_connection()
         try:
             conn.row_factory = sqlite3.Row
             c = conn.cursor()
@@ -47,7 +53,7 @@ class ShopItemsRepository(IShopItemsRepository):
             conn.close()
 
     async def get_all(self, guild_id: str) -> List[dict]:
-        conn = sqlite3.connect(self.db_path)
+        conn = self._get_connection()
         try:
             conn.row_factory = sqlite3.Row
             c = conn.cursor()
@@ -57,11 +63,8 @@ class ShopItemsRepository(IShopItemsRepository):
         finally:
             conn.close()
 
-    async def list(self, guild_id: str) -> List[dict]:
-        return await self.get_all(guild_id)
-
     async def add(self, entity: dict) -> bool:
-        conn = sqlite3.connect(self.db_path)
+        conn = self._get_connection()
         try:
             c = conn.cursor()
             c.execute('''
@@ -75,7 +78,7 @@ class ShopItemsRepository(IShopItemsRepository):
             conn.close()
 
     async def update(self, entity: dict) -> bool:
-        conn = sqlite3.connect(self.db_path)
+        conn = self._get_connection()
         try:
             c = conn.cursor()
             c.execute('''
@@ -90,7 +93,7 @@ class ShopItemsRepository(IShopItemsRepository):
             conn.close()
 
     async def delete(self, entity: dict) -> bool:
-        conn = sqlite3.connect(self.db_path)
+        conn = self._get_connection()
         try:
             c = conn.cursor()
             c.execute('DELETE FROM shop_items WHERE id = ?', (entity['id'],))
@@ -102,7 +105,7 @@ class ShopItemsRepository(IShopItemsRepository):
 
     async def delete_all(self, guild_id: str) -> int:
         """Delete all shop items for a guild and return the number of deleted records"""
-        conn = sqlite3.connect(self.db_path)
+        conn = self._get_connection()
         try:
             c = conn.cursor()
             c.execute('DELETE FROM shop_items WHERE guild_id = ?', (guild_id,))
@@ -113,7 +116,7 @@ class ShopItemsRepository(IShopItemsRepository):
             conn.close()
 
     async def exists(self, id: str, guild_id: str) -> bool:
-        conn = sqlite3.connect(self.db_path)
+        conn = self._get_connection()
         try:
             c = conn.cursor()
             c.execute('SELECT 1 FROM shop_items WHERE id = ? AND guild_id = ?', (str(id), str(guild_id)))
