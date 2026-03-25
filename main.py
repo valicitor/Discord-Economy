@@ -1,8 +1,89 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from config import BOT_NAME, BOT_VERSION, DISCORD_BOT_TOKEN, TEST_SERVER_ID
+from config import BOT_NAME, BOT_VERSION, DISCORD_BOT_TOKEN, TEST_SERVER_ID, DO_GLOBAL_SYNC
 import asyncio
+import json
+import hashlib
+
+# ----------------------------
+# Command sync Class
+# ----------------------------
+class CommandSyncManager:
+    def __init__(self, tree: discord.app_commands.CommandTree):
+        self.tree = tree
+
+    async def sync_if_needed(self):
+        test_guild = discord.Object(id=TEST_SERVER_ID)
+
+        local_commands = self.tree.get_commands()
+        if not local_commands:
+            print("No local commands found. Skipping sync.")
+            return
+
+        remote_commands = await self.tree.fetch_commands(guild=test_guild)
+
+        if not remote_commands:
+            print("No commands registered. Performing initial sync.")
+            self.tree.copy_global_to(guild=test_guild)
+            synced = await self.tree.sync(guild=test_guild)
+            print(f"✅ Synced {len(synced)} commands")
+            return
+
+        print(f"Found {len(remote_commands)} commands registered.")
+
+        if self.commands_are_different(remote_commands, local_commands):
+            print("Commands changed. Syncing...")
+            self.tree.copy_global_to(guild=test_guild)
+            synced = await self.tree.sync(guild=test_guild)
+            print(f"✅ Synced {len(synced)} commands")
+        else:
+            print("Commands identical. Skipping sync.")
+    
+    async def sync_global_if_needed(self):
+        local_commands = self.tree.get_commands()
+
+        if not local_commands:
+            print("No local global commands found. Skipping sync.")
+            return
+
+        remote_commands = await self.tree.fetch_commands()
+
+        if not remote_commands:
+            print("No global commands registered. Performing initial sync.")
+            synced = await self.tree.sync()
+            print(f"✅ Synced {len(synced)} global commands")
+            return
+
+        print(f"Found {len(remote_commands)} global commands registered.")
+
+        if self.commands_are_different(remote_commands, local_commands):
+            print("Global commands changed. Syncing...")
+            synced = await self.tree.sync()
+            print(f"✅ Synced {len(synced)} global commands")
+        else:
+            print("Global commands identical. Skipping sync.")
+
+    # -------------------------
+    # Comparison Logic
+    # -------------------------
+
+    def normalize_local_command(self, cmd):
+        return (
+            cmd.name,
+            cmd.description,
+        )
+
+    def normalize_remote_command(self, cmd):
+        return (
+            cmd.name,
+            cmd.description,
+        )
+
+    def commands_are_different(self, remote, local):
+        remote_norm = sorted(self.normalize_remote_command(c) for c in remote)
+        local_norm = sorted(self.normalize_local_command(c) for c in local)
+        return remote_norm != local_norm
 
 # ----------------------------
 # Bot Class
@@ -36,99 +117,20 @@ class MyClient(commands.Bot):
 
         # Run cog loads concurrently
         await asyncio.gather(*(load_cog(cog) for cog in cogs))
-    
-    # ----------------------------
-    # Delete Commands Concurrently
-    # ----------------------------
-    async def clear_commands_from_guild(self, guild_id: int):
-        print(f"Clearing commands from guild {guild_id}...")
-        try:
-            guild = discord.Object(id=guild_id)
-            commands_list = await self.tree.fetch_commands(guild=guild)
-            if not commands_list:
-                print(f"No commands to delete in guild {guild_id}")
-                return
-
-            async def delete_cmd(cmd):
-                try:
-                    await cmd.delete()
-                    print(f"🗑️ Deleted guild command: {cmd.name}")
-                except Exception as e:
-                    print(f"❌ Failed to delete {cmd.name} in guild {guild_id}: {e}")
-
-            await asyncio.gather(*(delete_cmd(cmd) for cmd in commands_list))
-            print(f"✅ Deleted {len(commands_list)} commands from guild {guild_id}")
-
-        except Exception as e:
-            print(f"❌ Failed to clear commands from guild {guild_id}: {e}")
-
-    async def clear_commands_globally(self):
-        print("Clearing global commands...")
-        try:
-            commands_list = await self.tree.fetch_commands()
-            if not commands_list:
-                print("No global commands to delete.")
-                return
-
-            async def delete_cmd(cmd):
-                try:
-                    await cmd.delete()
-                    print(f"🗑️ Deleted global command: {cmd.name}")
-                except Exception as e:
-                    print(f"❌ Failed to delete global command {cmd.name}: {e}")
-
-            await asyncio.gather(*(delete_cmd(cmd) for cmd in commands_list))
-            print(f"✅ Deleted {len(commands_list)} global commands.")
-        except Exception as e:
-            print(f"❌ Failed to clear global commands: {e}")
-
-    # ----------------------------
-    # Sync Commands Concurrently
-    # ----------------------------
-    async def sync_commands_to_guilds(self, guild_ids: list[int]):
-        print(f"Syncing commands to guilds {guild_ids}...")
-        semaphore = asyncio.Semaphore(3)  # limit concurrency to avoid rate-limits
-
-        async def sync_guild(guild_id):
-            async with semaphore:
-                try:
-                    guild = discord.Object(id=guild_id)
-                    self.tree.copy_global_to(guild=guild)
-                    synced = await self.tree.sync(guild=guild)
-                    print(f"✅ Synced {len(synced)} commands to guild {guild_id}")
-                except Exception as e:
-                    print(f"❌ Failed to sync guild {guild_id}: {e}")
-
-        try:
-            await asyncio.gather(*(sync_guild(gid) for gid in guild_ids))
-            print("✅ All guild syncs completed.")
-        except discord.HTTPException as e:
-            if e.status == 429:
-                print(f"Rate-limited: {e}")
-            else:
-                print(f"HTTPException: {e}")
-
-    async def sync_commands_globally(self):
-        print("Syncing global commands...")
-        try:
-            synced = await self.tree.sync()
-            print(f"✅ Synced {len(synced)} global commands.")
-        except Exception as e:
-            print(f"❌ Failed to sync global commands: {e}")
 
     async def on_ready(self):
         print(f'{self.user} has connected to Discord!')
         print(f'{BOT_NAME} bot v{BOT_VERSION} is ready!')
         print(f'Connected to {len(self.guilds)} guilds: {[guild.name for guild in self.guilds]}')
 
-        # Clear and sync commands as needed
-        # Test server commands
-        await self.clear_commands_from_guild(TEST_SERVER_ID)
-        await self.sync_commands_to_guilds([TEST_SERVER_ID])
+        sync_manager = CommandSyncManager(self.tree)
+        await sync_manager.sync_if_needed()
 
-        # Global commands
-        # await self.clear_commands_globally()
-        # await self.sync_commands_globally()
+        # Only sync globally when explicitly enabled
+        if DO_GLOBAL_SYNC:
+            await sync_manager.sync_global_if_needed()
+        
+        print("✅ Bot is fully ready and synced.")
 
 
     async def on_interaction(self, interaction: discord.Interaction):

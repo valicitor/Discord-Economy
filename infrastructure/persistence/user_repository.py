@@ -30,6 +30,7 @@ class UserRepository(IUserRepository):
                 CREATE TABLE IF NOT EXISTS users (
                     user_id INTEGER PRIMARY KEY,
                     guild_id INTEGER NOT NULL,
+                    username TEXT NOT NULL,
                     balance INTEGER NOT NULL DEFAULT 0
                 )
             ''')
@@ -67,9 +68,9 @@ class UserRepository(IUserRepository):
         try:
             c = conn.cursor()
             c.execute('''
-                INSERT INTO users (user_id, guild_id, balance)
-                VALUES (?, ?, ?)
-            ''', (entity['user_id'], entity['guild_id'], entity['balance'],))
+                INSERT INTO users (user_id, guild_id, username, balance)
+                VALUES (?, ?, ?, ?)
+            ''', (entity['user_id'], entity['guild_id'], entity['username'], entity['balance'],))
             add_count = c.rowcount
             conn.commit()
             return add_count > 0
@@ -82,9 +83,9 @@ class UserRepository(IUserRepository):
             c = conn.cursor()
             c.execute('''
                 UPDATE users
-                SET balance = ?
+                SET balance = ?, username = ?
                 WHERE user_id = ? AND guild_id = ?  
-            ''', (entity['balance'], entity['user_id'], entity['guild_id'],))
+            ''', (entity['balance'], entity['username'], entity['user_id'], entity['guild_id'],))
             updated_count = c.rowcount
             conn.commit()
             return updated_count > 0

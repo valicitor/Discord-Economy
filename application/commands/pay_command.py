@@ -11,12 +11,12 @@ class PayCommand:
 
         return
 
-    async def execute(self, guild_id: str, user_id: str, member_id: str, amount: app_commands.Range[int, 1, 100000000]) -> bool|None:
+    async def execute(self, guild_id: str, user: discord.User | discord.Member, member: discord.User | discord.Member, amount: app_commands.Range[int, 1, 100000000]) -> bool|None:
 
-        await ensure_users(guild_id, [user_id, member_id], interaction=self.interaction)
+        await ensure_users(guild_id, [{'user_id': user.id, 'username': user.name}, {'user_id': member.id, 'username': member.name}], interaction=self.interaction)
 
-        user_rec = await self.user_repository.get_by_id(user_id)
-        member_rec = await self.user_repository.get_by_id(member_id)
+        user_rec = await self.user_repository.get_by_id(user.id)
+        member_rec = await self.user_repository.get_by_id(member.id)
 
         # Validate sufficient funds
         new_balance = int(user_rec['balance']) - amount
