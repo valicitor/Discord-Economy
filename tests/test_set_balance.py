@@ -5,6 +5,7 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import unittest
+from unittest.mock import Mock
 import asyncio
 from application import SetBalanceCommand
 from application import GetBalanceQuery
@@ -21,6 +22,7 @@ class TestSetBalanceCommand(unittest.TestCase):
         self.entity1 = {
             "user_id": 1,
             "guild_id": 12348,
+            "username": "TestUser",
             "balance": 100
         }
 
@@ -35,13 +37,19 @@ class TestSetBalanceCommand(unittest.TestCase):
 
     def test_add_balance(self):
         # Arrange
+        fake_user = Mock()
+        fake_user.id = self.entity1["user_id"]
+        fake_user.name = self.entity1["username"]
+        fake_user.display_name = self.entity1.get("display_name", fake_user.name)
+        fake_user.mention = f"<@{fake_user.id}>"
+
         amount = 50
 
         # Act
-        asyncio.run(self.set_balance_command.execute(self.entity1["guild_id"], self.entity1["user_id"], amount))
+        asyncio.run(self.set_balance_command.execute(self.entity1["guild_id"], fake_user, amount))
 
         # Assert
-        updated_balance = asyncio.run(self.get_balance_query.execute(self.entity1["guild_id"], self.entity1["user_id"]))
+        updated_balance = asyncio.run(self.get_balance_query.execute(self.entity1["guild_id"], fake_user))
         self.assertEqual(updated_balance, amount)
 
 if __name__ == "__main__":

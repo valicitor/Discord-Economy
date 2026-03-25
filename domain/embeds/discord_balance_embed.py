@@ -20,3 +20,14 @@ class DiscordBalanceEmbed:
             color=discord.Color.blue()
         )
         return embed
+    
+    @staticmethod
+    def get_leaderboard_embed(interaction: discord.Interaction, top_balances: list[dict]):
+        embed = discord.Embed(
+            title=f"🏆 Balance Leaderboard",
+            description="Here are the top users by balance:",
+            color=discord.Color.gold()
+        )
+        for idx, record in enumerate(top_balances, start=1):
+            embed.add_field(name=f"{idx}. `{record['username']}`", value=f"**{record['balance']} credits**", inline=False)
+        return embed

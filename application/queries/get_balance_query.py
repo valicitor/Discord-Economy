@@ -10,8 +10,8 @@ class GetBalanceQuery:
 
         return
 
-    async def execute(self, guild_id: str, user_id: str) -> int|None:
-        await ensure_users(guild_id, [user_id], interaction=self.interaction)
-        user_rec = await self.user_repository.get_by_id(user_id)
+    async def execute(self, guild_id: str, user: discord.User | discord.Member) -> int|None:
+        await ensure_users(guild_id, [{'user_id': user.id, 'username': user.name}], interaction=self.interaction)
+        user_rec = await self.user_repository.get_by_id(user.id)
 
         return int(user_rec['balance'])

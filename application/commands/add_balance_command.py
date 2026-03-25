@@ -11,11 +11,11 @@ class AddBalanceCommand:
 
         return
 
-    async def execute(self, guild_id: str, member_id: str, amount: app_commands.Range[int, 1, 100000000]) -> bool|None:
+    async def execute(self, guild_id: str, member: discord.User | discord.Member, amount: app_commands.Range[int, 1, 100000000]) -> bool|None:
 
-        await ensure_users(guild_id, [member_id], interaction=self.interaction)
+        await ensure_users(guild_id, [{'user_id': member.id, 'username': member.name}], interaction=self.interaction)
 
-        member_rec = await self.user_repository.get_by_id(member_id)
+        member_rec = await self.user_repository.get_by_id(member.id)
 
         # Update recipient balances
         member_rec['balance'] = int(member_rec['balance']) + amount

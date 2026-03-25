@@ -15,7 +15,7 @@ class AdminCog(commands.Cog):
     # --- /add-balance ---
     @app_commands.command(name="add-balance", description="Add balance to a member.")
     @app_commands.checks.has_permissions(administrator=True)
-    async def add_balance(self, interaction: discord.Interaction, user: discord.User, amount: app_commands.Range[int, 1, 100000000]):
+    async def admin_add_balance_user(self, interaction: discord.Interaction, user: discord.User, amount: app_commands.Range[int, 1, 100000000]):
         query = AddBalanceCommand(interaction=interaction)
         success = await query.execute(guild_id=str(interaction.guild_id), member_id=str(user.id), amount=amount)
 
@@ -29,7 +29,7 @@ class AdminCog(commands.Cog):
     # --- /set-balance ---
     @app_commands.command(name="set-balance", description="Set a members current balance.")
     @app_commands.checks.has_permissions(administrator=True)
-    async def set_balance(self, interaction: discord.Interaction, user: discord.User, amount: app_commands.Range[int, 1, 100000000]):
+    async def admin_set_balance_user(self, interaction: discord.Interaction, user: discord.User, amount: app_commands.Range[int, 1, 100000000]):
         query = SetBalanceCommand(interaction=interaction)
         success = await query.execute(guild_id=str(interaction.guild_id), member_id=str(user.id), amount=amount)
 

@@ -21,21 +21,25 @@ class TestGetTopBalancesQuery(unittest.TestCase):
         self.entity1 = {
             "user_id": 1,
             "guild_id": 12349,
+            "username": "TestUser",
             "balance": 10
         }
         self.entity2 = {
             "user_id": 2,
             "guild_id": 12349,
+            "username": "TestUser",
             "balance": 50
         }
         self.entity3 = {
             "user_id": 3,
             "guild_id": 12349,
+            "username": "TestUser",
             "balance": 100
         }
         self.entity4 = {
             "user_id": 4,
             "guild_id": 12349,
+            "username": "TestUser",
             "balance": 9
         }
 
