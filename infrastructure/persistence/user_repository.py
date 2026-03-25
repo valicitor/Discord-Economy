@@ -48,12 +48,15 @@ class UserRepository(IUserRepository):
         finally:
             conn.close()
 
-    async def get_all(self, guild_id: str) -> List[dict]:
+    async def get_all(self, guild_id: str, limit: int = None) -> List[dict]:
         conn = self._get_connection()
         try:
             conn.row_factory = sqlite3.Row
             c = conn.cursor()
-            c.execute('SELECT * FROM users WHERE guild_id = ?', (str(guild_id),))
+            if limit is not None:
+                c.execute('SELECT * FROM users WHERE guild_id = ? ORDER BY balance DESC LIMIT ?', (str(guild_id), limit))
+            else:
+                c.execute('SELECT * FROM users WHERE guild_id = ? ORDER BY balance DESC', (str(guild_id),))
             rows = c.fetchall()
             return [dict(row) for row in rows]
         finally:
