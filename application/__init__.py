@@ -1,4 +1,4 @@
-from .queries.get_balance_query import GetBalanceQuery
+from .queries.get_user_query import GetUserQuery
 from .queries.get_top_balances_query import GetTopBalancesQuery
 
 from .commands.set_balance_command import SetBalanceCommand

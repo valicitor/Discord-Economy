@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from domain import DiscordHelpEmbed
+from host.embeds.discord_help_embed import DiscordHelpEmbed
 
 class HelpCog(commands.Cog):
     HELP_COMMANDS = [

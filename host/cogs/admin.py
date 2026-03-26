@@ -1,11 +1,12 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from domain import DiscordAdminEmbed
+from domain import User, UserNotFoundException, GuildNotFoundException
 from application import (
     SetBalanceCommand,
     AddBalanceCommand
 )
+from host.embeds.discord_admin_embed import DiscordAdminEmbed
 
 class AdminCog(commands.Cog):
 
@@ -15,30 +16,40 @@ class AdminCog(commands.Cog):
     # --- /add-balance ---
     @app_commands.command(name="add-balance", description="Add balance to a member.")
     @app_commands.checks.has_permissions(administrator=True)
-    async def admin_add_balance_user(self, interaction: discord.Interaction, user: discord.User, amount: app_commands.Range[int, 1, 100000000]):
-        query = AddBalanceCommand(interaction=interaction)
-        success = await query.execute(guild_id=str(interaction.guild_id), member_id=str(user.id), amount=amount)
+    async def admin_add_balance_user(self, interaction: discord.Interaction, discord_user: discord.User, amount: app_commands.Range[int, 1, 100000000]):
+        try:
+            user = User(guild_id=interaction.guild_id, user_id=discord_user.id, username=discord_user.name)
 
-        if success is None:
-            # Error messages are handled within the command, so we just return here to avoid sending a duplicate message.
-            return
+            query = AddBalanceCommand()
+            await query.execute(guild_id=str(interaction.guild_id), user=user, amount=amount)
 
-        embed = DiscordAdminEmbed.add_balance_embed(interaction, amount)
-        await interaction.response.send_message(embed=embed)
+            embed = DiscordAdminEmbed.add_balance_embed(interaction, discord_user, amount)
+            await interaction.response.send_message(embed=embed)
+        except UserNotFoundException as e:
+            await interaction.response.send_message(f"User not found: {str(e)}", ephemeral=True)
+        except GuildNotFoundException as e:
+            await interaction.response.send_message(f"Guild not found: {str(e)}", ephemeral=True)
+        except Exception as e:
+            await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
 
     # --- /set-balance ---
     @app_commands.command(name="set-balance", description="Set a members current balance.")
     @app_commands.checks.has_permissions(administrator=True)
-    async def admin_set_balance_user(self, interaction: discord.Interaction, user: discord.User, amount: app_commands.Range[int, 1, 100000000]):
-        query = SetBalanceCommand(interaction=interaction)
-        success = await query.execute(guild_id=str(interaction.guild_id), member_id=str(user.id), amount=amount)
+    async def admin_set_balance_user(self, interaction: discord.Interaction, discord_user: discord.User, amount: app_commands.Range[int, 1, 100000000]):
+        try:
+            user = User(guild_id=interaction.guild_id, user_id=discord_user.id, username=discord_user.name)
 
-        if success is None:
-            # Error messages are handled within the command, so we just return here to avoid sending a duplicate message.
-            return
+            query = SetBalanceCommand()
+            await query.execute(guild_id=str(interaction.guild_id), user=user, amount=amount)
 
-        embed = DiscordAdminEmbed.set_balance_embed(interaction, amount)
-        await interaction.response.send_message(embed=embed)
+            embed = DiscordAdminEmbed.set_balance_embed(interaction, discord_user, amount)
+            await interaction.response.send_message(embed=embed)
+        except UserNotFoundException as e:
+            await interaction.response.send_message(f"User not found: {str(e)}", ephemeral=True)
+        except GuildNotFoundException as e:
+            await interaction.response.send_message(f"Guild not found: {str(e)}", ephemeral=True)
+        except Exception as e:
+            await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(AdminCog(bot))

@@ -209,4 +209,4 @@ __marimo__/
 # Add config.py to prevent leaking sensitive tokens
 config.py
 users.db
-server_config.db
+guild_config.db

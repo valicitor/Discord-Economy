@@ -36,7 +36,7 @@ Also by allowing trading, investing, and other deep economic actions players tha
   - `SetBalanceCommand`: Set a player's balance to a specific amount.
   - `PayCommand`: Send money to another player
 - **Queries**:
-  - `GetBalanceQuery`: Retrieve a player's current balance.
+  - `GetUserQuery`: Retrieve a player
   - `GetTopBalancesQuery`: Retrieve a leaderboard of players with the highest balances.
 
 #### Basic Gambling Games:
