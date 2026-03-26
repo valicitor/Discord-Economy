@@ -3,8 +3,6 @@ from discord import app_commands
 from discord.ext import commands
 from config import BOT_NAME, BOT_VERSION, DISCORD_BOT_TOKEN, TEST_SERVER_ID, DO_GLOBAL_SYNC
 import asyncio
-import json
-import hashlib
 
 # ----------------------------
 # Command sync Class

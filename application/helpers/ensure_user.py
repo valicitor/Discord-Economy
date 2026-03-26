@@ -1,53 +1,39 @@
-import discord
+from domain import User, GuildConfig
+from domain import GuildNotFoundException, UserNotFoundException
+from infrastructure import UserRepository, GuildConfigRepository
 
-from infrastructure import UserRepository, ServerConfigRepository
-
-async def _ensure_guild(guild_id: int) -> dict|None:
+async def _ensure_guild(guild_id: int) -> GuildConfig|None:
     """Ensure a guild exists in the database, creating a config if necessary."""
-    server_config_repository = ServerConfigRepository()
+    guild_config_repository = GuildConfigRepository()
 
-    if not await server_config_repository.exists(guild_id):
-        entity = {
-            'guild_id': guild_id,
-            'starting_balance': 0,
-            'currency_symbol': '$',
-            'currency_emoji': ''
-        }
-        await server_config_repository.add(entity)
+    if not await guild_config_repository.exists(guild_id):
+        new_guild_config = GuildConfig(guild_id=guild_id, starting_balance=0, currency_symbol='$', currency_emoji='')
+        await guild_config_repository.add(new_guild_config)
     
-    return await server_config_repository.get_by_id(guild_id)
+    return await guild_config_repository.get_by_id(guild_id)
 
-async def _ensure_user(guild_id: int, user_id: int, username: str, starting_balance: int) -> dict|None:
+async def _ensure_user(guild_id: int, user_id: int, username: str, starting_balance: int) -> User|None:
     """Ensure a user exists in the database, creating an account if necessary."""
     user_repository = UserRepository()
 
     if not await user_repository.exists(user_id, guild_id):
-        entity = {
-            'user_id': user_id,
-            'guild_id': guild_id,
-            'username': username,
-            'balance': starting_balance
-        }
-        await user_repository.add(entity)
+        new_user = User(user_id=user_id, guild_id=guild_id, username=username, cash_balance=starting_balance)
+        await user_repository.add(new_user)
     
     return await user_repository.get_by_id(user_id)
 
-async def ensure_users(guild_id: int, users: list = [], interaction: discord.Interaction|None = None) -> None:
+async def ensure_users(guild_id: int, users: list[User] = []) -> None:
     if len(users) == 0:
         return None
 
-    guild_rec = await _ensure_guild(guild_id)
+    guild_config = await _ensure_guild(guild_id)
 
-    if guild_rec is None:
-        if interaction != None and interaction.response.is_done():
-            await interaction.response.send_message(f"Please ensure the guild has a configuration and try again.", ephemeral=True)
-        return None
+    if guild_config is None:
+        raise GuildNotFoundException(f"Failed to ensure guild with ID {guild_id}.");
 
     for user in users:
-        member_rec = await _ensure_user(guild_id, user['user_id'], user['username'], guild_rec['starting_balance'])
+        member_rec = await _ensure_user(guild_id, user.user_id, user.username, guild_config.starting_balance)
     
         if member_rec is None:
-            if interaction != None and interaction.response.is_done():
-                await interaction.response.send_message(f"Please ensure the recipient has an account and try again.", ephemeral=True)
-            return None
+            raise UserNotFoundException(f"Failed to ensure user {user.user_id} in guild {guild_id}.")
     

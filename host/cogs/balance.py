@@ -1,12 +1,18 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from domain import DiscordBalanceEmbed
+from domain import (
+    User, 
+    GuildNotFoundException, 
+    UserNotFoundException,
+    InsufficientFundsException
+)
 from application import (
     PayCommand,
-    GetBalanceQuery,
+    GetUserQuery,
     GetTopBalancesQuery
 )
+from host.embeds.discord_balance_embed import DiscordBalanceEmbed
 import typing
 
 class BalanceCog(commands.Cog):
@@ -16,47 +22,63 @@ class BalanceCog(commands.Cog):
 
     # --- /balance ---
     @app_commands.command(name="balance", description="Show your current balance.")
-    async def user_balance(self, interaction: discord.Interaction, user: typing.Optional[discord.User] = None):
-        query = GetBalanceQuery(interaction=interaction)
+    async def user_balance(self, interaction: discord.Interaction, discord_user: typing.Optional[discord.User] = None):
+        try:
+            target_user = discord_user if discord_user else interaction.user
+            user = User(guild_id=interaction.guild_id, user_id=target_user.id, username=target_user.name)
 
-        target_user = user if user else interaction.user
-        balance = await query.execute(guild_id=str(interaction.guild_id), user=target_user)
+            query = GetUserQuery()
+            updated_user = await query.execute(guild_id=str(interaction.guild_id), user=user)
 
-        if balance is None:
-            # Error messages are handled within the command, so we just return here to avoid sending a duplicate message.
-            return
-
-        embed = DiscordBalanceEmbed.get_balance_embed(interaction, bal=balance)
-        await interaction.response.send_message(embed=embed)
+            embed = DiscordBalanceEmbed.get_balance_embed(interaction, user=updated_user)
+            await interaction.response.send_message(embed=embed)
+        except UserNotFoundException as e:
+            await interaction.response.send_message(f"User not found: {str(e)}", ephemeral=True)
+        except GuildNotFoundException as e:
+            await interaction.response.send_message(f"Guild not found: {str(e)}", ephemeral=True)
+        except Exception as e:
+            await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
 
     # --- /pay ---
     @app_commands.command(name="pay", description="Pay another user.")
-    async def user_pay(self, interaction: discord.Interaction, user: discord.User, amount: app_commands.Range[int, 1, 100000000]):
-        command = PayCommand(interaction=interaction)
-        success = await command.execute(guild_id=str(interaction.guild_id), user_id=str(interaction.user.id), member_id=str(user.id), amount=amount)
+    async def user_pay(self, interaction: discord.Interaction, discord_user: discord.User, amount: app_commands.Range[int, 1, 100000000]):
+        try:
+            user = User(guild_id=interaction.guild_id, user_id=interaction.user.id, username=interaction.user.name)
+            target = User(guild_id=interaction.guild_id, user_id=discord_user.id, username=discord_user.name)
 
-        if success is None:
-            # Error messages are handled within the command, so we just return here to avoid sending a duplicate message.
-            return
-        if not success:
-            await interaction.response.send_message(f"Payment failed. Please ensure you have sufficient funds and try again.", ephemeral=True)
-            return
-        
-        embed = DiscordBalanceEmbed.pay_balance_embed(interaction, user=interaction.user, member=user, amount=amount)
-        await interaction.response.send_message(embed=embed)
+            command = PayCommand()
+            await command.execute(guild_id=str(interaction.guild_id), user=user, target=target, amount=amount)
+            
+            embed = DiscordBalanceEmbed.pay_balance_embed(interaction, user=interaction.user, target=discord_user, amount=amount)
+            await interaction.response.send_message(embed=embed)
+        except UserNotFoundException as e:
+            await interaction.response.send_message(f"User not found: {str(e)}", ephemeral=True)
+        except GuildNotFoundException as e:
+            await interaction.response.send_message(f"Guild not found: {str(e)}", ephemeral=True)
+        except InsufficientFundsException as e:
+            await interaction.response.send_message(f"Insufficient funds: {str(e)}", ephemeral=True)
+        except Exception as e:
+            await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
 
     # --- /leaderboard ---
     @app_commands.command(name="leaderboard", description="Show the top users by balance.")
-    async def user_leaderboard(self, interaction: discord.Interaction, page: typing.Optional[int] = 1, sort: typing.Optional[typing.Literal['Cash', 'Total']] = "Cash"):
-        query = GetTopBalancesQuery(interaction=interaction)
-        top_balances = await query.execute(guild_id=str(interaction.guild_id), limit=10)
+    async def user_leaderboard(self, interaction: discord.Interaction, page: typing.Optional[int] = 1, sort: typing.Optional[typing.Literal['Cash', 'Bank', 'Total']] = "Cash"):
+        try:
+            query = GetTopBalancesQuery()
+            top_balances = await query.execute(guild_id=str(interaction.guild_id), page=page, sort_by=sort)
 
-        if not top_balances:
-            await interaction.response.send_message("No users found.", ephemeral=True)
-            return
+            if not top_balances:
+                await interaction.response.send_message("No users found.", ephemeral=True)
+                return
 
-        embed = DiscordBalanceEmbed.get_leaderboard_embed(interaction, top_balances)
-        await interaction.response.send_message(embed=embed)
+            embed = DiscordBalanceEmbed.get_leaderboard_embed(interaction, top_balances)
+            await interaction.response.send_message(embed=embed)
+        except UserNotFoundException as e:
+            await interaction.response.send_message(f"User not found: {str(e)}", ephemeral=True)
+        except GuildNotFoundException as e:
+            await interaction.response.send_message(f"Guild not found: {str(e)}", ephemeral=True)
+        except Exception as e:
+            await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(BalanceCog(bot))
