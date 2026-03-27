@@ -3,8 +3,8 @@ from discord import app_commands
 from discord.ext import commands
 from domain import User, UserNotFoundException, GuildNotFoundException
 from application import (
-    SetBalanceCommand,
-    AddBalanceCommand
+    SetBalanceCommand, SetBalanceCommandRequest,
+    AddBalanceCommand, AddBalanceCommandRequest
 )
 from host.embeds.discord_admin_embed import DiscordAdminEmbed
 
@@ -18,12 +18,20 @@ class AdminCog(commands.Cog):
     @app_commands.checks.has_permissions(administrator=True)
     async def admin_add_balance_user(self, interaction: discord.Interaction, discord_user: discord.User, amount: app_commands.Range[int, 1, 100000000]):
         try:
-            user = User(guild_id=interaction.guild_id, user_id=discord_user.id, username=discord_user.name)
+            request = AddBalanceCommandRequest(
+                guild_id=interaction.guild_id, 
+                user=User(
+                    guild_id=interaction.guild_id, 
+                    user_id=discord_user.id, 
+                    username=discord_user.name,
+                    avatar=str(discord_user.display_avatar)
+                ), 
+                amount=amount
+            )
 
-            query = AddBalanceCommand()
-            await query.execute(guild_id=str(interaction.guild_id), user=user, amount=amount)
+            response = AddBalanceCommand(request).execute()
 
-            embed = DiscordAdminEmbed.add_balance_embed(interaction, discord_user, amount)
+            embed = DiscordAdminEmbed.add_balance_embed(interaction, discord_user, response)
             await interaction.response.send_message(embed=embed)
         except UserNotFoundException as e:
             await interaction.response.send_message(f"User not found: {str(e)}", ephemeral=True)
@@ -37,12 +45,20 @@ class AdminCog(commands.Cog):
     @app_commands.checks.has_permissions(administrator=True)
     async def admin_set_balance_user(self, interaction: discord.Interaction, discord_user: discord.User, amount: app_commands.Range[int, 1, 100000000]):
         try:
-            user = User(guild_id=interaction.guild_id, user_id=discord_user.id, username=discord_user.name)
+            request = SetBalanceCommandRequest(
+                guild_id=interaction.guild_id, 
+                user=User(
+                    guild_id=interaction.guild_id, 
+                    user_id=discord_user.id, 
+                    username=discord_user.name,
+                    avatar=str(discord_user.display_avatar)
+                ), 
+                amount=amount
+            )
 
-            query = SetBalanceCommand()
-            await query.execute(guild_id=str(interaction.guild_id), user=user, amount=amount)
+            response = SetBalanceCommand(request).execute()
 
-            embed = DiscordAdminEmbed.set_balance_embed(interaction, discord_user, amount)
+            embed = DiscordAdminEmbed.set_balance_embed(interaction, discord_user, response)
             await interaction.response.send_message(embed=embed)
         except UserNotFoundException as e:
             await interaction.response.send_message(f"User not found: {str(e)}", ephemeral=True)

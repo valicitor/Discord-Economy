@@ -1,4 +1,7 @@
+from .interfaces.i_guild_config_repository import IGuildConfigRepository
+from .interfaces.i_user_repository import IUserRepository
+from .interfaces.i_shop_items_repository import IShopItemsRepository
+from .interfaces.i_inventory_repository import IInventoryRepository
+
 from .persistence.guild_config_repository import GuildConfigRepository
 from .persistence.user_repository import UserRepository
-from .persistence.shop_items_repository import ShopItemsRepository
-from .persistence.inventory_repository import InventoryRepository
