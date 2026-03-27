@@ -8,9 +8,9 @@ from domain import (
     InsufficientFundsException
 )
 from application import (
-    PayCommand,
-    GetUserQuery,
-    GetTopBalancesQuery
+    GetBalanceQuery, GetBalanceQueryRequest,
+    PayCommand, PayCommandRequest,
+    GetTopBalancesQuery, GetTopBalancesQueryRequest
 )
 from host.embeds.discord_balance_embed import DiscordBalanceEmbed
 import typing
@@ -24,13 +24,19 @@ class BalanceCog(commands.Cog):
     @app_commands.command(name="balance", description="Show your current balance.")
     async def user_balance(self, interaction: discord.Interaction, discord_user: typing.Optional[discord.User] = None):
         try:
-            target_user = discord_user if discord_user else interaction.user
-            user = User(guild_id=interaction.guild_id, user_id=target_user.id, username=target_user.name)
+            request=GetBalanceQueryRequest(
+                guild_id=interaction.guild_id, 
+                user=User(
+                    guild_id=interaction.guild_id, 
+                    user_id=interaction.user.id, 
+                    username=interaction.user.name,
+                    avatar=str(interaction.user.display_avatar)
+                ), 
+            )
 
-            query = GetUserQuery()
-            updated_user = await query.execute(guild_id=str(interaction.guild_id), user=user)
+            response = GetBalanceQuery(request).execute()
 
-            embed = DiscordBalanceEmbed.get_balance_embed(interaction, user=updated_user)
+            embed = DiscordBalanceEmbed.get_balance_embed(interaction, response)
             await interaction.response.send_message(embed=embed)
         except UserNotFoundException as e:
             await interaction.response.send_message(f"User not found: {str(e)}", ephemeral=True)
@@ -43,13 +49,26 @@ class BalanceCog(commands.Cog):
     @app_commands.command(name="pay", description="Pay another user.")
     async def user_pay(self, interaction: discord.Interaction, discord_user: discord.User, amount: app_commands.Range[int, 1, 100000000]):
         try:
-            user = User(guild_id=interaction.guild_id, user_id=interaction.user.id, username=interaction.user.name)
-            target = User(guild_id=interaction.guild_id, user_id=discord_user.id, username=discord_user.name)
+            request=PayCommandRequest(
+                guild_id=interaction.guild_id, 
+                user=User(
+                    guild_id=interaction.guild_id, 
+                    user_id=interaction.user.id, 
+                    username=interaction.user.name,
+                    avatar=str(interaction.user.display_avatar)
+                ), 
+                target=User(
+                    guild_id=interaction.guild_id, 
+                    user_id=discord_user.id, 
+                    username=discord_user.name,
+                    avatar=str(discord_user.display_avatar)
+                ), 
+                amount=amount
+            )
 
-            command = PayCommand()
-            await command.execute(guild_id=str(interaction.guild_id), user=user, target=target, amount=amount)
+            response = PayCommand(request).execute()
             
-            embed = DiscordBalanceEmbed.pay_balance_embed(interaction, user=interaction.user, target=discord_user, amount=amount)
+            embed = DiscordBalanceEmbed.pay_balance_embed(interaction, discord_user, response)
             await interaction.response.send_message(embed=embed)
         except UserNotFoundException as e:
             await interaction.response.send_message(f"User not found: {str(e)}", ephemeral=True)
@@ -64,14 +83,19 @@ class BalanceCog(commands.Cog):
     @app_commands.command(name="leaderboard", description="Show the top users by balance.")
     async def user_leaderboard(self, interaction: discord.Interaction, page: typing.Optional[int] = 1, sort: typing.Optional[typing.Literal['Cash', 'Bank', 'Total']] = "Cash"):
         try:
-            query = GetTopBalancesQuery()
-            top_balances = await query.execute(guild_id=str(interaction.guild_id), page=page, sort_by=sort)
+            request=GetTopBalancesQueryRequest(
+                guild_id=interaction.guild_id, 
+                page=page, 
+                sort_by=sort
+            )
 
-            if not top_balances:
+            response = GetTopBalancesQuery(request).execute()
+
+            if not response.users:
                 await interaction.response.send_message("No users found.", ephemeral=True)
                 return
 
-            embed = DiscordBalanceEmbed.get_leaderboard_embed(interaction, top_balances)
+            embed = DiscordBalanceEmbed.get_leaderboard_embed(interaction, response)
             await interaction.response.send_message(embed=embed)
         except UserNotFoundException as e:
             await interaction.response.send_message(f"User not found: {str(e)}", ephemeral=True)
