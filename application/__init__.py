@@ -6,3 +6,4 @@ from .commands.add_balance_command import AddBalanceCommand, AddBalanceCommandRe
 from .commands.pay_command import PayCommand, PayCommandRequest, PayCommandResponse
 from .commands.withdraw_command import WithdrawCommand, WithdrawCommandRequest, WithdrawCommandResponse
 from .commands.deposit_command import DepositCommand, DepositCommandRequest, DepositCommandResponse
+from .commands.set_currency_symbol_command import SetCurrencySymbolCommand, SetCurrencySymbolCommandRequest, SetCurrencySymbolCommandResponse
