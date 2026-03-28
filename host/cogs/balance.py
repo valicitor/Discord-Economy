@@ -24,6 +24,7 @@ class BalanceCog(commands.Cog):
 
     # --- /balance ---
     @app_commands.command(name="balance", description="Show your current balance.")
+    @app_commands.guild_only()
     async def user_balance(self, interaction: discord.Interaction, discord_user: typing.Optional[discord.User] = None):
         try:
             request=GetBalanceQueryRequest(
@@ -49,6 +50,7 @@ class BalanceCog(commands.Cog):
 
     # --- /pay ---
     @app_commands.command(name="pay", description="Pay another user.")
+    @app_commands.guild_only()
     async def user_pay(self, interaction: discord.Interaction, discord_user: discord.User, amount: app_commands.Range[int, 1, 100000000]):
         try:
             request=PayCommandRequest(
@@ -83,6 +85,7 @@ class BalanceCog(commands.Cog):
 
     # --- /withdraw ---
     @app_commands.command(name="withdraw", description="Withdraw money from your bank.")
+    @app_commands.guild_only()
     async def user_withdraw(self, interaction: discord.Interaction, amount: typing.Optional[app_commands.Range[int, 1, 100000000]] = None):
         try:
             request=WithdrawCommandRequest(
@@ -111,6 +114,7 @@ class BalanceCog(commands.Cog):
 
     # --- /deposit ---
     @app_commands.command(name="deposit", description="Deposit money into your bank.")
+    @app_commands.guild_only()
     async def user_deposit(self, interaction: discord.Interaction, amount: typing.Optional[app_commands.Range[int, 1, 100000000]] = None):
         try:
             request=DepositCommandRequest(
@@ -139,6 +143,7 @@ class BalanceCog(commands.Cog):
 
     # --- /leaderboard ---
     @app_commands.command(name="leaderboard", description="Show the top users by balance.")
+    @app_commands.guild_only()
     async def user_leaderboard(self, interaction: discord.Interaction, page: typing.Optional[int] = 1, sort: typing.Optional[typing.Literal['Cash', 'Bank', 'Total']] = "Cash"):
         try:
             request=GetTopBalancesQueryRequest(

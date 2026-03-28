@@ -57,11 +57,10 @@ class SetCurrencySymbolCommand:
 
         updated_guild_config = GuildConfigRepository().get_by_id(guild_config.guild_id)
         if updated_guild_config is None:
-            raise GuildNotFoundException(
-                f"Guild with ID {guild_config.guild_id} not found."
-            )
+            raise GuildNotFoundException(f"Guild with ID {guild_config.guild_id} not found.")
 
         return SetCurrencySymbolCommandResponse(
             success=success,
-            guild_config=updated_guild_config
+            guild_config=updated_guild_config,
+            currency_symbol=symbol
         )

@@ -1,12 +1,16 @@
 import discord
 from discord import Interaction
-from application import AddBalanceCommandResponse, SetBalanceCommandResponse
+from application import (
+    AddBalanceCommandResponse, 
+    SetBalanceCommandResponse, 
+    SetCurrencySymbolCommandResponse
+)
 from host.helpers.currency import currency_symbol
 
 class DiscordAdminEmbed:
 
     @staticmethod
-    def set_currency_symbol_embed(interaction: Interaction, response):
+    def set_currency_symbol_embed(interaction: Interaction, response: SetCurrencySymbolCommandResponse):
         currency = currency_symbol(
             response.guild_config.currency_emoji, 
             response.guild_config.currency_symbol
