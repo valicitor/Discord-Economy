@@ -5,7 +5,8 @@ from application import (
     PayCommandResponse, 
     GetTopBalancesQueryResponse, 
     WithdrawCommandResponse, 
-    DepositCommandResponse
+    DepositCommandResponse,
+    WorkCommandResponse
 )
 from host.helpers.currency import currency_symbol
 
@@ -93,4 +94,19 @@ class DiscordBalanceEmbed:
 
         embed.set_footer(text=f"Page {response.page}/{response.max_pages}")
 
+        return embed
+
+    @staticmethod
+    def work_embed(interaction: discord.Interaction, response: WorkCommandResponse):
+        currency = currency_symbol(
+            response.guild_config.currency_emoji, 
+            response.guild_config.currency_symbol
+        )
+
+        embed=discord.Embed(
+            description=f"💼 You worked and earned {currency}{response.amount}!",
+            color=discord.Color.green()
+        )
+        
+        embed.set_author(name=f"{response.user.username}", icon_url=f"{response.user.avatar}")
         return embed
