@@ -1,6 +1,12 @@
 import discord
 from discord import Interaction
-from application import GetBalanceQueryResponse, PayCommandResponse, GetTopBalancesQueryResponse
+from application import (
+    GetBalanceQueryResponse, 
+    PayCommandResponse, 
+    GetTopBalancesQueryResponse, 
+    WithdrawCommandResponse, 
+    DepositCommandResponse
+)
 from host.helpers.currency import currency_symbol
 
 class DiscordBalanceEmbed:
@@ -21,6 +27,36 @@ class DiscordBalanceEmbed:
         embed.add_field(name="Cash", value=f"{currency}{response.user.cash_balance}", inline=True)
         embed.add_field(name="Bank", value=f"{currency}{response.user.bank_balance}", inline=True)
         embed.add_field(name="Total", value=f"{currency}{response.user.cash_balance + response.user.bank_balance}", inline=True)
+        return embed
+    
+    @staticmethod
+    def withdraw_embed(interaction: Interaction, response: WithdrawCommandResponse):
+        currency = currency_symbol(
+            response.guild_config.currency_emoji, 
+            response.guild_config.currency_symbol
+        )
+
+        embed=discord.Embed(
+            description=f"✅ Withdrew {currency}{response.amount} from your bank!",
+            color=discord.Color.blue()
+        )
+        
+        embed.set_author(name=f"{response.user.username}", icon_url=f"{response.user.avatar}")
+        return embed
+
+    @staticmethod
+    def deposit_embed(interaction: Interaction, response: DepositCommandResponse):
+        currency = currency_symbol(
+            response.guild_config.currency_emoji, 
+            response.guild_config.currency_symbol
+        )
+
+        embed=discord.Embed(
+            description=f"✅ Deposited {currency}{response.amount} into your bank!",
+            color=discord.Color.blue()
+        )
+        
+        embed.set_author(name=f"{response.user.username}", icon_url=f"{response.user.avatar}")
         return embed
 
     @staticmethod
@@ -46,10 +82,11 @@ class DiscordBalanceEmbed:
 
         description=f"View the leaderboard here:\n"
         for idx, record in enumerate(response.users, start=1):
-            description+=f"\n**{idx}.** `{record.username}` • {currency}{record.cash_balance}"
+            money = record.cash_balance if response.sort_by == "Cash" else record.bank_balance if response.sort_by == "Bank" else record.cash_balance + record.bank_balance
+            description+=f"\n**{idx}.** `{record.username}` • {currency}{money}"
                 
         embed=discord.Embed(
-            title="🏆 Leaderboard", 
+            title=f"🏆 Leaderboard [{response.sort_by}]", 
             description=description, 
             color=discord.Color.gold()
         )

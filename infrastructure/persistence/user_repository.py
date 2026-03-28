@@ -75,13 +75,19 @@ class UserRepository(IUserRepository):
             self._ensure_connection()
             c = self.conn.cursor()
             c.execute("""
-                SELECT *,
-                       RANK() OVER (
-                           PARTITION BY guild_id
-                           ORDER BY (cash_balance + bank_balance) DESC
-                       ) as rank
-                FROM users
-                WHERE guild_id = ? AND user_id = ?
+                WITH RankedUsers AS (
+                    SELECT *,
+                        RANK() OVER (
+                            PARTITION BY guild_id
+                            ORDER BY (cash_balance + bank_balance) DESC
+                        ) as rank
+                    FROM users
+                    WHERE guild_id = ?
+                )
+                      
+                SELECT *
+                FROM RankedUsers
+                WHERE user_id = ?
             """, (guild_id, user_id))
 
             row = c.fetchone()
@@ -92,13 +98,18 @@ class UserRepository(IUserRepository):
             self._ensure_connection()
             c = self.conn.cursor()
             c.execute("""
-                SELECT *,
-                       RANK() OVER (
-                           PARTITION BY guild_id
-                           ORDER BY (cash_balance + bank_balance) DESC
-                       ) as rank
-                FROM users
-                WHERE guild_id = ?
+                WITH RankedUsers AS (
+                    SELECT *,
+                        RANK() OVER (
+                            PARTITION BY guild_id
+                            ORDER BY (cash_balance + bank_balance) DESC
+                        ) as rank
+                    FROM users
+                    WHERE guild_id = ?
+                )
+                      
+                SELECT *
+                FROM RankedUsers
             """, (guild_id,))
 
             return [User(data=dict(row)) for row in c.fetchall()]
@@ -113,13 +124,18 @@ class UserRepository(IUserRepository):
         sort_column = self._get_sort_column(sort_by)
 
         query = f"""
-            SELECT *,
-                   RANK() OVER (
-                       PARTITION BY guild_id
-                       ORDER BY {sort_column} DESC
-                   ) as rank
-            FROM users
-            WHERE guild_id = ?
+            WITH RankedUsers AS (
+                SELECT *,
+                    RANK() OVER (
+                        PARTITION BY guild_id
+                        ORDER BY {sort_column} DESC
+                    ) as rank
+                FROM users
+                WHERE guild_id = ?
+            )
+
+            SELECT *
+            FROM RankedUsers
             ORDER BY {sort_column} DESC
         """
 

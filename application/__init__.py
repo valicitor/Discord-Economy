@@ -4,3 +4,5 @@ from .queries.get_top_balances_query import GetTopBalancesQuery, GetTopBalancesQ
 from .commands.set_balance_command import SetBalanceCommand, SetBalanceCommandRequest, SetBalanceCommandResponse
 from .commands.add_balance_command import AddBalanceCommand, AddBalanceCommandRequest, AddBalanceCommandResponse
 from .commands.pay_command import PayCommand, PayCommandRequest, PayCommandResponse
+from .commands.withdraw_command import WithdrawCommand, WithdrawCommandRequest, WithdrawCommandResponse
+from .commands.deposit_command import DepositCommand, DepositCommandRequest, DepositCommandResponse

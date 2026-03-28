@@ -39,6 +39,7 @@ class TestAddBalanceCommand(unittest.TestCase):
         request = AddBalanceCommandRequest(
             guild_id=self.guild_config.guild_id, 
             user=self.entity1, 
+            account_type="Cash",
             amount=amount_to_add
         )
 

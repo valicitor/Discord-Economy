@@ -10,6 +10,7 @@ class AddBalanceCommandRequest:
 
         self.guild_id: int = kwargs.get('guild_id')
         self.user: User = kwargs.get('user')
+        self.account_type: str = kwargs.get('account_type')
         self.amount: int = kwargs.get('amount')
 
 class AddBalanceCommandResponse:
@@ -20,6 +21,7 @@ class AddBalanceCommandResponse:
         self.success: bool = kwargs.get('success')
         self.guild_config: GuildConfig = kwargs.get('guild_config')
         self.user: User = kwargs.get('user')
+        self.account_type: str = kwargs.get('account_type')
         self.amount: int = kwargs.get('amount')
 
 class AddBalanceCommand:
@@ -34,7 +36,10 @@ class AddBalanceCommand:
         guild_config, user = ensure_guild_and_user(self.request.guild_id, self.request.user)
 
         # Update recipient balances
-        user.cash_balance = int(user.cash_balance) + self.request.amount
+        if self.request.account_type == "Cash":
+            user.cash_balance = int(user.cash_balance) + self.request.amount
+        elif self.request.account_type == "Bank":
+            user.bank_balance = int(user.bank_balance) + self.request.amount
 
         success = UserRepository().update(user)
 
@@ -42,4 +47,4 @@ class AddBalanceCommand:
         if updated_user is None:
             raise UserNotFoundException(f"User with ID {user.user_id} not found in guild {user.guild_id}.")
 
-        return AddBalanceCommandResponse(success=success, guild_config=guild_config, user=updated_user, amount=self.request.amount)
+        return AddBalanceCommandResponse(success=success, guild_config=guild_config, user=updated_user, account_type=self.request.account_type, amount=self.request.amount)

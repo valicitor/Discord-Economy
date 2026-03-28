@@ -7,6 +7,7 @@ from application import (
     AddBalanceCommand, AddBalanceCommandRequest
 )
 from host.embeds.discord_admin_embed import DiscordAdminEmbed
+import typing
 
 class AdminCog(commands.Cog):
 
@@ -16,7 +17,7 @@ class AdminCog(commands.Cog):
     # --- /add-balance ---
     @app_commands.command(name="add-balance", description="Add balance to a member.")
     @app_commands.checks.has_permissions(administrator=True)
-    async def admin_add_balance_user(self, interaction: discord.Interaction, discord_user: discord.User, amount: app_commands.Range[int, 1, 100000000]):
+    async def admin_add_balance_user(self, interaction: discord.Interaction, discord_user: discord.User, amount: app_commands.Range[int, 1, 100000000], account_type: typing.Optional[typing.Literal['Cash', 'Bank']] = "Cash"):
         try:
             request = AddBalanceCommandRequest(
                 guild_id=interaction.guild_id, 
@@ -26,6 +27,7 @@ class AdminCog(commands.Cog):
                     username=discord_user.name,
                     avatar=str(discord_user.display_avatar)
                 ), 
+                account_type=account_type,
                 amount=amount
             )
 
@@ -43,7 +45,7 @@ class AdminCog(commands.Cog):
     # --- /set-balance ---
     @app_commands.command(name="set-balance", description="Set a members current balance.")
     @app_commands.checks.has_permissions(administrator=True)
-    async def admin_set_balance_user(self, interaction: discord.Interaction, discord_user: discord.User, amount: app_commands.Range[int, 1, 100000000]):
+    async def admin_set_balance_user(self, interaction: discord.Interaction, discord_user: discord.User, amount: app_commands.Range[int, 1, 100000000], account_type: typing.Optional[typing.Literal['Cash', 'Bank']] = "Cash"):
         try:
             request = SetBalanceCommandRequest(
                 guild_id=interaction.guild_id, 
@@ -53,6 +55,7 @@ class AdminCog(commands.Cog):
                     username=discord_user.name,
                     avatar=str(discord_user.display_avatar)
                 ), 
+                account_type=account_type,
                 amount=amount
             )
 

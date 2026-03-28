@@ -14,7 +14,7 @@ class DiscordAdminEmbed:
 
         embed = discord.Embed(
             title=f"💳 Bank Account Summary",
-            description=f"{interaction.user.mention}, added **{currency}{response.amount}** to {target.mention} account.",
+            description=f"{interaction.user.mention}, added **{currency}{response.amount}** to {target.mention}'s {response.account_type} balance.",
             color=discord.Color.blue()
         )
         return embed
@@ -28,7 +28,7 @@ class DiscordAdminEmbed:
         
         embed = discord.Embed(
             title=f"💳 Bank Account Summary",
-            description=f"{interaction.user.mention}, set {target.mention}'s balance to **{currency}{response.amount}**.",
+            description=f"{interaction.user.mention}, set {target.mention}'s {response.account_type} balance to **{currency}{response.amount}**.",
             color=discord.Color.blue()
         )
         return embed

@@ -10,7 +10,9 @@ from domain import (
 from application import (
     GetBalanceQuery, GetBalanceQueryRequest,
     PayCommand, PayCommandRequest,
-    GetTopBalancesQuery, GetTopBalancesQueryRequest
+    GetTopBalancesQuery, GetTopBalancesQueryRequest,
+    WithdrawCommand, WithdrawCommandRequest,
+    DepositCommand, DepositCommandRequest
 )
 from host.embeds.discord_balance_embed import DiscordBalanceEmbed
 import typing
@@ -28,9 +30,9 @@ class BalanceCog(commands.Cog):
                 guild_id=interaction.guild_id, 
                 user=User(
                     guild_id=interaction.guild_id, 
-                    user_id=interaction.user.id, 
-                    username=interaction.user.name,
-                    avatar=str(interaction.user.display_avatar)
+                    user_id=discord_user.id if discord_user else interaction.user.id, 
+                    username=discord_user.name if discord_user else interaction.user.name,
+                    avatar=str(discord_user.display_avatar) if discord_user else str(interaction.user.display_avatar)
                 ), 
             )
 
@@ -69,6 +71,62 @@ class BalanceCog(commands.Cog):
             response = PayCommand(request).execute()
             
             embed = DiscordBalanceEmbed.pay_balance_embed(interaction, discord_user, response)
+            await interaction.response.send_message(embed=embed)
+        except UserNotFoundException as e:
+            await interaction.response.send_message(f"User not found: {str(e)}", ephemeral=True)
+        except GuildNotFoundException as e:
+            await interaction.response.send_message(f"Guild not found: {str(e)}", ephemeral=True)
+        except InsufficientFundsException as e:
+            await interaction.response.send_message(f"Insufficient funds: {str(e)}", ephemeral=True)
+        except Exception as e:
+            await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
+
+    # --- /withdraw ---
+    @app_commands.command(name="withdraw", description="Withdraw money from your bank.")
+    async def user_withdraw(self, interaction: discord.Interaction, amount: typing.Optional[app_commands.Range[int, 1, 100000000]] = None):
+        try:
+            request=WithdrawCommandRequest(
+                guild_id=interaction.guild_id, 
+                user=User(
+                    guild_id=interaction.guild_id, 
+                    user_id=interaction.user.id, 
+                    username=interaction.user.name,
+                    avatar=str(interaction.user.display_avatar)
+                ), 
+                amount=amount
+            )
+
+            response = WithdrawCommand(request).execute()
+
+            embed = DiscordBalanceEmbed.withdraw_embed(interaction, response)
+            await interaction.response.send_message(embed=embed)
+        except UserNotFoundException as e:
+            await interaction.response.send_message(f"User not found: {str(e)}", ephemeral=True)
+        except GuildNotFoundException as e:
+            await interaction.response.send_message(f"Guild not found: {str(e)}", ephemeral=True)
+        except InsufficientFundsException as e:
+            await interaction.response.send_message(f"Insufficient funds: {str(e)}", ephemeral=True)
+        except Exception as e:
+            await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
+
+    # --- /deposit ---
+    @app_commands.command(name="deposit", description="Deposit money into your bank.")
+    async def user_deposit(self, interaction: discord.Interaction, amount: typing.Optional[app_commands.Range[int, 1, 100000000]] = None):
+        try:
+            request=DepositCommandRequest(
+                guild_id=interaction.guild_id, 
+                user=User(
+                    guild_id=interaction.guild_id, 
+                    user_id=interaction.user.id, 
+                    username=interaction.user.name,
+                    avatar=str(interaction.user.display_avatar)
+                ), 
+                amount=amount
+            )
+
+            response = DepositCommand(request).execute()
+
+            embed = DiscordBalanceEmbed.deposit_embed(interaction, response)
             await interaction.response.send_message(embed=embed)
         except UserNotFoundException as e:
             await interaction.response.send_message(f"User not found: {str(e)}", ephemeral=True)
