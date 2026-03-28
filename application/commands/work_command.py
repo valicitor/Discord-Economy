@@ -38,10 +38,10 @@ class WorkCommand:
         guild_config, user = ensure_guild_and_user(self.request.guild_id, self.request.user)
 
         if user.last_work:
-            time_since_last_work = int(datetime.datetime.now().timestamp()) - int(user.last_work)
+            time_since_last_work = int(datetime.datetime.now().timestamp())- int(user.last_work)
             if time_since_last_work < guild_config.work_cooldown:
                 remaining_cooldown = guild_config.work_cooldown - time_since_last_work
-                raise OnCooldownException(f"You are on cooldown. Please wait {self._timestamp_to_string(remaining_cooldown)} seconds before working again.")
+                raise OnCooldownException(f"You are on cooldown. Please wait {self._timestamp_to_string(remaining_cooldown)} before working again.")
 
         # Calculate random pay amount
         amount = random.randint(guild_config.work_min_pay, guild_config.work_max_pay)

@@ -30,7 +30,7 @@ class TestWorkCommand(unittest.TestCase):
             "username": "TestUser",
             "avatar": "",
             "cash_balance": 100,
-            "work_cooldown": 0
+            "last_work": 0
         })
 
         # Add test user to the database
@@ -51,7 +51,6 @@ class TestWorkCommand(unittest.TestCase):
 
         # Act
         response = WorkCommand(request).execute()
-        print(f"User last work timestamp: {response.user.last_work}")
 
         # Try to work again, should fail due to cooldown
         with self.assertRaises(OnCooldownException) as context:

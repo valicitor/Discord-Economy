@@ -44,6 +44,14 @@ class GuildConfigRepository(IGuildConfigRepository):
                     work_max_pay INTEGER NOT NULL
                 )
             """)
+            c.execute("PRAGMA table_info(guild_config)")
+            existing_columns = {row[1] for row in c.fetchall()}
+            if "work_cooldown" not in existing_columns:
+                c.execute("ALTER TABLE guild_config ADD COLUMN work_cooldown INTEGER NOT NULL")
+            if "work_min_pay" not in existing_columns:
+                c.execute("ALTER TABLE guild_config ADD COLUMN work_min_pay INTEGER NOT NULL")
+            if "work_max_pay" not in existing_columns:
+                c.execute("ALTER TABLE guild_config ADD COLUMN work_max_pay INTEGER NOT NULL")
             self.conn.execute("PRAGMA journal_mode=WAL;")
             self.conn.commit()
 

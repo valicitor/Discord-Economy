@@ -48,6 +48,13 @@ class UserRepository(IUserRepository):
                 CREATE INDEX IF NOT EXISTS idx_users_guild_id 
                 ON users(guild_id)
             """)
+            
+             # Lightweight migration: ensure 'last_work' column exists on existing databases
+            c.execute("PRAGMA table_info(users)")
+            existing_columns = {row[1] for row in c.fetchall()}
+            if "last_work" not in existing_columns:
+                c.execute("ALTER TABLE users ADD COLUMN last_work REAL")
+
             self.conn.execute("PRAGMA journal_mode=WAL;")
             self.conn.commit()
 

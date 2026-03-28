@@ -1,5 +1,3 @@
-from datetime import datetime
-
 class User:
     def __init__(self, data: dict = None, **kwargs):
         if data:
@@ -13,7 +11,7 @@ class User:
         self.cash_balance: int|None = kwargs.get('cash_balance', 0)
         self.bank_balance: int|None = kwargs.get('bank_balance', 0)
 
-        self.last_work: datetime|None = kwargs.get('last_work', 0)
+        self.last_work: float|None = kwargs.get('last_work', 0)
 
         self.rank: int|None = kwargs.get('rank', 999)
 
