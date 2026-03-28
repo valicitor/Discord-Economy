@@ -38,7 +38,7 @@ class DepositCommand:
 
         # Validate sufficient funds
         user.cash_balance = int(user.cash_balance) - self.request.amount
-        if user.cash_balance  < 0:
+        if user.cash_balance < 0:
             raise InsufficientFundsException("You do not have enough funds to complete this deposit.")
         
         user.bank_balance = int(user.bank_balance) + self.request.amount
