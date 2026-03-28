@@ -5,14 +5,16 @@ from domain import (
     User, 
     GuildNotFoundException, 
     UserNotFoundException,
-    InsufficientFundsException
+    InsufficientFundsException,
+    OnCooldownException
 )
 from application import (
     GetBalanceQuery, GetBalanceQueryRequest,
     PayCommand, PayCommandRequest,
     GetTopBalancesQuery, GetTopBalancesQueryRequest,
     WithdrawCommand, WithdrawCommandRequest,
-    DepositCommand, DepositCommandRequest
+    DepositCommand, DepositCommandRequest,
+    WorkCommand, WorkCommandRequest
 )
 from host.embeds.discord_balance_embed import DiscordBalanceEmbed
 import typing
@@ -164,6 +166,34 @@ class BalanceCog(commands.Cog):
             await interaction.response.send_message(f"User not found: {str(e)}", ephemeral=True)
         except GuildNotFoundException as e:
             await interaction.response.send_message(f"Guild not found: {str(e)}", ephemeral=True)
+        except Exception as e:
+            await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
+
+    # --- /work ---
+    @app_commands.command(name="work", description="Work to earn money.")
+    @app_commands.guild_only()
+    async def user_work(self, interaction: discord.Interaction):
+        try:
+            request=WorkCommandRequest(
+                guild_id=interaction.guild_id, 
+                user=User(
+                    guild_id=interaction.guild_id, 
+                    user_id=interaction.user.id, 
+                    username=interaction.user.name,
+                    avatar=str(interaction.user.display_avatar)
+                )
+            )
+
+            response = WorkCommand(request).execute()
+
+            embed = DiscordBalanceEmbed.work_embed(interaction, response)
+            await interaction.response.send_message(embed=embed)
+        except UserNotFoundException as e:
+            await interaction.response.send_message(f"User not found: {str(e)}", ephemeral=True)
+        except GuildNotFoundException as e:
+            await interaction.response.send_message(f"Guild not found: {str(e)}", ephemeral=True)
+        except OnCooldownException as e:
+            await interaction.response.send_message(f"On cooldown: {str(e)}", ephemeral=True)
         except Exception as e:
             await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
 

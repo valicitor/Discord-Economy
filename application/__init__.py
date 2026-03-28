@@ -7,3 +7,4 @@ from .commands.pay_command import PayCommand, PayCommandRequest, PayCommandRespo
 from .commands.withdraw_command import WithdrawCommand, WithdrawCommandRequest, WithdrawCommandResponse
 from .commands.deposit_command import DepositCommand, DepositCommandRequest, DepositCommandResponse
 from .commands.set_currency_symbol_command import SetCurrencySymbolCommand, SetCurrencySymbolCommandRequest, SetCurrencySymbolCommandResponse
+from .commands.work_command import WorkCommand, WorkCommandRequest, WorkCommandResponse

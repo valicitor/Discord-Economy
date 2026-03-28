@@ -40,6 +40,7 @@ class UserRepository(IUserRepository):
                     avatar TEXT NOT NULL,
                     cash_balance INTEGER NOT NULL DEFAULT 0,
                     bank_balance INTEGER NOT NULL DEFAULT 0,
+                    last_work REAL,
                     PRIMARY KEY (user_id, guild_id)
                 )
             """)
@@ -47,6 +48,13 @@ class UserRepository(IUserRepository):
                 CREATE INDEX IF NOT EXISTS idx_users_guild_id 
                 ON users(guild_id)
             """)
+            
+             # Lightweight migration: ensure 'last_work' column exists on existing databases
+            c.execute("PRAGMA table_info(users)")
+            existing_columns = {row[1] for row in c.fetchall()}
+            if "last_work" not in existing_columns:
+                c.execute("ALTER TABLE users ADD COLUMN last_work REAL")
+
             self.conn.execute("PRAGMA journal_mode=WAL;")
             self.conn.commit()
 
@@ -169,8 +177,8 @@ class UserRepository(IUserRepository):
             self._ensure_connection()
             c = self.conn.cursor()
             c.execute("""
-                INSERT INTO users (user_id, guild_id, username, avatar, cash_balance, bank_balance)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO users (user_id, guild_id, username, avatar, cash_balance, bank_balance, last_work)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(user_id, guild_id) DO NOTHING
             """, (
                 user.user_id,
@@ -178,7 +186,8 @@ class UserRepository(IUserRepository):
                 user.username,
                 user.avatar,
                 user.cash_balance,
-                user.bank_balance
+                user.bank_balance,
+                user.last_work
             ))
 
             self.conn.commit()
@@ -190,13 +199,15 @@ class UserRepository(IUserRepository):
             c = self.conn.cursor()
             c.execute("""
                 UPDATE users
-                SET cash_balance = ?, bank_balance = ?, username = ?, avatar = ?
+                SET username = ?, avatar = ?, cash_balance = ?, bank_balance = ?, last_work = ?
                 WHERE user_id = ? AND guild_id = ?
             """, (
-                user.cash_balance,
-                user.bank_balance,
                 user.username,
                 user.avatar,
+                user.cash_balance,
+                user.bank_balance,
+                user.last_work,
+                
                 user.user_id,
                 user.guild_id
             ))

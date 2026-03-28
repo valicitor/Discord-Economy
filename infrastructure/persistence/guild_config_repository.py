@@ -38,9 +38,20 @@ class GuildConfigRepository(IGuildConfigRepository):
                     guild_id INTEGER PRIMARY KEY,
                     starting_balance INTEGER NOT NULL,
                     currency_symbol TEXT NOT NULL,
-                    currency_emoji TEXT
+                    currency_emoji TEXT,
+                    work_cooldown INTEGER NOT NULL,
+                    work_min_pay INTEGER NOT NULL,
+                    work_max_pay INTEGER NOT NULL
                 )
             """)
+            c.execute("PRAGMA table_info(guild_config)")
+            existing_columns = {row[1] for row in c.fetchall()}
+            if "work_cooldown" not in existing_columns:
+                c.execute("ALTER TABLE guild_config ADD COLUMN work_cooldown INTEGER NOT NULL")
+            if "work_min_pay" not in existing_columns:
+                c.execute("ALTER TABLE guild_config ADD COLUMN work_min_pay INTEGER NOT NULL")
+            if "work_max_pay" not in existing_columns:
+                c.execute("ALTER TABLE guild_config ADD COLUMN work_max_pay INTEGER NOT NULL")
             self.conn.execute("PRAGMA journal_mode=WAL;")
             self.conn.commit()
 
@@ -78,15 +89,18 @@ class GuildConfigRepository(IGuildConfigRepository):
             c = self.conn.cursor()
             c.execute("""
                 INSERT INTO guild_config (
-                    guild_id, starting_balance, currency_symbol, currency_emoji
+                    guild_id, starting_balance, currency_symbol, currency_emoji, work_cooldown, work_min_pay, work_max_pay
                 )
-                VALUES (?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(guild_id) DO NOTHING
             """, (
                 guild_config.guild_id,
                 guild_config.starting_balance,
                 guild_config.currency_symbol,
-                guild_config.currency_emoji
+                guild_config.currency_emoji,
+                guild_config.work_cooldown,
+                guild_config.work_min_pay,
+                guild_config.work_max_pay
             ))
 
             self.conn.commit()
@@ -98,12 +112,15 @@ class GuildConfigRepository(IGuildConfigRepository):
             c = self.conn.cursor()
             c.execute("""
                 UPDATE guild_config
-                SET starting_balance = ?, currency_symbol = ?, currency_emoji = ?
+                SET starting_balance = ?, currency_symbol = ?, currency_emoji = ?, work_cooldown = ?, work_min_pay = ?, work_max_pay = ?
                 WHERE guild_id = ?
             """, (
                 guild_config.starting_balance,
                 guild_config.currency_symbol,
                 guild_config.currency_emoji,
+                guild_config.work_cooldown,
+                guild_config.work_min_pay,
+                guild_config.work_max_pay,
                 guild_config.guild_id
             ))
 
