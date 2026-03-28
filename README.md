@@ -14,7 +14,7 @@ Also by allowing trading, investing, and other deep economic actions players tha
 #### Core Features:
 - [x] Basic currency tracking: Implement a system to track player balances.
 - [ ] Basic gambling games: Add simple games like dice rolls or card games for players to gamble currency.
-- [ ] Basic collect income/bank: Allow players to collect periodic income and deposit/withdraw from a bank.
+- [x] Basic collect income/bank: Allow players to collect periodic income and deposit/withdraw from a bank.
 - [ ] Basic inventory: Track player-owned items.
 - [ ] Basic shop store/trading: Enable players to buy/sell items and trade with each other.
 
