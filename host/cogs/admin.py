@@ -1,7 +1,13 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from domain import User, Item, UserNotFoundException, GuildNotFoundException
+from domain import User, Item
+from domain import (
+    UserNotFoundException, 
+    GuildNotFoundException, 
+    ItemCreationFailedException, 
+    ItemNotFoundException
+)
 from application import (
     SetCurrencySymbolCommand, SetCurrencySymbolCommandRequest,
     SetBalanceCommand, SetBalanceCommandRequest,
@@ -114,7 +120,7 @@ class AdminCog(commands.Cog):
         stock_remaining: typing.Optional[int] = -1, 
         category: typing.Optional[str] = "default", 
         inventory: typing.Optional[bool] = True, 
-        useable: typing.Optional[bool] = True, 
+        usable: typing.Optional[bool] = True, 
         sellable: typing.Optional[bool] = True
     ):
         try:
@@ -129,7 +135,7 @@ class AdminCog(commands.Cog):
                     stock=stock_remaining,
                     category=category,
                     inventory=inventory,
-                    useable=useable,
+                    usable=usable,
                     sellable=sellable
                 )
             )
@@ -138,8 +144,10 @@ class AdminCog(commands.Cog):
 
             embed = DiscordAdminEmbed.create_item_embed(interaction, response)
             await interaction.response.send_message(embed=embed)
-        except UserNotFoundException as e:
-            await interaction.response.send_message(f"User not found: {str(e)}", ephemeral=True)
+        except ItemCreationFailedException as e:
+            await interaction.response.send_message(f"Item creation failed: {str(e)}", ephemeral=True)
+        except ItemNotFoundException as e:
+            await interaction.response.send_message(f"Item not found: {str(e)}", ephemeral=True)
         except GuildNotFoundException as e:
             await interaction.response.send_message(f"Guild not found: {str(e)}", ephemeral=True)
         except Exception as e:

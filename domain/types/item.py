@@ -12,7 +12,7 @@ class Item:
         self.description: str|None = kwargs.get('description', '')
         self.stock: int|None = kwargs.get('stock', -1)
         self.inventory: bool|None = kwargs.get('inventory', True)
-        self.useable: bool|None = kwargs.get('useable', True)
+        self.usable: bool|None = kwargs.get('usable', True)
         self.sellable: bool|None = kwargs.get('sellable', True)
 
     def to_dict(self):
@@ -26,6 +26,6 @@ class Item:
             'description': self.description,
             'stock': self.stock,
             'inventory': self.inventory,
-            'useable': self.useable,
+            'usable': self.usable,
             'sellable': self.sellable
         }

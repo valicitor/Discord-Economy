@@ -1,5 +1,5 @@
 from domain import GuildConfig, Item
-from domain import ItemNotFoundException
+from domain import ItemNotFoundException, ItemCreationFailedException
 from infrastructure import ItemRepository
 from application.helpers.ensure_user import ensure_guild
 
@@ -31,9 +31,11 @@ class CreateItemCommand:
         guild_config = ensure_guild(self.request.guild_id)
         
         success, item_id = ItemRepository().add(self.request.item)
+        if not success or item_id is None:
+            raise ItemCreationFailedException("Failed to create item. Please try again.")
 
-        item_record = ItemRepository().get_by_id(self.request.item.guild_id, item_id)
+        item_record = ItemRepository().get_by_id(guild_config.guild_id, item_id)
         if item_record is None:
-            raise ItemNotFoundException(f"Item with name {self.request.item.name} not found in guild {self.request.item.guild_id}.")
+            raise ItemNotFoundException(f"Item with name {self.request.item.name} not found in guild {guild_config.guild_id}.")
         
         return CreateItemCommandResponse(success=success, guild_config=guild_config, item=item_record)

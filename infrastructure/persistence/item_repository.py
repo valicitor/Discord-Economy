@@ -43,12 +43,12 @@ class ItemRepository(IItemRepository):
                     description TEXT DEFAULT '',
                     stock INTEGER NOT NULL DEFAULT -1,
                     inventory BOOLEAN NOT NULL DEFAULT 1,
-                    useable BOOLEAN NOT NULL DEFAULT 1,
+                    usable BOOLEAN NOT NULL DEFAULT 1,
                     sellable BOOLEAN NOT NULL DEFAULT 1
                 )
             """)
             c.execute("""
-                CREATE INDEX idx_items_guild_item_id ON items(guild_id, item_id);
+                CREATE INDEX IF NOT EXISTS idx_items_guild_item_id ON items(guild_id, item_id);
             """)
 
             self.conn.execute("PRAGMA journal_mode=WAL;")
@@ -75,7 +75,7 @@ class ItemRepository(IItemRepository):
         with self._lock:
             self._ensure_connection()
             c = self.conn.cursor()
-            c.execute("SELECT * FROM items WHERE guild_id = ?", (guild_id))
+            c.execute("SELECT * FROM items WHERE guild_id = ?", (guild_id,))
 
             return [Item(data=dict(row)) for row in c.fetchall()]
 
@@ -97,7 +97,7 @@ class ItemRepository(IItemRepository):
             c = self.conn.cursor()
             c.execute("""
                 INSERT INTO items (
-                    guild_id, name, category, icon, price, description, stock, inventory, useable, sellable
+                    guild_id, name, category, icon, price, description, stock, inventory, usable, sellable
                 )
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
@@ -109,7 +109,7 @@ class ItemRepository(IItemRepository):
                 item.description,
                 item.stock,
                 item.inventory,
-                item.useable,
+                item.usable,
                 item.sellable
             ))
             self.conn.commit()
@@ -122,7 +122,7 @@ class ItemRepository(IItemRepository):
             c = self.conn.cursor()
             c.execute("""
                 UPDATE items
-                SET name = ?, category = ?, icon = ?, price = ?, description = ?, stock = ?, inventory = ?, useable = ?, sellable = ?
+                SET name = ?, category = ?, icon = ?, price = ?, description = ?, stock = ?, inventory = ?, usable = ?, sellable = ?
                 WHERE item_id = ? AND guild_id = ?
             """, (
                 item.name,
@@ -132,7 +132,7 @@ class ItemRepository(IItemRepository):
                 item.description,
                 item.stock,
                 item.inventory,
-                item.useable,
+                item.usable,
                 item.sellable,
                 
                 item.item_id,

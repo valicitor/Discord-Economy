@@ -31,7 +31,7 @@ class TestCreateItemCommand(unittest.TestCase):
                 "description": "TestDescription",
                 "stock": 10,
                 "inventory": True,
-                "useable": True,
+                "usable": True,
                 "sellable": True
             })
 
