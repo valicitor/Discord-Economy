@@ -1,11 +1,12 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from domain import User, UserNotFoundException, GuildNotFoundException
+from domain import User, Item, UserNotFoundException, GuildNotFoundException
 from application import (
     SetCurrencySymbolCommand, SetCurrencySymbolCommandRequest,
     SetBalanceCommand, SetBalanceCommandRequest,
-    AddBalanceCommand, AddBalanceCommandRequest
+    AddBalanceCommand, AddBalanceCommandRequest,
+    CreateItemCommand, CreateItemCommandRequest
 )
 from host.embeds.discord_admin_embed import DiscordAdminEmbed
 import typing
@@ -87,6 +88,55 @@ class AdminCog(commands.Cog):
             response = SetBalanceCommand(request).execute()
 
             embed = DiscordAdminEmbed.set_balance_embed(interaction, discord_user, response)
+            await interaction.response.send_message(embed=embed)
+        except UserNotFoundException as e:
+            await interaction.response.send_message(f"User not found: {str(e)}", ephemeral=True)
+        except GuildNotFoundException as e:
+            await interaction.response.send_message(f"Guild not found: {str(e)}", ephemeral=True)
+        except Exception as e:
+            await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
+    
+     # --- /item-setup-create ---
+    item_setup_group = app_commands.Group(
+        name="item-setup",
+        description="Item setup commands"
+    )
+    
+    @item_setup_group.command(name="create", description="Create a new item.")
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def admin_create_item(
+        self, interaction: discord.Interaction, 
+        name: str, 
+        price: typing.Optional[int] = 0, 
+        icon: typing.Optional[str] = "", 
+        description: typing.Optional[str] = "", 
+        stock_remaining: typing.Optional[int] = -1, 
+        category: typing.Optional[str] = "default", 
+        inventory: typing.Optional[bool] = True, 
+        useable: typing.Optional[bool] = True, 
+        sellable: typing.Optional[bool] = True
+    ):
+        try:
+            request = CreateItemCommandRequest(
+                guild_id=interaction.guild_id, 
+                item=Item(
+                    guild_id=interaction.guild_id, 
+                    name=name,
+                    price=price,
+                    icon=icon,
+                    description=description,
+                    stock=stock_remaining,
+                    category=category,
+                    inventory=inventory,
+                    useable=useable,
+                    sellable=sellable
+                )
+            )
+
+            response = CreateItemCommand(request).execute()
+
+            embed = DiscordAdminEmbed.create_item_embed(interaction, response)
             await interaction.response.send_message(embed=embed)
         except UserNotFoundException as e:
             await interaction.response.send_message(f"User not found: {str(e)}", ephemeral=True)

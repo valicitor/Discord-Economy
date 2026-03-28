@@ -210,3 +210,4 @@ __marimo__/
 config.py
 users.db
 guild_config.db
+items.db

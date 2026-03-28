@@ -8,3 +8,4 @@ from .commands.withdraw_command import WithdrawCommand, WithdrawCommandRequest, 
 from .commands.deposit_command import DepositCommand, DepositCommandRequest, DepositCommandResponse
 from .commands.set_currency_symbol_command import SetCurrencySymbolCommand, SetCurrencySymbolCommandRequest, SetCurrencySymbolCommandResponse
 from .commands.work_command import WorkCommand, WorkCommandRequest, WorkCommandResponse
+from .commands.create_item_command import CreateItemCommand, CreateItemCommandRequest, CreateItemCommandResponse
