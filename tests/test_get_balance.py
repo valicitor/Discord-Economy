@@ -20,14 +20,16 @@ class TestGetBalanceQuery(unittest.TestCase):
             "guild_id": 12342,
             "username": "TestUser",
             "avatar": "",
-            "cash_balance": 100
+            "cash_balance": 100,
+            "bank_balance": 1100
         })
         self.entity2 = User(data={
             "user_id": 2,
             "guild_id": 12342,
             "username": "TestUser",
             "avatar": "",
-            "cash_balance": 200
+            "cash_balance": 200,
+            "bank_balance": 1200
         })
 
         # Add test users to the database
@@ -57,8 +59,18 @@ class TestGetBalanceQuery(unittest.TestCase):
         response2 = GetBalanceQuery(request2).execute()
 
         # Assert
+        self.assertEqual(response1.user.guild_id, 12342)
+        self.assertEqual(response2.user.guild_id, 12342)
+
         self.assertEqual(response1.user.cash_balance, 100)
         self.assertEqual(response2.user.cash_balance, 200)
+
+        self.assertEqual(response1.user.bank_balance, 1100)
+        self.assertEqual(response2.user.bank_balance, 1200)
+
+        self.assertEqual(response1.user.rank, 2)
+        self.assertEqual(response2.user.rank, 1)
+
 
 if __name__ == "__main__":
     unittest.main()

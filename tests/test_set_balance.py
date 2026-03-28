@@ -33,6 +33,7 @@ class TestSetBalanceCommand(unittest.TestCase):
         request = SetBalanceCommandRequest(
             guild_id=self.guild_config.guild_id, 
             user=self.entity1, 
+            account_type="Cash",
             amount=amount
         )
 

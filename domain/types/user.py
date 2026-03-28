@@ -9,7 +9,7 @@ class User:
         self.avatar = kwargs.get('avatar')
         self.cash_balance = kwargs.get('cash_balance', 0)
         self.bank_balance = kwargs.get('bank_balance', 0)
-        self.rank = kwargs.get('rank')
+        self.rank = kwargs.get('rank', 999)
 
     def to_dict(self):
         return {
