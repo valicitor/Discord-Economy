@@ -87,6 +87,31 @@ class CommandSyncManager:
 # Bot Class
 # ----------------------------
 class MyClient(commands.Bot):
+    BOT_ROLE = "dev"
+    COG_MAP = {
+        "dev"  : [
+            "host.cogs.admin",
+            "host.cogs.balance",
+        ],
+        "economy": [
+            "host.cogs.balance",
+            "host.cogs.shop",
+            "host.cogs.inventory",
+        ],
+        "combat": [
+            "host.cogs.units",
+            "host.cogs.equipment",
+        ],
+        "world": [
+            "host.cogs.poi",
+            "host.cogs.travel",
+        ],
+        "actions": [
+            "host.cogs.actions",
+            "host.cogs.robbery",
+        ]
+    }
+    
     def __init__(self):
         intents = discord.Intents.default()
         intents.message_content = True  # If you need message content
@@ -100,11 +125,7 @@ class MyClient(commands.Bot):
         print("✅ All cogs loaded.")
     
     async def _load_all_cogs(self):
-        cogs = [
-            "host.cogs.admin",
-            "host.cogs.help",
-            "host.cogs.balance",
-        ]
+        cogs = self.COG_MAP.get(self.BOT_ROLE, [])
 
         async def load_cog(cog):
             try:
@@ -121,8 +142,10 @@ class MyClient(commands.Bot):
         print(f'{BOT_NAME} bot v{BOT_VERSION} is ready!')
         print(f'Connected to {len(self.guilds)} guilds: {[guild.name for guild in self.guilds]}')
 
-        sync_manager = CommandSyncManager(self.tree)
-        await sync_manager.sync_if_needed()
+        # Check if TEST_SERVER_ID exists in config and sync commands if so
+        if TEST_SERVER_ID != None:
+            sync_manager = CommandSyncManager(self.tree)
+            await sync_manager.sync_if_needed()
 
         # Only sync globally when explicitly enabled
         if DO_GLOBAL_SYNC:

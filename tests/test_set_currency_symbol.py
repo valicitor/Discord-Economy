@@ -1,8 +1,8 @@
 import sys
 import os
 
-# Add the project root to sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from config import BASE_DIR
+sys.path.insert(0, os.path.abspath(BASE_DIR))
 
 import unittest
 from domain import GuildConfig
@@ -11,7 +11,7 @@ from infrastructure import GuildConfigRepository
 
 class TestSetCurrencySymbolCommand(unittest.TestCase):
     def setUp(self):
-        self.guild_config_repository = GuildConfigRepository()
+        self.guild_config_repository = GuildConfigRepository(":memory:")
         
         self.guild_config = GuildConfig(data={ 'guild_id': 12341, 'starting_balance': 0, 'currency_symbol': '$', 'currency_emoji': '' })
 

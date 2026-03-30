@@ -1,26 +1,22 @@
+from dataclasses import dataclass
+
 from domain import User, GuildConfig
 from domain import UserNotFoundException, InsufficientFundsException
 from infrastructure import UserRepository
 from application.helpers.ensure_user import ensure_guild_and_user
 
+@dataclass
 class DepositCommandRequest:
-    def __init__(self, data: dict = None, **kwargs):
-        if data:
-            kwargs = {**data, **kwargs}
+    guild_id: int
+    user: User
+    amount: int = None
 
-        self.guild_id: int = kwargs.get('guild_id')
-        self.user: User = kwargs.get('user')
-        self.amount: int = kwargs.get('amount')
-
+@dataclass
 class DepositCommandResponse:
-    def __init__(self, data: dict = None, **kwargs):
-        if data:
-            kwargs = {**data, **kwargs}
-
-        self.success: bool = kwargs.get('success')
-        self.guild_config: GuildConfig = kwargs.get('guild_config')
-        self.user: User = kwargs.get('user')
-        self.amount: int = kwargs.get('amount')
+    success: bool
+    guild_config: GuildConfig
+    user: User
+    amount: int
 
 class DepositCommand:
 

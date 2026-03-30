@@ -1,8 +1,8 @@
 import sys
 import os
 
-# Add the project root to sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from config import BASE_DIR
+sys.path.insert(0, os.path.abspath(BASE_DIR))
 
 import unittest
 from domain import Item, GuildConfig
@@ -11,7 +11,9 @@ from infrastructure import ItemRepository, GuildConfigRepository
 
 class TestCreateItemCommand(unittest.TestCase):
     def setUp(self):
-        self.guild_config_repository = GuildConfigRepository()
+        self.guild_config_repository = GuildConfigRepository(":memory:")
+        self.item_repository = ItemRepository(":memory:")
+
         self.guild_config = GuildConfig(data={ 
             'guild_id': 12341, 
             'starting_balance': 0, 
@@ -41,7 +43,7 @@ class TestCreateItemCommand(unittest.TestCase):
     def tearDown(self):
         # Remove test item from the database
         self.guild_config_repository.delete(self.guild_config)
-        ItemRepository().delete(self.item)
+        self.item_repository.delete(self.item)
 
     def test_create_item_command(self):
         # Arrange

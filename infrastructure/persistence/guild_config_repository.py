@@ -1,34 +1,12 @@
 from domain import GuildConfig
-from infrastructure import IGuildConfigRepository
+from domain import IRepository
+from infrastructure import BaseRepository
 from typing import List, Optional
-import sqlite3
-from threading import Lock
-import atexit
 
 
-class GuildConfigRepository(IGuildConfigRepository):
-    _instance = None
-    _instance_lock = Lock()
-
-    def __new__(cls, *args, **kwargs):
-        with cls._instance_lock:
-            if not cls._instance:
-                cls._instance = super(GuildConfigRepository, cls).__new__(cls)
-        return cls._instance
-
+class GuildConfigRepository(IRepository, BaseRepository):
     def __init__(self, db_path: str = None):
-        if not hasattr(self, "_initialized"):
-            self.db_path = db_path or "guild_config.db"
-            self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
-            self.conn.row_factory = sqlite3.Row
-            self._lock = Lock()
-
-            self.init_database()
-
-            atexit.register(self.close)
-            self._initialized = True
-
-    # ---------- Database Setup ----------
+        super().__init__(db_path or "guild_config.db")
 
     def init_database(self):
         with self._lock:
@@ -54,12 +32,6 @@ class GuildConfigRepository(IGuildConfigRepository):
                 c.execute("ALTER TABLE guild_config ADD COLUMN work_max_pay INTEGER NOT NULL")
             self.conn.execute("PRAGMA journal_mode=WAL;")
             self.conn.commit()
-
-    # ---------- Helpers ----------
-
-    def _ensure_connection(self):
-        if self.conn is None:
-            raise RuntimeError("Database connection is closed")
 
     # ---------- Queries ----------
 
@@ -148,11 +120,3 @@ class GuildConfigRepository(IGuildConfigRepository):
                 (guild_id,)
             )
             return c.fetchone() is not None
-
-    # ---------- Cleanup ----------
-
-    def close(self):
-        with self._lock:
-            if self.conn:
-                self.conn.close()
-                self.conn = None

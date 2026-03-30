@@ -1,0 +1,38 @@
+{
+    "version": "1.0",
+    "vehicles": {
+        "data": [
+            { "name": "Zakuul Walker",     "description": "A tanky walker vehicle",         "metadata": {} },
+            { "name": "X-wing",             "description": "A fast, agile starfighter",    "metadata": {} }
+        ]
+    },
+    "vehicle_stats": {
+        "data": [
+            { "vehicle_name": "Zakuul Walker",     "stat_key": "WS",       "stat_value": "4+" },
+            { "vehicle_name": "Zakuul Walker",     "stat_key": "BS",       "stat_value": "5+" },
+            { "vehicle_name": "Zakuul Walker",     "stat_key": "T",        "stat_value": "8" },
+            { "vehicle_name": "Zakuul Walker",     "stat_key": "W",        "stat_value": "12" },
+
+            { "vehicle_name": "Zakuul Walker",     "stat_key": "Attacks",  "stat_value": "3" },
+            { "vehicle_name": "Zakuul Walker",     "stat_key": "S",        "stat_value": "7" },
+            { "vehicle_name": "Zakuul Walker",     "stat_key": "AP",       "stat_value": "-2" },
+            { "vehicle_name": "Zakuul Walker",     "stat_key": "D",        "stat_value": "2" },
+            { "vehicle_name": "Zakuul Walker",     "stat_key": "Range",    "stat_value": "Far" },
+
+            { "vehicle_name": "Zakuul Walker",     "stat_key": "Sv",       "stat_value": "3+" },
+
+            { "vehicle_name": "X-wing",   "stat_key": "WS",       "stat_value": "3+" },
+            { "vehicle_name": "X-wing",   "stat_key": "BS",       "stat_value": "4+" },
+            { "vehicle_name": "X-wing",   "stat_key": "T",        "stat_value": "2" },
+            { "vehicle_name": "X-wing",   "stat_key": "W",        "stat_value": "3" },
+
+            { "vehicle_name": "X-wing",   "stat_key": "Attacks",  "stat_value": "1" },
+            { "vehicle_name": "X-wing",   "stat_key": "S",        "stat_value": "2" },
+            { "vehicle_name": "X-wing",   "stat_key": "AP",       "stat_value": "0" },
+            { "vehicle_name": "X-wing",   "stat_key": "D",        "stat_value": "1" },
+            { "vehicle_name": "X-wing",   "stat_key": "Range",    "stat_value": "Far" },
+            
+            { "vehicle_name": "X-wing",   "stat_key": "Sv",       "stat_value": "6+" }
+        ]
+    }
+}

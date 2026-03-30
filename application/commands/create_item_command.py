@@ -1,24 +1,20 @@
+from dataclasses import dataclass
+
 from domain import GuildConfig, Item
 from domain import ItemNotFoundException, ItemCreationFailedException
 from infrastructure import ItemRepository
 from application.helpers.ensure_user import ensure_guild
 
+@dataclass
 class CreateItemCommandRequest:
-    def __init__(self, data: dict = None, **kwargs):
-        if data:
-            kwargs = {**data, **kwargs}
+    guild_id: int
+    item: Item
 
-        self.guild_id: int = kwargs.get('guild_id')
-        self.item: Item = kwargs.get('item')
-
+@dataclass
 class CreateItemCommandResponse:
-    def __init__(self, data: dict = None, **kwargs):
-        if data:
-            kwargs = {**data, **kwargs}
-
-        self.success: bool = kwargs.get('success')
-        self.guild_config: GuildConfig = kwargs.get('guild_config')
-        self.item: Item = kwargs.get('item')
+    success: bool
+    guild_config: GuildConfig
+    item: Item
 
 class CreateItemCommand:
 

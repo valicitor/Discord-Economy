@@ -1,28 +1,24 @@
+from attr import dataclass
+
 from domain import User, GuildConfig
 from domain import InsufficientFundsException, UserNotFoundException
 from infrastructure import UserRepository
 from application.helpers.ensure_user import ensure_guild_and_users
 
+@dataclass
 class PayCommandRequest:
-    def __init__(self, data: dict = None, **kwargs):
-        if data:
-            kwargs = {**data, **kwargs}
+    guild_id: int
+    user: User
+    target: User
+    amount: int
 
-        self.guild_id: int = kwargs.get('guild_id')
-        self.user: User = kwargs.get('user')
-        self.target: User = kwargs.get('target')
-        self.amount: int = kwargs.get('amount')
-
+@dataclass
 class PayCommandResponse:
-    def __init__(self, data: dict = None, **kwargs):
-        if data:
-            kwargs = {**data, **kwargs}
-
-        self.success: bool = kwargs.get('success')
-        self.guild_config: GuildConfig = kwargs.get('guild_config')
-        self.user: User = kwargs.get('user')
-        self.target: User = kwargs.get('target')
-        self.amount: int = kwargs.get('amount')
+    success: bool
+    guild_config: GuildConfig
+    user: User
+    target: User
+    amount: int
 
 class PayCommand:
 

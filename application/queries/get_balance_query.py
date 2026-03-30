@@ -1,23 +1,19 @@
+from attr import dataclass
+
 from domain import User, GuildConfig
 from infrastructure import UserRepository
 from application.helpers.ensure_user import ensure_guild_and_user
 
+@dataclass
 class GetBalanceQueryRequest:
-    def __init__(self, data: dict = None, **kwargs):
-        if data:
-            kwargs = {**data, **kwargs}
+    guild_id: int
+    user: User
 
-        self.guild_id: int = kwargs.get('guild_id')
-        self.user: User = kwargs.get('user')
-
+@dataclass
 class GetBalanceQueryResponse:
-    def __init__(self, data: dict = None, **kwargs):
-        if data:
-            kwargs = {**data, **kwargs}
-
-        self.success: bool = kwargs.get('success')
-        self.guild_config: GuildConfig = kwargs.get('guild_config')
-        self.user: User = kwargs.get('user')
+    success: bool
+    guild_config: GuildConfig
+    user: User
 
 class GetBalanceQuery:
 
