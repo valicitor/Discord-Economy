@@ -1,28 +1,24 @@
+from attr import dataclass
+
 from domain import User, GuildConfig
 from domain import UserNotFoundException
 from infrastructure import UserRepository
 from application.helpers.ensure_user import ensure_guild_and_user
 
+@dataclass
 class AddBalanceCommandRequest:
-    def __init__(self, data: dict = None, **kwargs):
-        if data:
-            kwargs = {**data, **kwargs}
+    guild_id: int
+    user: User
+    account_type: str
+    amount: int
 
-        self.guild_id: int = kwargs.get('guild_id')
-        self.user: User = kwargs.get('user')
-        self.account_type: str = kwargs.get('account_type')
-        self.amount: int = kwargs.get('amount')
-
+@dataclass
 class AddBalanceCommandResponse:
-    def __init__(self, data: dict = None, **kwargs):
-        if data:
-            kwargs = {**data, **kwargs}
-
-        self.success: bool = kwargs.get('success')
-        self.guild_config: GuildConfig = kwargs.get('guild_config')
-        self.user: User = kwargs.get('user')
-        self.account_type: str = kwargs.get('account_type')
-        self.amount: int = kwargs.get('amount')
+    success: bool
+    guild_config: GuildConfig
+    user: User
+    account_type: str
+    amount: int
 
 class AddBalanceCommand:
 

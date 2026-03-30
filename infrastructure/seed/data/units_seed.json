@@ -1,0 +1,18 @@
+{
+    "version": "1.0",
+    "units": {
+        "data": [
+            { "name": "Stormtrooper",     "description": "A soldier of the Galactic Empire",         "metadata": {} },
+            { "name": "Worker",           "description": "A hard worker from the Galactic Empire",   "metadata": {} }
+        ]
+    },
+    "unit_stats": {
+        "data": [
+            { "unit_name": "Stormtrooper",  "stat_key": "Race",     "stat_value": "Human" },
+            { "unit_name": "Stormtrooper",  "stat_key": "Weapon",   "stat_value": "Z-6 Rotary Blaster Cannon" },
+            { "unit_name": "Stormtrooper",  "stat_key": "Armor",    "stat_value": "Imperial Agent Armor" },
+
+            { "unit_name": "Worker",        "stat_key": "Race",     "stat_value": "Human" }
+        ]
+    }
+}

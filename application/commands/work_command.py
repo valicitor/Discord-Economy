@@ -1,3 +1,5 @@
+from attr import dataclass
+
 from domain import User, GuildConfig
 from domain import UserNotFoundException, OnCooldownException
 from infrastructure import UserRepository
@@ -5,23 +7,17 @@ from application.helpers.ensure_user import ensure_guild_and_user
 import random
 import datetime
 
+@dataclass
 class WorkCommandRequest:
-    def __init__(self, data: dict = None, **kwargs):
-        if data:
-            kwargs = {**data, **kwargs}
+    guild_id: int
+    user: User
 
-        self.guild_id: int = kwargs.get('guild_id')
-        self.user: User = kwargs.get('user')
-
+@dataclass
 class WorkCommandResponse:
-    def __init__(self, data: dict = None, **kwargs):
-        if data:
-            kwargs = {**data, **kwargs}
-
-        self.success: bool = kwargs.get('success')
-        self.guild_config: GuildConfig = kwargs.get('guild_config')
-        self.user: User = kwargs.get('user')
-        self.amount: int = kwargs.get('amount')
+    success: bool
+    guild_config: GuildConfig
+    user: User
+    amount: int
 
 class WorkCommand:
 

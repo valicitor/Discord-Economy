@@ -1,0 +1,20 @@
+{
+    "version": "1.0",
+    "equipments": {
+        "data": [
+            { "name": "Z-6 Rotary Blaster Cannon",      "slot": "Weapon",      "description": "A versatile blaster cannon",                    "metadata": {} },
+            { "name": "Imperial Agent Armor",           "slot": "Armor",       "description": "A set of armor worn by Imperial agents",         "metadata": {} }
+        ]
+    },
+    "equipment_stats": {
+        "data": [
+            { "equipment_name": "Z-6 Rotary Blaster Cannon",     "stat_key": "Attacks",  "stat_value": "3" },
+            { "equipment_name": "Z-6 Rotary Blaster Cannon",     "stat_key": "S",        "stat_value": "7" },
+            { "equipment_name": "Z-6 Rotary Blaster Cannon",     "stat_key": "AP",       "stat_value": "-2" },
+            { "equipment_name": "Z-6 Rotary Blaster Cannon",     "stat_key": "D",        "stat_value": "2" },
+            { "equipment_name": "Z-6 Rotary Blaster Cannon",     "stat_key": "Range",    "stat_value": "Far" },
+
+            { "equipment_name": "Imperial Agent Armor",          "stat_key": "Sv",       "stat_value": "3+" }
+        ]
+    }
+}

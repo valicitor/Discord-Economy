@@ -1,29 +1,25 @@
+from attr import dataclass
+
 from domain import User, GuildConfig
 from domain import GuildNotFoundException
 from infrastructure import UserRepository, GuildConfigRepository
 from application.helpers.ensure_user import ensure_guild
 import math
 
+@dataclass
 class GetTopBalancesQueryRequest:
-    def __init__(self, data: dict = None, **kwargs):
-        if data:
-            kwargs = {**data, **kwargs}
+    guild_id: int
+    page: int
+    sort_by: str
 
-        self.guild_id: int = kwargs.get('guild_id')
-        self.page: int = kwargs.get('page')
-        self.sort_by: str = kwargs.get('sort_by')
-
+@dataclass
 class GetTopBalancesQueryResponse:
-    def __init__(self, data: dict = None, **kwargs):
-        if data:
-            kwargs = {**data, **kwargs}
-
-        self.success: bool = kwargs.get('success')
-        self.guild_config: GuildConfig = kwargs.get('guild_config')
-        self.users: list[User] = kwargs.get('users')
-        self.page: int = kwargs.get('page')
-        self.max_pages: int = kwargs.get('max_pages')
-        self.sort_by: str = kwargs.get('sort_by')
+    success: bool
+    guild_config: GuildConfig
+    users: list[User]
+    page: int
+    max_pages: int
+    sort_by: str
 
 class GetTopBalancesQuery:
 

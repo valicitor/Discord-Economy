@@ -1,8 +1,8 @@
 import sys
 import os
 
-# Add the project root to sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from config import BASE_DIR
+sys.path.insert(0, os.path.abspath(BASE_DIR))
 
 import unittest
 from domain import User, GuildConfig
@@ -11,8 +11,8 @@ from infrastructure import UserRepository, GuildConfigRepository
 
 class TestPayCommand(unittest.TestCase):
     def setUp(self):
-        self.guild_config_repository = GuildConfigRepository()
-        self.user_repository = UserRepository()
+        self.guild_config_repository = GuildConfigRepository(":memory:")
+        self.user_repository = UserRepository(":memory:")
 
         self.guild_config = GuildConfig(data={ 'guild_id': 12344, 'starting_balance': 0, 'currency_symbol': '$', 'currency_emoji': '' })
         self.entity1 = User(data={

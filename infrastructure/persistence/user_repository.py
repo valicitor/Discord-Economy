@@ -1,31 +1,11 @@
 from domain import User
-from infrastructure import IUserRepository
+from domain import IRepository
+from infrastructure import BaseRepository
 from typing import List, Optional
-import sqlite3
-from threading import Lock
-import atexit
 
-class UserRepository(IUserRepository):
-    _instance = None
-    _instance_lock = Lock()
-
-    def __new__(cls, *args, **kwargs):
-        with cls._instance_lock:
-            if not cls._instance:
-                cls._instance = super(UserRepository, cls).__new__(cls)
-        return cls._instance
-
+class UserRepository(IRepository, BaseRepository):
     def __init__(self, db_path: str = None):
-        if not hasattr(self, "_initialized"):
-            self.db_path = db_path or "users.db"
-            self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
-            self.conn.row_factory = sqlite3.Row
-            self._lock = Lock()
-
-            self.init_database()
-
-            atexit.register(self.close)
-            self._initialized = True
+        super().__init__(db_path or "users.db")
 
     # ---------- Database Setup ----------
 
@@ -248,11 +228,3 @@ class UserRepository(IUserRepository):
                 (user_id, guild_id)
             )
             return c.fetchone() is not None
-
-    # ---------- Cleanup ----------
-
-    def close(self):
-        with self._lock:
-            if self.conn:
-                self.conn.close()
-                self.conn = None

@@ -1,5 +1,7 @@
 import re
 
+from attr import dataclass
+
 from domain import GuildConfig
 from domain import GuildNotFoundException
 from infrastructure import GuildConfigRepository
@@ -7,22 +9,16 @@ from application.helpers.ensure_user import ensure_guild
 
 CUSTOM_EMOJI_PATTERN = re.compile(r"^<a?:\w+:\d+>$")
 
+@dataclass
 class SetCurrencySymbolCommandRequest:
-    def __init__(self, data: dict = None, **kwargs):
-        if data:
-            kwargs = {**data, **kwargs}
+    guild_id: int
+    currency_symbol: str
 
-        self.guild_id: int = kwargs.get('guild_id')
-        self.currency_symbol: str = kwargs.get('currency_symbol')
-
+@dataclass
 class SetCurrencySymbolCommandResponse:
-    def __init__(self, data: dict = None, **kwargs):
-        if data:
-            kwargs = {**data, **kwargs}
-
-        self.success: bool = kwargs.get('success')
-        self.guild_config: GuildConfig = kwargs.get('guild_config')
-        self.currency_symbol: str = kwargs.get('currency_symbol')
+    success: bool
+    guild_config: GuildConfig
+    currency_symbol: str
 
 class SetCurrencySymbolCommand:
 
