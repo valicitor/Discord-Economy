@@ -9,8 +9,8 @@ from infrastructure import RaceRepository, RaceStatRepository, SeedRacesAndRaceS
 
 class TestRacesSeeder(unittest.TestCase):
     def setUp(self):
-        self.race_repository = RaceRepository(":memory:")  # Use in-memory database for testing
-        self.race_stat_repository = RaceStatRepository(":memory:")  # Use in-memory database for testing
+        self.race_repository = RaceRepository(db_path=":memory:")  # Use in-memory database for testing
+        self.race_stat_repository = RaceStatRepository(db_path=":memory:")  # Use in-memory database for testing
 
     def tearDown(self):
         # Remove test database

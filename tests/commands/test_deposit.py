@@ -6,13 +6,13 @@ sys.path.insert(0, os.path.abspath(BASE_DIR))
 
 import unittest
 from domain import User, GuildConfig
-from application import WithdrawCommand, WithdrawCommandRequest
+from application import DepositCommand, DepositCommandRequest
 from infrastructure import UserRepository, GuildConfigRepository
 
-class TestWithdrawCommand(unittest.TestCase):
+class TestDepositCommand(unittest.TestCase):
     def setUp(self):
-        self.guild_config_repository = GuildConfigRepository(":memory:")
-        self.user_repository = UserRepository(":memory:")
+        self.guild_config_repository = GuildConfigRepository(db_path=":memory:")
+        self.user_repository = UserRepository(db_path=":memory:")
 
         self.guild_config = GuildConfig(data={ 'guild_id': 12344, 'starting_balance': 0, 'currency_symbol': '$', 'currency_emoji': '' })
         self.entity1 = User(data={
@@ -36,22 +36,22 @@ class TestWithdrawCommand(unittest.TestCase):
         self.user_repository.delete(self.entity1)
         self.user_repository.delete(self.entity2)
 
-    def test_withdraw(self):
+    def test_deposit(self):
         # Arrange
-        amount_to_withdraw = 50
+        amount_to_deposit = 50
 
-        request = WithdrawCommandRequest(
+        request = DepositCommandRequest(
             guild_id=self.entity1.guild_id,
             user=self.entity1,
-            amount=amount_to_withdraw
+            amount=amount_to_deposit
         )
 
         # Act
-        response = WithdrawCommand(request).execute()
+        response = DepositCommand(request).execute()
 
         # Assert
-        self.assertEqual(response.user.cash_balance, self.entity1.cash_balance + amount_to_withdraw)
-        self.assertEqual(response.user.bank_balance, self.entity1.bank_balance - amount_to_withdraw)
+        self.assertEqual(response.user.cash_balance, self.entity1.cash_balance - amount_to_deposit)
+        self.assertEqual(response.user.bank_balance, self.entity1.bank_balance + amount_to_deposit)
 
 if __name__ == "__main__":
     unittest.main()

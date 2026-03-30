@@ -4,14 +4,14 @@ class ServerSetting:
             kwargs = {**data, **kwargs}
 
         self.setting_id: int|None = kwargs.get('setting_id')
-        self.guild_id: int|None = kwargs.get('guild_id')
+        self.server_id: int|None = kwargs.get('server_id')
         self.key: str|None = kwargs.get('key')
         self.value: str|None = kwargs.get('value')
 
     def to_dict(self):
         return {
             'setting_id': self.setting_id,
-            'guild_id': self.guild_id,
+            'server_id': self.server_id,
             'key': self.key,
             'value': self.value
         }

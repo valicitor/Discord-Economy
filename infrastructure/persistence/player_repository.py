@@ -5,8 +5,8 @@ from typing import List, Optional
 
 
 class PlayerRepository(IRepository, BaseRepository):
-    def __init__(self, db_path: str = None):
-        super().__init__(db_path or "player.db")
+    def __init__(self, seeder=None, db_path: str = None):
+        super().__init__(seeder=seeder, db_path=db_path or "dynamic_resources.db")
 
     def init_database(self):
         with self._lock:
@@ -14,13 +14,16 @@ class PlayerRepository(IRepository, BaseRepository):
             c.execute("""
                 CREATE TABLE IF NOT EXISTS players (
                     player_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    server_id INTEGER NOT NULL,
                     discord_id INTEGER UNIQUE NOT NULL,
+                    discord_guild_id INTEGER NOT NULL,
                     username TEXT NOT NULL,
                     avatar TEXT NOT NULL,
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY(server_id) REFERENCES servers(server_id)
                 )
             """)
-            c.execute("CREATE INDEX IF NOT EXISTS idx_players_discord_id ON players(discord_id)")
+            c.execute("CREATE INDEX IF NOT EXISTS idx_players_discord ON players(discord_id, discord_guild_id)")
             self.conn.execute("PRAGMA journal_mode=WAL;")
             self.conn.commit()
 
@@ -36,7 +39,7 @@ class PlayerRepository(IRepository, BaseRepository):
             row = c.fetchone()
             return Player(data=dict(row)) if row else None
         
-    def get_by_discord(self, discord_id: int) -> Optional[Player]:
+    def get_by_discord_id(self, discord_id: int) -> Optional[Player]:
         with self._lock:
             self._ensure_connection()
             c = self.conn.cursor()
@@ -44,11 +47,21 @@ class PlayerRepository(IRepository, BaseRepository):
             row = c.fetchone()
             return Player(data=dict(row)) if row else None
 
-    def get_all(self) -> List[Player]:
+    def get_all(self, server_id: int = None) -> List[Player]:
         with self._lock:
             self._ensure_connection()
             c = self.conn.cursor()
-            c.execute("SELECT * FROM players")
+            if server_id is not None:
+                c.execute("SELECT * FROM players WHERE server_id = ?", (server_id,))
+            else:
+                c.execute("SELECT * FROM players")
+            return [Player(data=dict(row)) for row in c.fetchall()]
+
+    def get_all_by_discord_guild(self, discord_guild_id: int) -> List[Player]:
+        with self._lock:
+            self._ensure_connection()
+            c = self.conn.cursor()
+            c.execute("SELECT * FROM players WHERE discord_guild_id = ?", (discord_guild_id,))
             return [Player(data=dict(row)) for row in c.fetchall()]
 
     # ---------- Mutations ----------
@@ -59,12 +72,14 @@ class PlayerRepository(IRepository, BaseRepository):
             c = self.conn.cursor()
             c.execute("""
                 INSERT INTO players (
-                    discord_id, username, avatar
+                    discord_id, discord_guild_id, server_id, username, avatar
                 )
-                VALUES (?, ?, ?)
+                VALUES (?, ?, ?, ?, ?)
                 ON CONFLICT(discord_id) DO NOTHING
             """, (
                 player.discord_id,
+                player.discord_guild_id,
+                player.server_id,
                 player.username,
                 player.avatar
             ))
@@ -78,11 +93,13 @@ class PlayerRepository(IRepository, BaseRepository):
             c = self.conn.cursor()
             c.execute("""
                 UPDATE players
-                SET username = ?, avatar = ?
+                SET username = ?, avatar = ?, discord_guild_id = ?, server_id = ?
                 WHERE discord_id = ?
             """, (
                 player.username,
                 player.avatar,
+                player.discord_guild_id,
+                player.server_id,
                 player.discord_id
             ))
 
@@ -94,19 +111,28 @@ class PlayerRepository(IRepository, BaseRepository):
             self._ensure_connection()
             c = self.conn.cursor()
             c.execute(
-                "DELETE FROM players WHERE discord_id = ?",
-                (player.discord_id,)
+                "DELETE FROM players WHERE (discord_id = ? AND discord_guild_id = ?) OR player_id = ?",
+                (player.discord_id, player.discord_guild_id, player.player_id)
             )
 
             self.conn.commit()
             return c.rowcount > 0
 
-    def exists(self, discord_id: int) -> bool:
+    def exists(self, player_id: int) -> bool:
         with self._lock:
             self._ensure_connection()
             c = self.conn.cursor()
             c.execute(
-                "SELECT 1 FROM players WHERE discord_id = ?",
-                (discord_id,)
+                "SELECT 1 FROM players WHERE player_id = ?", (player_id,)
+            )
+            return c.fetchone() is not None
+
+    def exists_by_discord_id(self, discord_id: int, discord_guild_id: int) -> bool:
+        with self._lock:
+            self._ensure_connection()
+            c = self.conn.cursor()
+            c.execute(
+                "SELECT 1 FROM players WHERE discord_id = ? AND discord_guild_id = ?",
+                (discord_id, discord_guild_id)
             )
             return c.fetchone() is not None

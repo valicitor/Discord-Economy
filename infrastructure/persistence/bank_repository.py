@@ -1,10 +1,10 @@
-from domain import Currency
+from domain import Bank
 from domain import IRepository
 from infrastructure import BaseRepository
 from typing import List, Optional
 
 
-class CurrencyRepository(IRepository, BaseRepository):
+class BankRepository(IRepository, BaseRepository):
     def __init__(self, seeder=None, db_path: str = None):
         super().__init__(seeder=seeder, db_path=db_path or "dynamic_resources.db")
 
@@ -12,12 +12,12 @@ class CurrencyRepository(IRepository, BaseRepository):
         with self._lock:
             c = self.conn.cursor()
             c.execute("""
-                CREATE TABLE IF NOT EXISTS currencies (
-                    currency_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                CREATE TABLE IF NOT EXISTS banks (
+                    bank_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     server_id INTEGER NOT NULL,
                     name TEXT NOT NULL,
-                    emoji TEXT,
-                    symbol TEXT NOT NULL,
+                    interest_rate REAL NOT NULL,
+                    max_accounts INTEGER,
                     FOREIGN KEY(server_id) REFERENCES servers(server_id)
                 )
             """)
@@ -26,81 +26,81 @@ class CurrencyRepository(IRepository, BaseRepository):
 
     # ---------- Queries ----------
 
-    def get_by_id(self, currency_id: int) -> Optional[Currency]:
+    def get_by_id(self, bank_id: int) -> Optional[Bank]:
         with self._lock:
             self._ensure_connection()
             c = self.conn.cursor()
             c.execute(
-                "SELECT * FROM currencies WHERE currency_id = ?", (currency_id,)
+                "SELECT * FROM banks WHERE bank_id = ?", (bank_id,)
             )
             row = c.fetchone()
-            return Currency(data=dict(row)) if row else None
+            return Bank(data=dict(row)) if row else None
 
-    def get_all(self) -> List[Currency]:
+    def get_all(self) -> List[Bank]:
         with self._lock:
             self._ensure_connection()
             c = self.conn.cursor()
-            c.execute("SELECT * FROM currencies")
-            return [Currency(data=dict(row)) for row in c.fetchall()]
+            c.execute("SELECT * FROM banks")
+            return [Bank(data=dict(row)) for row in c.fetchall()]
 
     # ---------- Mutations ----------
 
-    def add(self, currency: Currency) -> tuple[bool, int]:
+    def add(self, bank: Bank) -> tuple[bool, int]:
         with self._lock:
             self._ensure_connection()
             c = self.conn.cursor()
             c.execute("""
-                INSERT INTO currencies (
-                    server_id, name, emoji, symbol
+                INSERT INTO banks (
+                    server_id, name, interest_rate, max_accounts
                 )
                 VALUES (?, ?, ?, ?)
             """, (
-                currency.server_id,
-                currency.name,
-                currency.emoji,
-                currency.symbol
+                bank.server_id,
+                bank.name,
+                bank.interest_rate,
+                bank.max_accounts
             ))
 
             self.conn.commit()
             return (c.rowcount > 0, c.lastrowid)
 
-    def update(self, currency: Currency) -> bool:
+    def update(self, bank: Bank) -> bool:
         with self._lock:
             self._ensure_connection()
             c = self.conn.cursor()
             c.execute("""
-                UPDATE currencies
-                SET server_id = ?, name = ?, emoji = ?, symbol = ?
-                WHERE currency_id = ?
+                UPDATE banks
+                SET server_id = ?, name = ?, interest_rate = ?, max_accounts = ?
+                WHERE bank_id = ?
             """, (
-                currency.server_id,
-                currency.name,
-                currency.emoji,
-                currency.symbol,
-                currency.currency_id
+                bank.server_id,
+                bank.name,
+                bank.interest_rate,
+                bank.max_accounts,
+                bank.bank_id
             ))
 
             self.conn.commit()
             return c.rowcount > 0
 
-    def delete(self, currency: Currency) -> bool:
+    def delete(self, bank: Bank) -> bool:
         with self._lock:
             self._ensure_connection()
             c = self.conn.cursor()
             c.execute(
-                "DELETE FROM currencies WHERE currency_id = ?",
-                (currency.currency_id,)
+                "DELETE FROM banks WHERE bank_id = ?",
+                (bank.bank_id,)
             )
 
             self.conn.commit()
             return c.rowcount > 0
 
-    def exists(self, currency_id: int) -> bool:
+    def exists(self, bank_id: int) -> bool:
         with self._lock:
             self._ensure_connection()
             c = self.conn.cursor()
             c.execute(
-                "SELECT 1 FROM currencies WHERE currency_id = ?",
-                (currency_id,)
+                "SELECT 1 FROM banks WHERE bank_id = ?",
+                (bank_id,)
             )
             return c.fetchone() is not None

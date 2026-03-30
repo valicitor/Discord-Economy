@@ -12,8 +12,8 @@ from infrastructure import UserRepository, GuildConfigRepository
 
 class TestWorkCommand(unittest.TestCase):
     def setUp(self):
-        self.guild_config_repository = GuildConfigRepository(":memory:")
-        self.user_repository = UserRepository(":memory:")
+        self.guild_config_repository = GuildConfigRepository(db_path=":memory:")
+        self.user_repository = UserRepository(db_path=":memory:")
         
         self.guild_config = GuildConfig(data={ 
             'guild_id': 12341, 

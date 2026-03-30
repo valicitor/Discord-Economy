@@ -5,8 +5,8 @@ from typing import List, Optional
 
 
 class PlayerBalanceRepository(IRepository, BaseRepository):
-    def __init__(self, db_path: str = None):
-        super().__init__(db_path or "player_balance.db")
+    def __init__(self, seeder=None, db_path: str = None):
+        super().__init__(seeder=seeder, db_path=db_path or "dynamic_resources.db")
 
     def init_database(self):
         with self._lock:
@@ -36,11 +36,14 @@ class PlayerBalanceRepository(IRepository, BaseRepository):
             row = c.fetchone()
             return PlayerBalance(data=dict(row)) if row else None
 
-    def get_all(self) -> List[PlayerBalance]:
+    def get_all(self, player_id: int = None) -> List[PlayerBalance]:
         with self._lock:
             self._ensure_connection()
             c = self.conn.cursor()
-            c.execute("SELECT * FROM player_balances")
+            if player_id is not None:
+                c.execute("SELECT * FROM player_balances WHERE player_id = ?", (player_id,))
+            else:
+                c.execute("SELECT * FROM player_balances")
             return [PlayerBalance(data=dict(row)) for row in c.fetchall()]
 
     # ---------- Mutations ----------

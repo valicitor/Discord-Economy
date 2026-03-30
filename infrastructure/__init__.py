@@ -5,7 +5,12 @@ from .persistence.user_repository import UserRepository
 from .persistence.item_repository import ItemRepository
 
 # --- New Repositories ---
+from .persistence.server_repository import ServerRepository
+from .persistence.server_setting_repository import ServerSettingRepository
+
 from .persistence.currency_repository import CurrencyRepository
+from .persistence.bank_repository import BankRepository
+from .persistence.bank_account_repository import BankAccountRepository
 
 from .persistence.player_repository import PlayerRepository
 from .persistence.player_balance_repository import PlayerBalanceRepository

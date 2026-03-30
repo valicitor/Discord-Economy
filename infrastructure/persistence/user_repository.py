@@ -4,8 +4,8 @@ from infrastructure import BaseRepository
 from typing import List, Optional
 
 class UserRepository(IRepository, BaseRepository):
-    def __init__(self, db_path: str = None):
-        super().__init__(db_path or "users.db")
+    def __init__(self, seeder=None, db_path: str = None):
+        super().__init__(seeder=seeder, db_path=db_path or "dynamic_resources.db")
 
     # ---------- Database Setup ----------
 

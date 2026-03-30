@@ -5,8 +5,8 @@ from typing import List, Optional
 
 
 class PlayerInventoryRepository(IRepository, BaseRepository):
-    def __init__(self, db_path: str = None):
-        super().__init__(db_path or "player_inventory.db")
+    def __init__(self, seeder=None, db_path: str = None):
+        super().__init__(seeder=seeder, db_path=db_path or "dynamic_resources.db")
 
     def init_database(self):
         with self._lock:

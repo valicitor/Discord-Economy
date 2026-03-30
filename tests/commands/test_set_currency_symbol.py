@@ -11,7 +11,7 @@ from infrastructure import GuildConfigRepository
 
 class TestSetCurrencySymbolCommand(unittest.TestCase):
     def setUp(self):
-        self.guild_config_repository = GuildConfigRepository(":memory:")
+        self.guild_config_repository = GuildConfigRepository(db_path=":memory:")
         
         self.guild_config = GuildConfig(data={ 'guild_id': 12341, 'starting_balance': 0, 'currency_symbol': '$', 'currency_emoji': '' })
 

@@ -2,15 +2,15 @@ import sys
 import os
 
 from config import BASE_DIR
-from infrastructure import PointOfInterestRepository, SeedPointOfInterestsIfEmpty
 sys.path.insert(0, os.path.abspath(BASE_DIR))
 
 import unittest
 from application import GenerateGalaxyMapCommand, GenerateGalaxyMapCommandRequest
+from infrastructure import PointOfInterestRepository, SeedPointOfInterestsIfEmpty
 
 class TestGenerateGalaxyMapCommand(unittest.TestCase):
     def setUp(self):
-        self.POI_repository = PointOfInterestRepository(":memory:")  # Use in-memory database for testing
+        self.POI_repository = PointOfInterestRepository(db_path=":memory:")  # Use in-memory database for testing
 
     def tearDown(self):
         self.POI_repository.delete_all()

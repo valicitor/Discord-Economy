@@ -11,8 +11,8 @@ from infrastructure import ItemRepository, GuildConfigRepository
 
 class TestCreateItemCommand(unittest.TestCase):
     def setUp(self):
-        self.guild_config_repository = GuildConfigRepository(":memory:")
-        self.item_repository = ItemRepository(":memory:")
+        self.guild_config_repository = GuildConfigRepository(db_path=":memory:")
+        self.item_repository = ItemRepository(db_path=":memory:")
 
         self.guild_config = GuildConfig(data={ 
             'guild_id': 12341, 

@@ -1,54 +1,92 @@
-from domain import User, GuildConfig
+from domain import (
+    Player, 
+    PlayerBalance,
+    Server, 
+    ServerSetting,
+    Currency, 
+    Bank,
+    BankAccount
+)
 from domain import GuildNotFoundException, UserNotFoundException
-from infrastructure import UserRepository, GuildConfigRepository
+from infrastructure import (
+    PlayerRepository, 
+    PlayerBalanceRepository,
+    ServerRepository, 
+    ServerSettingRepository,
+    CurrencyRepository,
+    BankRepository,
+    BankAccountRepository
+)
+from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
 
-def ensure_guild(guild_id: int) -> GuildConfig:
+def ensure_guild(discord_guild: DiscordGuild) -> ServerConfig:
     """Ensure a guild exists in the database, creating a config if necessary."""
 
-    if not GuildConfigRepository().exists(guild_id):
-        new_guild_config = GuildConfig(guild_id=guild_id, starting_balance=0, currency_symbol='$', currency_emoji='')
-        GuildConfigRepository().add(new_guild_config)
-    
-    guild_config = GuildConfigRepository().get_by_id(guild_id)
-    if guild_config is None:
-        raise GuildNotFoundException(f"Failed to ensure guild with ID {guild_id}.")
-    
-    return guild_config
+    if not ServerRepository().exists_by_guild_id(discord_guild.guild_id):
+        new_server = Server(guild_id=discord_guild.guild_id, name=discord_guild.name)
+        (_, server_id) = ServerRepository().add(new_server)
 
-def ensure_user(guild_config: GuildConfig, user: User) -> User:
+        new_currency = Currency(server_id=server_id, name="Cash", emoji="💰", symbol="$")
+        (_, currency_id) = CurrencyRepository().add(new_currency)
+
+        new_bank = Bank(server_id=server_id, name="Bank", interest_rate=0.01, max_accounts=None)
+        (_, bank_id) = BankRepository().add(new_bank)
+
+        new_server_setting = ServerSetting(server_id=server_id, key="default_currency_id", value=str(currency_id))
+        (_, setting_id) = ServerSettingRepository().add(new_server_setting)
+
+        new_server_setting = ServerSetting(server_id=server_id, key="default_bank_id", value=str(bank_id))
+        (_, setting_id) = ServerSettingRepository().add(new_server_setting)
+    
+    server = ServerRepository().get_by_guild_id(discord_guild.guild_id)
+    if server is None:
+        raise GuildNotFoundException(f"Failed to ensure guild with ID {discord_guild.guild_id}.")
+    
+    server_settings = ServerSettingRepository().get_all_by_server_id(server.server_id)
+    
+    return ServerConfig(server, server_settings)
+
+def ensure_user(server_config: ServerConfig, discord_user: DiscordUser) -> PlayerProfile:
     """Ensure a user exists in the database, creating an account if necessary."""
-    if not UserRepository().exists(user.user_id, guild_config.guild_id):
-        new_user = User(user_id=user.user_id, guild_id=guild_config.guild_id, username=user.username, avatar=user.avatar, cash_balance=guild_config.starting_balance, bank_balance=0)
-        UserRepository().add(new_user)
+    if not PlayerRepository().exists_by_discord_id(discord_user.user_id, server_config.server.guild_id):
+        new_player = Player(discord_id=discord_user.user_id, discord_guild_id=server_config.server.guild_id, server_id=server_config.server.server_id, username=discord_user.name, avatar=discord_user.display_avatar)
+        (_, player_id) = PlayerRepository().add(new_player)
+
+        default_currency_id = int(next((obj.value for _, obj in enumerate(server_config.server_settings) if obj.key == "default_currency_id"), None))
+        new_balance = PlayerBalance(player_id=player_id, currency_id=default_currency_id, amount=0)
+        (_, balance_id) = PlayerBalanceRepository().add(new_balance)
+        
+        default_bank_id = int(next((obj.value for _, obj in enumerate(server_config.server_settings) if obj.key == "default_bank_id"), None))
+        new_bank_account = BankAccount(bank_id=default_bank_id, player_id=player_id, balance=0)
+        (_, account_id) = BankAccountRepository().add(new_bank_account)
     
-    user_record = UserRepository().get_by_id(user.guild_id, user.user_id)
-    if user_record is None:
-        raise UserNotFoundException(f"User with ID {user.user_id} not found in guild {user.guild_id}.")
+    player = PlayerRepository().get_by_discord_id(discord_user.user_id)
+    if player is None:
+        raise UserNotFoundException(f"User with ID {discord_user.user_id} not found in guild {server_config.server.guild_id}.")
     
-    return user_record
+    balances = PlayerBalanceRepository().get_all(player_id=player.player_id)
+    bank_accounts = BankAccountRepository().get_all(player_id=player.player_id)
 
-def ensure_users(guild_config: GuildConfig, users: list[User] = []) -> list[User]:
-    if len(users) == 0:
-        return None
+    return PlayerProfile(player, balances, bank_accounts)
+
+def ensure_users(server_config: ServerConfig, discord_users: list[DiscordUser] = []) -> list[PlayerProfile]:
+    if len(discord_users) == 0:
+        return []
     
-    user_records = []
-    for user in users:
-        user_records.append(ensure_user(guild_config, user))
+    profiles = []
+    for discord_user in discord_users:
+        profiles.append(ensure_user(server_config, discord_user))
     
-    return user_records
+    return profiles
 
-def ensure_guild_and_user(guild_id: int, user: User) -> tuple[GuildConfig, User]:
-    """Ensure the guild and user exist, returning the saved objects."""
+def ensure_guild_and_user(discord_guild: DiscordGuild, discord_user: DiscordUser) -> tuple[ServerConfig, PlayerProfile]:
+    server_config = ensure_guild(discord_guild)
+    player_profile = ensure_user(server_config, discord_user)
 
-    guild_config = ensure_guild(guild_id)
-    user_record = ensure_user(guild_config, user)
+    return server_config, player_profile
 
-    return guild_config, user_record
+def ensure_guild_and_users(discord_guild: DiscordGuild, discord_users: list[DiscordUser]) -> tuple[ServerConfig, list[PlayerProfile]]:
+    server_config = ensure_guild(discord_guild)
+    player_profiles = ensure_users(server_config, discord_users)
 
-def ensure_guild_and_users(guild_id: int, users: list[User]) -> tuple[GuildConfig, list[User]]:
-    """Ensure the guild and users exist, returning the saved objects."""
-    
-    guild_config = ensure_guild(guild_id)
-    user_records = ensure_users(guild_config, users)
-
-    return guild_config, user_records
+    return server_config, player_profiles
