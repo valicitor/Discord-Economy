@@ -9,8 +9,8 @@ from infrastructure import UnitRepository, UnitStatRepository, SeedUnitsAndUnitS
 
 class TestUnitsSeeder(unittest.TestCase):
     def setUp(self):
-        self.unit_repository = UnitRepository(":memory:")  # Use in-memory database for testing
-        self.unit_stat_repository = UnitStatRepository(":memory:")  # Use in-memory database for testing
+        self.unit_repository = UnitRepository(db_path=":memory:")  # Use in-memory database for testing
+        self.unit_stat_repository = UnitStatRepository(db_path=":memory:")  # Use in-memory database for testing
 
     def tearDown(self):
         # Remove test database

@@ -1,22 +1,22 @@
 from attr import dataclass
 
-from domain import User, GuildConfig
-from domain import UserNotFoundException
-from infrastructure import UserRepository
+from infrastructure import  PlayerBalanceRepository, BankAccountRepository
 from application.helpers.ensure_user import ensure_guild_and_user
+
+from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
 
 @dataclass
 class AddBalanceCommandRequest:
-    guild_id: int
-    user: User
+    guild: DiscordGuild
+    user: DiscordUser
     account_type: str
     amount: int
 
 @dataclass
 class AddBalanceCommandResponse:
     success: bool
-    guild_config: GuildConfig
-    user: User
+    server_config: ServerConfig
+    player: PlayerProfile
     account_type: str
     amount: int
 
@@ -28,19 +28,27 @@ class AddBalanceCommand:
         return
 
     def execute(self) -> AddBalanceCommandResponse:
+        server_config, player_profile = ensure_guild_and_user(self.request.guild, self.request.user)
 
-        guild_config, user = ensure_guild_and_user(self.request.guild_id, self.request.user)
-
-        # Update recipient balances
         if self.request.account_type == "Cash":
-            user.cash_balance = int(user.cash_balance) + self.request.amount
+            default_currency_id = next((obj.value for obj in server_config.server_settings if obj.key == "default_currency_id"), None)
+
+            i, balance = next(((idx, obj) for idx, obj in enumerate(player_profile.balances) if obj.currency_id == int(default_currency_id)), (None, None))
+            balance.balance = int(balance.balance) + self.request.amount
+
+            success = PlayerBalanceRepository().update(balance)
+            balance = PlayerBalanceRepository().get_by_id(balance.balance_id)
+
+            player_profile.balances[i] = balance
         elif self.request.account_type == "Bank":
-            user.bank_balance = int(user.bank_balance) + self.request.amount
+            default_bank_id = next((obj.value for obj in server_config.server_settings if obj.key == "default_bank_id"), None)
 
-        success = UserRepository().update(user)
+            i, bank_account = next(((idx, obj) for idx, obj in enumerate(player_profile.bank_accounts) if obj.bank_id == int(default_bank_id)), (None, None))
+            bank_account.balance = int(bank_account.balance) + self.request.amount
 
-        updated_user = UserRepository().get_by_id(user.guild_id, user.user_id)
-        if updated_user is None:
-            raise UserNotFoundException(f"User with ID {user.user_id} not found in guild {user.guild_id}.")
+            success = BankAccountRepository().update(bank_account)
+            bank_account = BankAccountRepository().get_by_id(bank_account.account_id)
 
-        return AddBalanceCommandResponse(success=success, guild_config=guild_config, user=updated_user, account_type=self.request.account_type, amount=self.request.amount)
+            player_profile.bank_accounts[i] = bank_account
+
+        return AddBalanceCommandResponse(success=success, server_config=server_config, player=player_profile, account_type=self.request.account_type, amount=self.request.amount)

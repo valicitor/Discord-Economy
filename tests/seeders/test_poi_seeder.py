@@ -9,7 +9,7 @@ from infrastructure import PointOfInterestRepository, SeedPointOfInterestsIfEmpt
 
 class TestPOISeeder(unittest.TestCase):
     def setUp(self):
-        self.POI_repository = PointOfInterestRepository(":memory:")  # Use in-memory database for testing
+        self.POI_repository = PointOfInterestRepository(db_path=":memory:")  # Use in-memory database for testing
 
     def tearDown(self):
         # Remove test database

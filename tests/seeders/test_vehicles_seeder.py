@@ -9,8 +9,8 @@ from infrastructure import VehicleRepository, VehicleStatRepository, SeedVehicle
 
 class TestVehiclesSeeder(unittest.TestCase):
     def setUp(self):
-        self.vehicle_repository = VehicleRepository(":memory:")  # Use in-memory database for testing
-        self.vehicle_stat_repository = VehicleStatRepository(":memory:")  # Use in-memory database for testing
+        self.vehicle_repository = VehicleRepository(db_path=":memory:")  # Use in-memory database for testing
+        self.vehicle_stat_repository = VehicleStatRepository(db_path=":memory:")  # Use in-memory database for testing
 
     def tearDown(self):
         # Remove test database

@@ -5,49 +5,61 @@ from config import BASE_DIR
 sys.path.insert(0, os.path.abspath(BASE_DIR))
 
 import unittest
-from domain import User, GuildConfig
+
+from infrastructure import (
+    PlayerRepository, 
+    PlayerBalanceRepository,
+    ServerRepository, 
+    ServerSettingRepository,
+    CurrencyRepository,
+    BankRepository,
+    BankAccountRepository
+)
+from application import DiscordGuild, DiscordUser
 from application import AddBalanceCommand, AddBalanceCommandRequest
-from infrastructure import UserRepository, GuildConfigRepository
 
 class TestAddBalanceCommand(unittest.TestCase):
     def setUp(self):
-        self.guild_config_repository = GuildConfigRepository(":memory:")
-        self.user_repository = UserRepository(":memory:")
-        
-        self.guild_config = GuildConfig(data={ 'guild_id': 12341, 'starting_balance': 0, 'currency_symbol': '$', 'currency_emoji': '' })
-        self.entity1 = User(data={
-            "user_id": 1,
-            "guild_id": 12341,
-            "username": "TestUser",
-            "avatar": "",
-            "cash_balance": 100
-        })
+        self.server_repository = ServerRepository(db_path=":memory:")
+        self.server_setting_repository = ServerSettingRepository(db_path=":memory:")
+        self.currency_repository = CurrencyRepository(db_path=":memory:")
+        self.bank_repository = BankRepository(db_path=":memory:")
 
-        # Add test user to the database
-        self.guild_config_repository.add(self.guild_config)
-        self.user_repository.add(self.entity1)
+        self.player_repository = PlayerRepository(db_path=":memory:")
+        self.player_balance_repository = PlayerBalanceRepository(db_path=":memory:")
+        self.bank_account_repository = BankAccountRepository(db_path=":memory:")
+
+        self.discord_guild = DiscordGuild(guild_id=12345, name="TestGuild")
+        self.discord_user = DiscordUser(user_id=67890, name="TestUser", display_avatar="avatar_url")
 
     def tearDown(self):
         # Remove test user from the database
-        self.guild_config_repository.delete(self.guild_config)
-        self.user_repository.delete(self.entity1)
+        pass
 
     def test_add_balance(self):
         # Arrange
         amount_to_add = 50
 
-        request = AddBalanceCommandRequest(
-            guild_id=self.guild_config.guild_id, 
-            user=self.entity1, 
+        cash_request = AddBalanceCommandRequest(
+            guild=self.discord_guild,
+            user=self.discord_user,
             account_type="Cash",
+            amount=amount_to_add
+        )
+        bank_request = AddBalanceCommandRequest(
+            guild=self.discord_guild,
+            user=self.discord_user,
+            account_type="Bank",
             amount=amount_to_add
         )
 
         # Act
-        response = AddBalanceCommand(request).execute()
+        cash_response = AddBalanceCommand(cash_request).execute()
+        bank_response = AddBalanceCommand(bank_request).execute()
 
         # Assert
-        self.assertEqual(response.user.cash_balance, self.entity1.cash_balance + amount_to_add)
+        self.assertEqual(cash_response.player.balances[0].balance, amount_to_add)
+        self.assertEqual(bank_response.player.bank_accounts[0].balance, amount_to_add)
 
 if __name__ == "__main__":
     unittest.main()

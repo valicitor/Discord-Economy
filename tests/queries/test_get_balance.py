@@ -11,8 +11,8 @@ from infrastructure import UserRepository, GuildConfigRepository
 
 class TestGetBalanceQuery(unittest.TestCase):
     def setUp(self):
-        self.guild_config_repository = GuildConfigRepository(":memory:")
-        self.user_repository = UserRepository(":memory:")
+        self.guild_config_repository = GuildConfigRepository(db_path=":memory:")
+        self.user_repository = UserRepository(db_path=":memory:")
 
         self.guild_config = GuildConfig(data={ 'guild_id': 12342, 'starting_balance': 0, 'currency_symbol': '$', 'currency_emoji': '' })
         self.entity1 = User(data={

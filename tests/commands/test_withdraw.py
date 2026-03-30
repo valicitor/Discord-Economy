@@ -6,13 +6,13 @@ sys.path.insert(0, os.path.abspath(BASE_DIR))
 
 import unittest
 from domain import User, GuildConfig
-from application import DepositCommand, DepositCommandRequest
+from application import WithdrawCommand, WithdrawCommandRequest
 from infrastructure import UserRepository, GuildConfigRepository
 
-class TestDepositCommand(unittest.TestCase):
+class TestWithdrawCommand(unittest.TestCase):
     def setUp(self):
-        self.guild_config_repository = GuildConfigRepository(":memory:")
-        self.user_repository = UserRepository(":memory:")
+        self.guild_config_repository = GuildConfigRepository(db_path=":memory:")
+        self.user_repository = UserRepository(db_path=":memory:")
 
         self.guild_config = GuildConfig(data={ 'guild_id': 12344, 'starting_balance': 0, 'currency_symbol': '$', 'currency_emoji': '' })
         self.entity1 = User(data={
@@ -36,22 +36,22 @@ class TestDepositCommand(unittest.TestCase):
         self.user_repository.delete(self.entity1)
         self.user_repository.delete(self.entity2)
 
-    def test_deposit(self):
+    def test_withdraw(self):
         # Arrange
-        amount_to_deposit = 50
+        amount_to_withdraw = 50
 
-        request = DepositCommandRequest(
+        request = WithdrawCommandRequest(
             guild_id=self.entity1.guild_id,
             user=self.entity1,
-            amount=amount_to_deposit
+            amount=amount_to_withdraw
         )
 
         # Act
-        response = DepositCommand(request).execute()
+        response = WithdrawCommand(request).execute()
 
         # Assert
-        self.assertEqual(response.user.cash_balance, self.entity1.cash_balance - amount_to_deposit)
-        self.assertEqual(response.user.bank_balance, self.entity1.bank_balance + amount_to_deposit)
+        self.assertEqual(response.user.cash_balance, self.entity1.cash_balance + amount_to_withdraw)
+        self.assertEqual(response.user.bank_balance, self.entity1.bank_balance - amount_to_withdraw)
 
 if __name__ == "__main__":
     unittest.main()

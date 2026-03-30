@@ -5,8 +5,8 @@ from typing import List, Optional
 
 
 class EquipmentRepository(IRepository, BaseRepository):
-    def __init__(self, db_path: str = None):
-        super().__init__(db_path or "equipment.db")
+    def __init__(self, seeder=None, db_path: str = None):
+        super().__init__(seeder=seeder, db_path=db_path or "static_resources.db")
 
     def init_database(self):
         with self._lock:
