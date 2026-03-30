@@ -29,7 +29,7 @@ def ensure_guild(discord_guild: DiscordGuild) -> ServerConfig:
         new_currency = Currency(server_id=server_id, name="Cash", emoji="💰", symbol="$")
         (_, currency_id) = CurrencyRepository().add(new_currency)
 
-        new_bank = Bank(server_id=server_id, name="Bank", interest_rate=0.01, max_accounts=100)
+        new_bank = Bank(server_id=server_id, name="Bank", interest_rate=0.01, max_accounts=None)
         (_, bank_id) = BankRepository().add(new_bank)
 
         new_server_setting = ServerSetting(server_id=server_id, key="default_currency_id", value=str(currency_id))
@@ -52,11 +52,11 @@ def ensure_user(server_config: ServerConfig, discord_user: DiscordUser) -> Playe
         new_player = Player(discord_id=discord_user.user_id, discord_guild_id=server_config.server.guild_id, server_id=server_config.server.server_id, username=discord_user.name, avatar=discord_user.display_avatar)
         (_, player_id) = PlayerRepository().add(new_player)
 
-        default_currency_id = next((obj.value for _, obj in enumerate(server_config.server_settings) if obj.key == "default_currency_id"), None)
+        default_currency_id = int(next((obj.value for _, obj in enumerate(server_config.server_settings) if obj.key == "default_currency_id"), None))
         new_balance = PlayerBalance(player_id=player_id, currency_id=default_currency_id, amount=0)
         (_, balance_id) = PlayerBalanceRepository().add(new_balance)
         
-        default_bank_id = next((obj.value for _, obj in enumerate(server_config.server_settings) if obj.key == "default_bank_id"), None)
+        default_bank_id = int(next((obj.value for _, obj in enumerate(server_config.server_settings) if obj.key == "default_bank_id"), None))
         new_bank_account = BankAccount(bank_id=default_bank_id, player_id=player_id, balance=0)
         (_, account_id) = BankAccountRepository().add(new_bank_account)
     

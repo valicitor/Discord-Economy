@@ -25,12 +25,12 @@ class ServerSettingRepository(IRepository, BaseRepository):
 
     # ---------- Queries ----------
 
-    def get_by_id(self, server_setting_id: int) -> Optional[ServerSetting]:
+    def get_by_id(self, setting_id: int) -> Optional[ServerSetting]:
         with self._lock:
             self._ensure_connection()
             c = self.conn.cursor()
             c.execute(
-                "SELECT * FROM server_settings WHERE server_setting_id = ?", (server_setting_id,)
+                "SELECT * FROM server_settings WHERE setting_id = ?", (setting_id,)
             )
             row = c.fetchone()
             return ServerSetting(data=dict(row)) if row else None
@@ -92,7 +92,7 @@ class ServerSettingRepository(IRepository, BaseRepository):
             self._ensure_connection()
             c = self.conn.cursor()
             c.execute(
-                "DELETE FROM server_settings WHERE server_setting_id = ?",
+                "DELETE FROM server_settings WHERE setting_id = ?",
                 (server_setting.setting_id,)
             )
 
@@ -107,11 +107,11 @@ class ServerSettingRepository(IRepository, BaseRepository):
             self.conn.commit()
             return c.rowcount > 0
 
-    def exists(self, server_setting_id: int) -> bool:
+    def exists(self, setting_id: int) -> bool:
         with self._lock:
             self._ensure_connection()
             c = self.conn.cursor()
             c.execute(
-                "SELECT 1 FROM server_settings WHERE server_setting_id = ?", (server_setting_id,)
+                "SELECT 1 FROM server_settings WHERE setting_id = ?", (setting_id,)
             )
             return c.fetchone() is not None

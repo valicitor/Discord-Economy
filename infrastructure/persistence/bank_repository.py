@@ -17,7 +17,8 @@ class BankRepository(IRepository, BaseRepository):
                     server_id INTEGER NOT NULL,
                     name TEXT NOT NULL,
                     interest_rate REAL NOT NULL,
-                    max_accounts INTEGER NOT NULL
+                    max_accounts INTEGER,
+                    FOREIGN KEY(server_id) REFERENCES servers(server_id)
                 )
             """)
             self.conn.execute("PRAGMA journal_mode=WAL;")

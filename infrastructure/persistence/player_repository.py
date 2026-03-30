@@ -14,16 +14,16 @@ class PlayerRepository(IRepository, BaseRepository):
             c.execute("""
                 CREATE TABLE IF NOT EXISTS players (
                     player_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    server_id INTEGER NOT NULL,
                     discord_id INTEGER UNIQUE NOT NULL,
                     discord_guild_id INTEGER NOT NULL,
-                    server_id INTEGER NOT NULL,
                     username TEXT NOT NULL,
                     avatar TEXT NOT NULL,
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY(server_id) REFERENCES servers(server_id)
                 )
             """)
-            c.execute("CREATE INDEX IF NOT EXISTS idx_players_discord_id ON players(discord_id)")
-            c.execute("CREATE INDEX IF NOT EXISTS idx_players_discord_guild_id ON players(discord_guild_id)")
+            c.execute("CREATE INDEX IF NOT EXISTS idx_players_discord ON players(discord_id, discord_guild_id)")
             self.conn.execute("PRAGMA journal_mode=WAL;")
             self.conn.commit()
 

@@ -17,7 +17,8 @@ class CurrencyRepository(IRepository, BaseRepository):
                     server_id INTEGER NOT NULL,
                     name TEXT NOT NULL,
                     emoji TEXT,
-                    symbol TEXT NOT NULL
+                    symbol TEXT NOT NULL,
+                    FOREIGN KEY(server_id) REFERENCES servers(server_id)
                 )
             """)
             self.conn.execute("PRAGMA journal_mode=WAL;")

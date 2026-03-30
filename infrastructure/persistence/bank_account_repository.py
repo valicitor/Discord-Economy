@@ -17,23 +17,13 @@ class BankAccountRepository(IRepository, BaseRepository):
                     bank_id INTEGER NOT NULL,
                     player_id INTEGER NOT NULL,
                     balance INTEGER NOT NULL,
-                    created_at TEXT
+                    created_at TEXT,
+                    FOREIGN KEY(bank_id) REFERENCES banks(bank_id),
+                    FOREIGN KEY(player_id) REFERENCES players(player_id)
                 )
             """)
             self.conn.execute("PRAGMA journal_mode=WAL;")
             self.conn.commit()
-
-    # ---------- Queries ----------
-
-    def get_by_id(self, account_id: int) -> Optional[BankAccount]:
-        with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
-            c.execute(
-                "SELECT * FROM bank_accounts WHERE account_id = ?", (account_id,)
-            )
-            row = c.fetchone()
-            return BankAccount(data=dict(row)) if row else None
 
     # ---------- Queries ----------
 
