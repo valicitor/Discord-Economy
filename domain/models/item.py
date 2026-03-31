@@ -4,9 +4,10 @@ class Item:
             kwargs = {**data, **kwargs}
 
         self.item_id: int|None = kwargs.get('item_id')
-        self.guild_id: int|None = kwargs.get('guild_id')
+        self.server_id: int|None = kwargs.get('server_id')
         self.name: str|None = kwargs.get('name')
         self.category: str|None = kwargs.get('category', 'default')
+        self.reference_id: str|None = kwargs.get('reference_id')
         self.icon: str|None = kwargs.get('icon', '')
         self.price: int|None = kwargs.get('price', 0)
         self.description: str|None = kwargs.get('description', '')
@@ -18,9 +19,10 @@ class Item:
     def to_dict(self):
         return {
             'item_id': self.item_id,
-            'guild_id': self.guild_id,
+            'server_id': self.server_id,
             'name': self.name,
             'category': self.category,
+            'reference_id': self.reference_id,
             'icon': self.icon,
             'price': self.price,
             'description': self.description,

@@ -99,11 +99,11 @@ class ServerSettingRepository(IRepository, BaseRepository):
             self.conn.commit()
             return c.rowcount > 0
     
-    def delete_all(self) -> bool:
+    def delete_all(self, server_id: int) -> bool:
         with self._lock:
             self._ensure_connection()
             c = self.conn.cursor()
-            c.execute("DELETE FROM server_settings")
+            c.execute("DELETE FROM server_settings WHERE server_id = ?", (server_id,))
             self.conn.commit()
             return c.rowcount > 0
 

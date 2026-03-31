@@ -1,23 +1,27 @@
 from attr import dataclass
 
-from domain import User, GuildConfig
-from domain import InsufficientFundsException, UserNotFoundException
-from infrastructure import UserRepository
+from infrastructure import  PlayerBalanceRepository
 from application.helpers.ensure_user import ensure_guild_and_users
+
+from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
+
+from domain import UpdateFailedException, InsufficientFundsException
 
 @dataclass
 class PayCommandRequest:
-    guild_id: int
-    user: User
-    target: User
+    guild: DiscordGuild
+    user: DiscordUser
+    target: DiscordUser
+    account_type: str
     amount: int
 
 @dataclass
 class PayCommandResponse:
     success: bool
-    guild_config: GuildConfig
-    user: User
-    target: User
+    server_config: ServerConfig
+    player: PlayerProfile
+    target_player: PlayerProfile
+    account_type: str
     amount: int
 
 class PayCommand:
@@ -28,30 +32,36 @@ class PayCommand:
         return
 
     def execute(self) -> PayCommandResponse:
+        server_config, (player_profile, target_player_profile) = ensure_guild_and_users(self.request.guild, [self.request.user, self.request.target])
 
-        guild_config, (user, target) = ensure_guild_and_users(self.request.guild_id, [self.request.user, self.request.target])
+        default_currency_id = next((obj.value for obj in server_config.server_settings if obj.key == "default_currency_id"), None)
 
-        # Validate sufficient funds
-        new_balance = int(user.cash_balance) - self.request.amount
-        if new_balance < 0:
-            raise InsufficientFundsException("You do not have enough funds to complete this payment.")
-        
-        target_new_balance = int(target.cash_balance) + self.request.amount
+        i, balance = next(((idx, obj) for idx, obj in enumerate(player_profile.balances) if obj.currency_id == int(default_currency_id)), (None, None))
+        j, target_balance = next(((idx, obj) for idx, obj in enumerate(target_player_profile.balances) if obj.currency_id == int(default_currency_id)), (None, None))
 
-        # Update sender balances
-        user.cash_balance = new_balance
-        user_success = UserRepository().update(user)
+        balance.balance = int(balance.balance) - self.request.amount
+        if balance.balance < 0:
+            raise InsufficientFundsException("You do not have enough funds to complete this withdrawal.")
+        target_balance.balance = int(target_balance.balance) + self.request.amount
 
-        # Update recipient balances
-        target.cash_balance = target_new_balance
-        target_success = UserRepository().update(target)
+        balance_success = PlayerBalanceRepository().update(balance)
+        if not balance_success:
+            raise UpdateFailedException("Failed to update player balance. Please try again.")
+        balance = PlayerBalanceRepository().get_by_id(balance.balance_id)
 
-        updated_user = UserRepository().get_by_id(user.guild_id, user.user_id)
-        if updated_user is None:
-            raise UserNotFoundException(f"User with ID {user.user_id} not found in guild {user.guild_id}.")
-        
-        updated_target = UserRepository().get_by_id(target.guild_id, target.user_id)
-        if updated_target is None:
-            raise UserNotFoundException(f"User with ID {target.user_id} not found in guild {target.guild_id}.")
+        target_balance_success = PlayerBalanceRepository().update(target_balance)
+        if not target_balance_success:
+            raise UpdateFailedException("Failed to update target player balance. Please try again.")
+        target_balance = PlayerBalanceRepository().get_by_id(target_balance.balance_id)
 
-        return PayCommandResponse(success=user_success and target_success, guild_config=guild_config, user=updated_user, target=updated_target, amount=self.request.amount)
+        player_profile.balances[i] = balance
+        target_player_profile.balances[j] = target_balance
+
+        return PayCommandResponse(
+            success=balance_success and target_balance_success, 
+            server_config=server_config, 
+            player=player_profile, 
+            target_player=target_player_profile, 
+            account_type=self.request.account_type, 
+            amount=self.request.amount
+        )

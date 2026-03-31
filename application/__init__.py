@@ -3,6 +3,8 @@ from .dtos.discord_guild import DiscordGuild
 from .dtos.server_config import ServerConfig
 from .dtos.player_profile import PlayerProfile
 
+from .handlers.galaxy_map_generator_handler import GalaxyMapGeneratorHandler
+
 from .queries.get_balance_query import GetBalanceQuery, GetBalanceQueryRequest, GetBalanceQueryResponse
 from .queries.get_top_balances_query import GetTopBalancesQuery, GetTopBalancesQueryRequest, GetTopBalancesQueryResponse
 
@@ -12,7 +14,5 @@ from .commands.pay_command import PayCommand, PayCommandRequest, PayCommandRespo
 from .commands.withdraw_command import WithdrawCommand, WithdrawCommandRequest, WithdrawCommandResponse
 from .commands.deposit_command import DepositCommand, DepositCommandRequest, DepositCommandResponse
 from .commands.set_currency_symbol_command import SetCurrencySymbolCommand, SetCurrencySymbolCommandRequest, SetCurrencySymbolCommandResponse
-from .commands.work_command import WorkCommand, WorkCommandRequest, WorkCommandResponse
-from .commands.create_item_command import CreateItemCommand, CreateItemCommandRequest, CreateItemCommandResponse
 
 from .commands.generate_galaxy_map_command import GenerateGalaxyMapCommand, GenerateGalaxyMapCommandRequest, GenerateGalaxyMapCommandResponse

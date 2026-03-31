@@ -93,6 +93,14 @@ class PlayerBalanceRepository(IRepository, BaseRepository):
 
             self.conn.commit()
             return c.rowcount > 0
+    
+    def delete_all(self, player_id: int) -> bool:
+        with self._lock:
+            self._ensure_connection()
+            c = self.conn.cursor()
+            c.execute("DELETE FROM player_balances WHERE player_id = ?", (player_id,))
+            self.conn.commit()
+            return c.rowcount > 0
 
     def exists(self, balance_id: int) -> bool:
         with self._lock:

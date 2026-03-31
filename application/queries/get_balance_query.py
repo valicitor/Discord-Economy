@@ -1,19 +1,19 @@
 from attr import dataclass
 
-from domain import User, GuildConfig
-from infrastructure import UserRepository
+from application.helpers.ensure_user import ensure_guild_and_user
+from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
 from application.helpers.ensure_user import ensure_guild_and_user
 
 @dataclass
 class GetBalanceQueryRequest:
-    guild_id: int
-    user: User
+    guild: DiscordGuild
+    user: DiscordUser
 
 @dataclass
 class GetBalanceQueryResponse:
     success: bool
-    guild_config: GuildConfig
-    user: User
+    server_config: ServerConfig
+    player: PlayerProfile
 
 class GetBalanceQuery:
 
@@ -22,6 +22,6 @@ class GetBalanceQuery:
         return
 
     def execute(self) -> GetBalanceQueryResponse:
-        guild_config, user = ensure_guild_and_user(self.request.guild_id, self.request.user)
+        server_config, player = ensure_guild_and_user(self.request.guild, self.request.user)
 
-        return GetBalanceQueryResponse(success=True, guild_config=guild_config, user=user)
+        return GetBalanceQueryResponse(success=True, server_config=server_config, player=player)

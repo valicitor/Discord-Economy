@@ -94,6 +94,12 @@ class BankRepository(IRepository, BaseRepository):
 
             self.conn.commit()
             return c.rowcount > 0
+    
+    def delete_all(self, server_id: int) -> bool:
+        with self._lock:
+            self._ensure_connection()
+            c = self.conn.cursor()
+            c.execute("DELETE FROM banks WHERE server_id = ?", (server_id,))
 
     def exists(self, bank_id: int) -> bool:
         with self._lock:

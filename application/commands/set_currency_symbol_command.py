@@ -2,23 +2,23 @@ import re
 
 from attr import dataclass
 
-from domain import GuildConfig
-from domain import GuildNotFoundException
-from infrastructure import GuildConfigRepository
-from application.helpers.ensure_user import ensure_guild
+from infrastructure import CurrencyRepository
+from application import DiscordGuild, ServerConfig
 
-CUSTOM_EMOJI_PATTERN = re.compile(r"^<a?:\w+:\d+>$")
+from domain import Currency
+
+from application.helpers.ensure_user import ensure_guild
 
 @dataclass
 class SetCurrencySymbolCommandRequest:
-    guild_id: int
+    guild: DiscordGuild
     currency_symbol: str
 
 @dataclass
 class SetCurrencySymbolCommandResponse:
     success: bool
-    guild_config: GuildConfig
-    currency_symbol: str
+    server_config: ServerConfig
+    currency: Currency
 
 class SetCurrencySymbolCommand:
 
@@ -26,37 +26,26 @@ class SetCurrencySymbolCommand:
         self.request = request
         return
 
-    def _is_custom_emoji(self, value: str) -> bool:
-        return bool(CUSTOM_EMOJI_PATTERN.match(value))
-
-    def _is_unicode_emoji(self, value: str) -> bool:
-        # Minimal but safer heuristic:
-        return any(ord(char) >= 0x1F300 for char in value)
-
     def execute(self) -> SetCurrencySymbolCommandResponse:
+        server_config = ensure_guild(self.request.guild)
 
-        guild_config = ensure_guild(self.request.guild_id)
+        default_currency_id = next((obj.value for obj in server_config.server_settings if obj.key == "default_currency_id"), None)
+        currency = CurrencyRepository().get_by_id(int(default_currency_id))
 
         symbol = (self.request.currency_symbol or "").strip()
 
-        is_custom = self._is_custom_emoji(symbol)
-        is_unicode = self._is_unicode_emoji(symbol)
+        is_custom = any(ord(char) >= 0x1F300 for char in symbol)
+        is_unicode = bool(re.compile(r"^<a?:\w+:\d+>$").match(symbol))
 
         if is_custom or is_unicode:
-            guild_config.currency_emoji = symbol
-            guild_config.currency_symbol = ""
+            currency.emoji = symbol
+            currency.symbol = ""
         else:
-            guild_config.currency_emoji = ""
-            guild_config.currency_symbol = symbol[:10]
+            currency.emoji = ""
+            currency.symbol = symbol[:10]
 
-        success = GuildConfigRepository().update(guild_config)
+        success = CurrencyRepository().update(currency)
+        if not success:
+            raise Exception("Failed to update currency. Please try again.")
 
-        updated_guild_config = GuildConfigRepository().get_by_id(guild_config.guild_id)
-        if updated_guild_config is None:
-            raise GuildNotFoundException(f"Guild with ID {guild_config.guild_id} not found.")
-
-        return SetCurrencySymbolCommandResponse(
-            success=success,
-            guild_config=updated_guild_config,
-            currency_symbol=symbol
-        )
+        return SetCurrencySymbolCommandResponse(success=success, server_config=server_config, currency=currency)

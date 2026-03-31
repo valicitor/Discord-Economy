@@ -41,12 +41,15 @@ from .models.unit_garrison import UnitGarrison
 from .models.transaction import Transaction
 
 # --- Exceptions ---
-from .exceptions.user_not_found_exception import UserNotFoundException
-from .exceptions.guild_not_found_exception import GuildNotFoundException
-from .exceptions.item_not_found_exception import ItemNotFoundException
-from .exceptions.item_creation_failed_exception import ItemCreationFailedException
+from .exceptions.record_not_found_exception import RecordNotFoundException
+from .exceptions.create_failed_exception import CreateFailedException
+from .exceptions.update_failed_exception import UpdateFailedException
+from .exceptions.delete_failed_exception import DeleteFailedException
+from .exceptions.duplicate_record_exception import DuplicateRecordException
+from .exceptions.invalid_data_exception import InvalidDataException
+from .exceptions.permission_denied_exception import PermissionDeniedException
+
 from .exceptions.insufficient_funds_exception import InsufficientFundsException
-from .exceptions.on_cooldown_exception import OnCooldownException
 
 # --- Interfaces ---
 from .interfaces.i_repository import IRepository

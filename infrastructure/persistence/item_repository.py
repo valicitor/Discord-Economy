@@ -15,7 +15,7 @@ class ItemRepository(IRepository, BaseRepository):
             c.execute("""
                 CREATE TABLE IF NOT EXISTS items (
                     item_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    guild_id INTEGER NOT NULL,
+                    server_id INTEGER NOT NULL,
                     name TEXT NOT NULL,
                     category TEXT NOT NULL,
                     icon TEXT NOT NULL,
@@ -24,11 +24,12 @@ class ItemRepository(IRepository, BaseRepository):
                     stock INTEGER NOT NULL DEFAULT -1,
                     inventory BOOLEAN NOT NULL DEFAULT 1,
                     usable BOOLEAN NOT NULL DEFAULT 1,
-                    sellable BOOLEAN NOT NULL DEFAULT 1
+                    sellable BOOLEAN NOT NULL DEFAULT 1,
+                    FOREIGN KEY(server_id) REFERENCES servers(server_id)
                 )
             """)
             c.execute("""
-                CREATE INDEX IF NOT EXISTS idx_items_guild_item_id ON items(guild_id, item_id);
+                CREATE INDEX IF NOT EXISTS idx_items_server_item_id ON items(server_id, item_id);
             """)
 
             self.conn.execute("PRAGMA journal_mode=WAL;")
@@ -42,30 +43,30 @@ class ItemRepository(IRepository, BaseRepository):
 
     # ---------- Queries ----------
 
-    def get_by_id(self, guild_id: int, item_id: int) -> Optional[Item]:
+    def get_by_id(self, server_id: int, item_id: int) -> Optional[Item]:
         with self._lock:
             self._ensure_connection()
             c = self.conn.cursor()
-            c.execute("SELECT * FROM items WHERE item_id = ? AND guild_id = ?", (item_id, guild_id))
+            c.execute("SELECT * FROM items WHERE item_id = ? AND server_id = ?", (item_id, server_id))
 
             row = c.fetchone()
             return Item(data=dict(row)) if row else None
 
-    def get_all(self, guild_id: int) -> List[Item]:
+    def get_all(self, server_id: int) -> List[Item]:
         with self._lock:
             self._ensure_connection()
             c = self.conn.cursor()
-            c.execute("SELECT * FROM items WHERE guild_id = ?", (guild_id,))
+            c.execute("SELECT * FROM items WHERE server_id = ?", (server_id,))
 
             return [Item(data=dict(row)) for row in c.fetchall()]
 
-    def get_count(self, guild_id: int) -> int:
+    def get_count(self, server_id: int) -> int:
         with self._lock:
             self._ensure_connection()
             c = self.conn.cursor()
             c.execute(
-                "SELECT COUNT(*) FROM items WHERE guild_id = ?",
-                (guild_id,)
+                "SELECT COUNT(*) FROM items WHERE server_id = ?",
+                (server_id,)
             )
             return c.fetchone()[0]
 
@@ -77,11 +78,11 @@ class ItemRepository(IRepository, BaseRepository):
             c = self.conn.cursor()
             c.execute("""
                 INSERT INTO items (
-                    guild_id, name, category, icon, price, description, stock, inventory, usable, sellable
+                    server_id, name, category, icon, price, description, stock, inventory, usable, sellable
                 )
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
-                item.guild_id,
+                item.server_id,
                 item.name,
                 item.category,
                 item.icon,
@@ -103,7 +104,7 @@ class ItemRepository(IRepository, BaseRepository):
             c.execute("""
                 UPDATE items
                 SET name = ?, category = ?, icon = ?, price = ?, description = ?, stock = ?, inventory = ?, usable = ?, sellable = ?
-                WHERE item_id = ? AND guild_id = ?
+                WHERE item_id = ? AND server_id = ?
             """, (
                 item.name,
                 item.category,
@@ -116,7 +117,7 @@ class ItemRepository(IRepository, BaseRepository):
                 item.sellable,
                 
                 item.item_id,
-                item.guild_id
+                item.server_id
             ))
 
             self.conn.commit()
@@ -127,31 +128,31 @@ class ItemRepository(IRepository, BaseRepository):
             self._ensure_connection()
             c = self.conn.cursor()
             c.execute(
-                "DELETE FROM items WHERE item_id = ? AND guild_id = ?",
-                (item.item_id, item.guild_id)
+                "DELETE FROM items WHERE item_id = ? AND server_id = ?",
+                (item.item_id, item.server_id)
             )
 
             self.conn.commit()
             return c.rowcount > 0
 
-    def delete_all(self, guild_id: int) -> int:
+    def delete_all(self, server_id: int) -> int:
         with self._lock:
             self._ensure_connection()
             c = self.conn.cursor()
             c.execute(
-                "DELETE FROM items WHERE guild_id = ?",
-                (guild_id,)
+                "DELETE FROM items WHERE server_id = ?",
+                (server_id,)
             )
 
             self.conn.commit()
             return c.rowcount
 
-    def exists(self, item_id: int, guild_id: int) -> bool:
+    def exists(self, item_id: int, server_id: int) -> bool:
         with self._lock:
             self._ensure_connection()
             c = self.conn.cursor()
             c.execute(
-                "SELECT 1 FROM items WHERE item_id = ? AND guild_id = ?",
-                (item_id, guild_id)
+                "SELECT 1 FROM items WHERE item_id = ? AND server_id = ?",
+                (item_id, server_id)
             )
             return c.fetchone() is not None

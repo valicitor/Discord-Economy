@@ -1,21 +1,19 @@
-class Business:
+class Faction:
     def __init__(self, data: dict = None, **kwargs):
         if data:
             kwargs = {**data, **kwargs}
 
-        self.business_id: int|None = kwargs.get('business_id')
+        self.faction_id: int|None = kwargs.get('faction_id')
         self.server_id: int|None = kwargs.get('server_id')
         self.owner_id: int|None = kwargs.get('owner_id')
         self.name: str|None = kwargs.get('name')
-        self.type: str|None = kwargs.get('type')
-        self.location: str|None = kwargs.get('location')
+        self.color: str|None = kwargs.get('color')
 
     def to_dict(self):
         return {
-            'business_id': self.business_id,
+            'faction_id': self.faction_id,
             'server_id': self.server_id,
             'owner_id': self.owner_id,
             'name': self.name,
-            'type': self.type,
-            'location': self.location
+            'color': self.color
         }

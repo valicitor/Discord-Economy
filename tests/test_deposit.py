@@ -5,7 +5,6 @@ from config import BASE_DIR
 sys.path.insert(0, os.path.abspath(BASE_DIR))
 
 import unittest
-
 from infrastructure import (
     PlayerRepository, 
     PlayerBalanceRepository,
@@ -16,11 +15,11 @@ from infrastructure import (
     BankAccountRepository
 )
 from application import DiscordGuild, DiscordUser
-from application import AddBalanceCommand, AddBalanceCommandRequest
+from application import DepositCommand, DepositCommandRequest
 
 from application.helpers.ensure_user import ensure_guild_and_user
 
-class TestAddBalanceCommand(unittest.TestCase):
+class TestDepositCommand(unittest.TestCase):
     def setUp(self):
         self.server_repository = ServerRepository(db_path=":memory:")
         self.server_setting_repository = ServerSettingRepository(db_path=":memory:")
@@ -36,6 +35,11 @@ class TestAddBalanceCommand(unittest.TestCase):
 
         self.server_config, self.player_profile = ensure_guild_and_user(self.discord_guild, self.discord_user)
 
+        self.player_profile.balances[0].balance = 100
+        self.player_balance_repository.update(self.player_profile.balances[0])
+        self.player_profile.bank_accounts[0].balance = 150
+        self.bank_account_repository.update(self.player_profile.bank_accounts[0])
+
     def tearDown(self):
         # Remove test user from the database
         self.bank_account_repository.delete_all(self.player_profile.player.player_id)
@@ -47,30 +51,22 @@ class TestAddBalanceCommand(unittest.TestCase):
         self.server_setting_repository.delete_all(self.server_config.server.server_id)
         self.server_repository.delete(self.server_config.server)
 
-    def test_add_balance(self):
+    def test_deposit(self):
         # Arrange
-        amount_to_add = 50
+        amount_to_deposit = 50
 
-        cash_request = AddBalanceCommandRequest(
+        deposit_request = DepositCommandRequest(
             guild=self.discord_guild,
             user=self.discord_user,
-            account_type="Cash",
-            amount=amount_to_add
-        )
-        bank_request = AddBalanceCommandRequest(
-            guild=self.discord_guild,
-            user=self.discord_user,
-            account_type="Bank",
-            amount=amount_to_add
+            amount=amount_to_deposit
         )
 
         # Act
-        cash_response = AddBalanceCommand(cash_request).execute()
-        bank_response = AddBalanceCommand(bank_request).execute()
+        deposit_response = DepositCommand(deposit_request).execute()
 
         # Assert
-        self.assertEqual(cash_response.player.balances[0].balance, amount_to_add)
-        self.assertEqual(bank_response.player.bank_accounts[0].balance, amount_to_add)
+        self.assertEqual(deposit_response.player.balances[0].balance, 50)
+        self.assertEqual(deposit_response.player.bank_accounts[0].balance, 200)
 
 if __name__ == "__main__":
     unittest.main()

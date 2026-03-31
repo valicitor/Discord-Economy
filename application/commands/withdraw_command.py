@@ -1,21 +1,25 @@
 from attr import dataclass
 
-from domain import User, GuildConfig
-from domain import UserNotFoundException, InsufficientFundsException
-from infrastructure import UserRepository
+from infrastructure import  PlayerBalanceRepository, BankAccountRepository
+from application.helpers.ensure_user import ensure_guild_and_user
+
+from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
+
+from domain import InsufficientFundsException
+
 from application.helpers.ensure_user import ensure_guild_and_user
 
 @dataclass
 class WithdrawCommandRequest:
-    guild_id: int
-    user: User
+    guild: DiscordGuild
+    user: DiscordUser
     amount: int = None
 
 @dataclass
 class WithdrawCommandResponse:
     success: bool
-    guild_config: GuildConfig
-    user: User
+    server_config: ServerConfig
+    player: PlayerProfile
     amount: int
 
 class WithdrawCommand:
@@ -26,23 +30,26 @@ class WithdrawCommand:
         return
 
     def execute(self) -> WithdrawCommandResponse:
+        server_config, player_profile = ensure_guild_and_user(self.request.guild, self.request.user)
 
-        guild_config, user = ensure_guild_and_user(self.request.guild_id, self.request.user)
+        default_currency_id = next((obj.value for obj in server_config.server_settings if obj.key == "default_currency_id"), None)
+        default_bank_id = next((obj.value for obj in server_config.server_settings if obj.key == "default_bank_id"), None)
 
-        if self.request.amount is None:
-            self.request.amount = user.bank_balance
-
-        # Validate sufficient funds
-        user.bank_balance = int(user.bank_balance) - self.request.amount
-        if user.bank_balance  < 0:
-            raise InsufficientFundsException("You do not have enough funds to complete this withdraw.")
+        i, balance = next(((idx, obj) for idx, obj in enumerate(player_profile.balances) if obj.currency_id == int(default_currency_id)), (None, None))
+        j, bank_account = next(((idx, obj) for idx, obj in enumerate(player_profile.bank_accounts) if obj.bank_id == int(default_bank_id)), (None, None))
         
-        user.cash_balance = int(user.cash_balance) + self.request.amount
+        bank_account.balance = int(bank_account.balance) - self.request.amount
+        if bank_account.balance < 0:
+            raise InsufficientFundsException("You do not have enough funds to complete this withdrawal.")
+        balance.balance = int(balance.balance) + self.request.amount
 
-        success = UserRepository().update(user)
+        balance_success = PlayerBalanceRepository().update(balance)
+        balance = PlayerBalanceRepository().get_by_id(balance.balance_id)
 
-        updated_user = UserRepository().get_by_id(user.guild_id, user.user_id)
-        if updated_user is None:
-            raise UserNotFoundException(f"User with ID {user.user_id} not found in guild {user.guild_id}.")
+        bank_account_success = BankAccountRepository().update(bank_account)
+        bank_account = BankAccountRepository().get_by_id(bank_account.account_id)
 
-        return WithdrawCommandResponse(success=success, guild_config=guild_config, user=updated_user, amount=self.request.amount)
+        player_profile.balances[i] = balance
+        player_profile.bank_accounts[j] = bank_account
+
+        return WithdrawCommandResponse(success=balance_success and bank_account_success, server_config=server_config, player=player_profile, amount=self.request.amount)
