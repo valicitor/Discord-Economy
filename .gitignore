@@ -211,3 +211,4 @@ config.py
 users.db
 guild_config.db
 items.db
+test_galaxy_map.png

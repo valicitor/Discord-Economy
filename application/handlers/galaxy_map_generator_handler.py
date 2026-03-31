@@ -5,6 +5,9 @@ from shapely.geometry import Point, LineString
 from shapely.ops import unary_union, split
 from matplotlib.patches import Polygon as MplPolygon
 
+from infrastructure import FactionRepository, FactionMemberRepository, PointOfInterestRepository
+
+from collections import defaultdict
 
 class GalaxyMapGeneratorHandler:
 
@@ -144,18 +147,33 @@ class GalaxyMapGeneratorHandler:
 
         for poi, core, influence in poi_areas:
             owner = poi.owner_player_id or "Neutral"
+            color = "white"
+            if poi.owner_player_id:
+                faction_member = FactionMemberRepository().get_by_player_id(poi.owner_player_id)
+                if faction_member:
+                    faction = FactionRepository().get_by_id(faction_member.faction_id)
+                    if faction:
+                        color = faction.color
+
             if core and not core.is_empty:
-                owners_core.setdefault(owner, []).append(core)
+                owners_core.setdefault(owner, []).append((core, color))
             if influence and not influence.is_empty:
-                owners_influence.setdefault(owner, []).append(influence)
+                owners_influence.setdefault(owner, []).append((influence, color))
 
         # Draw merged core territories
         for geoms in owners_core.values():
-            merged = unary_union(geoms)
-            polygons = [merged] if merged.geom_type == "Polygon" else list(merged.geoms)
-            for poly in polygons:
-                x, y = poly.exterior.coords.xy
-                ax.add_patch(MplPolygon(
+            color_groups = defaultdict(list)
+
+            for geom, color in geoms:
+                color_groups[color].append(geom)
+
+            for color, group in color_groups.items():
+                merged = unary_union(group)
+                polygons = [merged] if merged.geom_type == "Polygon" else list(merged.geoms)
+
+                for poly in polygons:
+                    x, y = poly.exterior.coords.xy
+                    ax.add_patch(MplPolygon(
                     list(zip(x, y)),
                     closed=True,
                     facecolor=(1, 1, 1, 0.05),
@@ -166,19 +184,27 @@ class GalaxyMapGeneratorHandler:
 
         # Draw merged influence areas
         for geoms in owners_influence.values():
-            merged = unary_union(geoms)
-            polygons = [merged] if merged.geom_type == "Polygon" else list(merged.geoms)
-            for poly in polygons:
-                x, y = poly.exterior.coords.xy
-                ax.add_patch(MplPolygon(
-                    list(zip(x, y)),
-                    closed=True,
-                    facecolor=(1, 1, 1, 0.025),
-                    edgecolor=(1, 1, 1, 0.2),
-                    linewidth=0.5,
-                    linestyle='--',
-                    zorder=0
-                ))
+            color_groups = defaultdict(list)
+
+            for geom, color in geoms:
+                color_groups[color].append(geom)
+
+            for color, group in color_groups.items():
+                merged = unary_union(group)
+                polygons = [merged] if merged.geom_type == "Polygon" else list(merged.geoms)
+
+                for poly in polygons:
+                    x, y = poly.exterior.coords.xy
+                    ax.add_patch(MplPolygon(
+                        list(zip(x, y)),
+                        closed=True,
+                        facecolor=color,
+                        edgecolor=color,
+                        linewidth=0.5,
+                        linestyle='--',
+                        alpha=0.1,
+                        zorder=0
+                    ))
 
     # -------------------- Map Rendering --------------------
     def render_full_map(self, pois, output_path, show_grid=True):

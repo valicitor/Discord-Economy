@@ -12,7 +12,7 @@ class BaseRepository:
                 cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, seeder=None, db_path: str = None):
+    def __init__(self, db_path: str = None):
         if not hasattr(self, "_initialized"):
             self.db_path = db_path or "base.db"
             
@@ -22,8 +22,6 @@ class BaseRepository:
             self._lock = Lock()
 
             self.init_database()
-            if callable(seeder):
-                seeder()
 
             atexit.register(self.close)
 

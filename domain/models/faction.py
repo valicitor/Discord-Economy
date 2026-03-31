@@ -7,6 +7,7 @@ class Faction:
         self.server_id: int|None = kwargs.get('server_id')
         self.owner_id: int|None = kwargs.get('owner_id')
         self.name: str|None = kwargs.get('name')
+        self.description: str|None = kwargs.get('description')
         self.color: str|None = kwargs.get('color')
 
     def to_dict(self):
@@ -15,5 +16,6 @@ class Faction:
             'server_id': self.server_id,
             'owner_id': self.owner_id,
             'name': self.name,
+            'description': self.description,
             'color': self.color
         }

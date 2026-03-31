@@ -39,6 +39,9 @@ from .persistence.unit_garrison_repository import UnitGarrisonRepository
 
 from .persistence.transaction_repository import TransactionRepository
 
+from .persistence.faction_repository import FactionRepository
+from .persistence.faction_member_repository import FactionMemberRepository
+
 # --- Seeders ---
 from .seed.point_of_interest_seeder import SeedPointOfInterestsIfEmpty
 from .seed.races_seeder import SeedRacesAndRaceStatsIfEmpty
