@@ -2,6 +2,7 @@ import re
 
 from attr import dataclass
 
+from domain import UpdateFailedException
 from infrastructure import CurrencyRepository
 from application import DiscordGuild, ServerConfig
 
@@ -46,6 +47,6 @@ class SetCurrencySymbolCommand:
 
         success = CurrencyRepository().update(currency)
         if not success:
-            raise Exception("Failed to update currency. Please try again.")
+            raise UpdateFailedException("Failed to update currency. Please try again.")
 
         return SetCurrencySymbolCommandResponse(success=success, server_config=server_config, currency=currency)

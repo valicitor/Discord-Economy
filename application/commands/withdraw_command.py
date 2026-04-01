@@ -5,7 +5,7 @@ from application.helpers.ensure_user import ensure_guild_and_user
 
 from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
 
-from domain import InsufficientFundsException
+from domain import InsufficientFundsException, UpdateFailedException
 
 from application.helpers.ensure_user import ensure_guild_and_user
 
@@ -44,9 +44,13 @@ class WithdrawCommand:
         balance.balance = int(balance.balance) + self.request.amount
 
         balance_success = PlayerBalanceRepository().update(balance)
+        if not balance_success:
+            raise UpdateFailedException("Failed to update player balance. Please try again.")
         balance = PlayerBalanceRepository().get_by_id(balance.balance_id)
 
         bank_account_success = BankAccountRepository().update(bank_account)
+        if not bank_account_success:
+            raise UpdateFailedException("Failed to update bank account. Please try again.")
         bank_account = BankAccountRepository().get_by_id(bank_account.account_id)
 
         player_profile.balances[i] = balance

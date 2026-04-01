@@ -1,6 +1,4 @@
 # --- Models ---
-from .models.user import User
-from .models.guild_config import GuildConfig
 from .models.item import Item
 
 # --- New Models ---

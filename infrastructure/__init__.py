@@ -1,7 +1,5 @@
 from .persistence.base_repository import BaseRepository
 
-from .persistence.guild_config_repository import GuildConfigRepository
-from .persistence.user_repository import UserRepository
 from .persistence.item_repository import ItemRepository
 
 # --- New Repositories ---
