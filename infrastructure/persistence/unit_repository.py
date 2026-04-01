@@ -36,6 +36,16 @@ class UnitRepository(IRepository, BaseRepository):
             )
             row = c.fetchone()
             return Unit(data=dict(row)) if row else None
+    
+    def get_by_name(self, name: str) -> Optional[Unit]:
+        with self._lock:
+            self._ensure_connection()
+            c = self.conn.cursor()
+            c.execute(
+                "SELECT * FROM units WHERE name = ?", (name,)
+            )
+            row = c.fetchone()
+            return Unit(data=dict(row)) if row else None
 
     def get_all(self) -> List[Unit]:
         with self._lock:

@@ -6,7 +6,6 @@ from .dtos.player_profile import PlayerProfile
 from .handlers.galaxy_map_generator_handler import GalaxyMapGeneratorHandler
 
 from .queries.get_balance_query import GetBalanceQuery, GetBalanceQueryRequest, GetBalanceQueryResponse
-from .queries.get_top_balances_query import GetTopBalancesQuery, GetTopBalancesQueryRequest, GetTopBalancesQueryResponse
 
 from .commands.set_balance_command import SetBalanceCommand, SetBalanceCommandRequest, SetBalanceCommandResponse
 from .commands.add_balance_command import AddBalanceCommand, AddBalanceCommandRequest, AddBalanceCommandResponse

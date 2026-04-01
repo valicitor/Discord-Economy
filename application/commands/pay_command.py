@@ -12,7 +12,6 @@ class PayCommandRequest:
     guild: DiscordGuild
     user: DiscordUser
     target: DiscordUser
-    account_type: str
     amount: int
 
 @dataclass
@@ -21,7 +20,6 @@ class PayCommandResponse:
     server_config: ServerConfig
     player: PlayerProfile
     target_player: PlayerProfile
-    account_type: str
     amount: int
 
 class PayCommand:
@@ -32,7 +30,7 @@ class PayCommand:
         return
 
     def execute(self) -> PayCommandResponse:
-        server_config, (player_profile, target_player_profile) = ensure_guild_and_users(self.request.guild, [self.request.user, self.request.target])
+        server_config, [player_profile, target_player_profile] = ensure_guild_and_users(self.request.guild, [self.request.user, self.request.target])
 
         default_currency_id = next((obj.value for obj in server_config.server_settings if obj.key == "default_currency_id"), None)
 
@@ -42,13 +40,13 @@ class PayCommand:
         balance.balance = int(balance.balance) - self.request.amount
         if balance.balance < 0:
             raise InsufficientFundsException("You do not have enough funds to complete this withdrawal.")
-        target_balance.balance = int(target_balance.balance) + self.request.amount
-
+        
         balance_success = PlayerBalanceRepository().update(balance)
         if not balance_success:
             raise UpdateFailedException("Failed to update player balance. Please try again.")
         balance = PlayerBalanceRepository().get_by_id(balance.balance_id)
 
+        target_balance.balance = int(target_balance.balance) + self.request.amount
         target_balance_success = PlayerBalanceRepository().update(target_balance)
         if not target_balance_success:
             raise UpdateFailedException("Failed to update target player balance. Please try again.")
@@ -62,6 +60,5 @@ class PayCommand:
             server_config=server_config, 
             player=player_profile, 
             target_player=target_player_profile, 
-            account_type=self.request.account_type, 
             amount=self.request.amount
         )

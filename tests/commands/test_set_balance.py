@@ -16,11 +16,11 @@ from infrastructure import (
     BankAccountRepository
 )
 from application import DiscordGuild, DiscordUser
-from application import AddBalanceCommand, AddBalanceCommandRequest
+from application import SetBalanceCommand, SetBalanceCommandRequest
 
 from application.helpers.ensure_user import ensure_guild_and_user
 
-class TestAddBalanceCommand(unittest.TestCase):
+class TestSetBalanceCommand(unittest.TestCase):
     def setUp(self):
         self.server_repository = ServerRepository(db_path=":memory:")
         self.server_setting_repository = ServerSettingRepository(db_path=":memory:")
@@ -32,7 +32,7 @@ class TestAddBalanceCommand(unittest.TestCase):
         self.bank_account_repository = BankAccountRepository(db_path=":memory:")
 
         self.discord_guild = DiscordGuild(guild_id=12345, name="TestGuild")
-        self.discord_user = DiscordUser(user_id=67890, name="TestUser", display_avatar="avatar_url")
+        self.discord_user = DiscordUser(user_id=68090, name="TestUser", display_avatar="avatar_url")
 
         self.server_config, self.player_profile = ensure_guild_and_user(self.discord_guild, self.discord_user)
 
@@ -47,30 +47,22 @@ class TestAddBalanceCommand(unittest.TestCase):
         self.server_setting_repository.delete_all(self.server_config.server.server_id)
         self.server_repository.delete(self.server_config.server)
 
-    def test_add_balance(self):
+    def test_set_balance(self):
         # Arrange
-        amount_to_add = 50
+        amount = 50
 
-        cash_request = AddBalanceCommandRequest(
-            guild=self.discord_guild,
-            user=self.discord_user,
+        request = SetBalanceCommandRequest(
+            guild=self.discord_guild, 
+            user=self.discord_user, 
             account_type="Cash",
-            amount=amount_to_add
-        )
-        bank_request = AddBalanceCommandRequest(
-            guild=self.discord_guild,
-            user=self.discord_user,
-            account_type="Bank",
-            amount=amount_to_add
+            amount=amount
         )
 
         # Act
-        cash_response = AddBalanceCommand(cash_request).execute()
-        bank_response = AddBalanceCommand(bank_request).execute()
+        response = SetBalanceCommand(request).execute()
 
         # Assert
-        self.assertEqual(cash_response.player.balances[0].balance, amount_to_add)
-        self.assertEqual(bank_response.player.bank_accounts[0].balance, amount_to_add)
+        self.assertEqual(response.player.balances[0].balance, amount)
 
 if __name__ == "__main__":
     unittest.main()

@@ -35,6 +35,17 @@ class RaceRepository(IRepository, BaseRepository):
             )
             row = c.fetchone()
             return Race(data=dict(row)) if row else None
+    
+        
+    def get_by_name(self, name: str) -> Optional[Race]:
+        with self._lock:
+            self._ensure_connection()
+            c = self.conn.cursor()
+            c.execute(
+                "SELECT * FROM races WHERE name = ?", (name,)
+            )
+            row = c.fetchone()
+            return Race(data=dict(row)) if row else None
 
     def get_all(self) -> List[Race]:
         with self._lock:
