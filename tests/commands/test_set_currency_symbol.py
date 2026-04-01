@@ -5,21 +5,35 @@ from config import BASE_DIR
 sys.path.insert(0, os.path.abspath(BASE_DIR))
 
 import unittest
-from domain import GuildConfig
+
+from infrastructure import (
+    ServerRepository, 
+    ServerSettingRepository,
+    CurrencyRepository,
+    BankRepository,
+)
+from application import DiscordGuild
 from application import SetCurrencySymbolCommand, SetCurrencySymbolCommandRequest
-from infrastructure import GuildConfigRepository
+
+from application.helpers.ensure_user import ensure_guild
 
 class TestSetCurrencySymbolCommand(unittest.TestCase):
     def setUp(self):
-        self.guild_config_repository = GuildConfigRepository(db_path=":memory:")
-        
-        self.guild_config = GuildConfig(data={ 'guild_id': 12341, 'starting_balance': 0, 'currency_symbol': '$', 'currency_emoji': '' })
+        self.server_repository = ServerRepository(db_path=":memory:")
+        self.server_setting_repository = ServerSettingRepository(db_path=":memory:")
+        self.currency_repository = CurrencyRepository(db_path=":memory:")
+        self.bank_repository = BankRepository(db_path=":memory:")
 
-        self.guild_config_repository.add(self.guild_config)
+        self.discord_guild = DiscordGuild(guild_id=12345, name="TestGuild")
+
+        self.server_config = ensure_guild(self.discord_guild)
 
     def tearDown(self):
         # Remove test user from the database
-        self.guild_config_repository.delete(self.guild_config)
+        self.bank_repository.delete_all(self.server_config.server.server_id)
+        self.currency_repository.delete_all(self.server_config.server.server_id)
+        self.server_setting_repository.delete_all(self.server_config.server.server_id)
+        self.server_repository.delete(self.server_config.server)
 
     def test_set_currency_symbol(self):
         # Arrange
@@ -29,19 +43,19 @@ class TestSetCurrencySymbolCommand(unittest.TestCase):
         currency_symbol_4="£"
 
         request1 = SetCurrencySymbolCommandRequest(
-            guild_id=self.guild_config.guild_id, 
+            guild=self.discord_guild, 
             currency_symbol=currency_symbol_1
         )
         request2 = SetCurrencySymbolCommandRequest(
-            guild_id=self.guild_config.guild_id, 
+            guild=self.discord_guild, 
             currency_symbol=currency_symbol_2
         )
         request3 = SetCurrencySymbolCommandRequest(
-            guild_id=self.guild_config.guild_id, 
+            guild=self.discord_guild, 
             currency_symbol=currency_symbol_3
         )
         request4 = SetCurrencySymbolCommandRequest(
-            guild_id=self.guild_config.guild_id, 
+            guild=self.discord_guild, 
             currency_symbol=currency_symbol_4
         )
 
@@ -52,17 +66,17 @@ class TestSetCurrencySymbolCommand(unittest.TestCase):
         response4 = SetCurrencySymbolCommand(request4).execute()
 
         # Assert
-        self.assertEqual(response1.guild_config.currency_emoji, "💰")
-        self.assertEqual(response1.guild_config.currency_symbol, "")
+        self.assertEqual(response1.currency.emoji, "💰")
+        self.assertEqual(response1.currency.symbol, "")
 
-        self.assertEqual(response2.guild_config.currency_emoji, "<:custom_emoji:123456789012345678>")
-        self.assertEqual(response2.guild_config.currency_symbol, "")
+        self.assertEqual(response2.currency.emoji, "<:custom_emoji:123456789012345678>")
+        self.assertEqual(response2.currency.symbol, "")
         
-        self.assertEqual(response3.guild_config.currency_emoji, "<a:animated_emoji:123456789012345678>")
-        self.assertEqual(response3.guild_config.currency_symbol, "")
+        self.assertEqual(response3.currency.emoji, "<a:animated_emoji:123456789012345678>")
+        self.assertEqual(response3.currency.symbol, "")
                 
-        self.assertEqual(response4.guild_config.currency_emoji, "")
-        self.assertEqual(response4.guild_config.currency_symbol, "£")
+        self.assertEqual(response4.currency.emoji, "")
+        self.assertEqual(response4.currency.symbol, "£")
 
 if __name__ == "__main__":
     unittest.main()

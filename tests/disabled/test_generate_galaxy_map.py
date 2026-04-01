@@ -66,6 +66,23 @@ class TestGenerateGalaxyMapCommand(unittest.TestCase):
         self.POI_repository.delete_all()
         self.faction_repository.delete_all(self.server_config.server.server_id)
 
+        self.bank_account_repository.delete_all(self.player_profile1.player.player_id)
+        self.player_balance_repository.delete_all(self.player_profile1.player.player_id)
+        self.player_repository.delete(self.player_profile1.player)
+
+        self.bank_account_repository.delete_all(self.player_profile2.player.player_id)
+        self.player_balance_repository.delete_all(self.player_profile2.player.player_id)
+        self.player_repository.delete(self.player_profile2.player)
+
+        self.bank_account_repository.delete_all(self.player_profile3.player.player_id)
+        self.player_balance_repository.delete_all(self.player_profile3.player.player_id)
+        self.player_repository.delete(self.player_profile3.player)
+        
+        self.bank_repository.delete_all(self.server_config.server.server_id)
+        self.currency_repository.delete_all(self.server_config.server.server_id)
+        self.server_setting_repository.delete_all(self.server_config.server.server_id)
+        self.server_repository.delete(self.server_config.server)
+
     def test_generate_galaxy_map(self):
         # Arrange
         request = GenerateGalaxyMapCommandRequest(

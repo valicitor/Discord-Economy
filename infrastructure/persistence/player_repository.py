@@ -28,20 +28,6 @@ class PlayerRepository(IRepository, BaseRepository):
             c.execute("CREATE INDEX IF NOT EXISTS idx_players_discord ON players(discord_id, discord_guild_id)")
             self.conn.execute("PRAGMA journal_mode=WAL;")
             self.conn.commit()
-    
-    # ---------- Helpers ----------
-
-    def _get_sort_column(self, sort_by: str) -> str:
-        mapping = {
-            "Cash": "cash_balance",
-            "Bank": "bank_balance",
-            "Total": "(cash_balance + bank_balance)"
-        }
-
-        if sort_by not in mapping:
-            raise ValueError(f"Invalid sort_by value: {sort_by}")
-
-        return mapping[sort_by]
 
     # ---------- Queries ----------
 
@@ -79,55 +65,6 @@ class PlayerRepository(IRepository, BaseRepository):
             c = self.conn.cursor()
             c.execute("SELECT * FROM players WHERE discord_guild_id = ?", (discord_guild_id,))
             return [Player(data=dict(row)) for row in c.fetchall()]
-        
-    
-    def get_leaderboard(
-        self,
-        server_id: int,
-        page: int = None,
-        sort_by: str = "Total"
-    ) -> List[Player]:
-
-        sort_column = self._get_sort_column(sort_by)
-
-        query = f"""
-            WITH RankedUsers AS (
-                SELECT *,
-                    RANK() OVER (
-                        PARTITION BY server_id
-                        ORDER BY {sort_column} DESC
-                    ) as rank
-                FROM players
-                WHERE server_id = ?
-            )
-
-            SELECT *
-            FROM RankedUsers
-            ORDER BY {sort_column} DESC
-        """
-
-        params = [server_id]
-
-        if page is not None:
-            offset = (page - 1) * 10
-            query += " LIMIT 10 OFFSET ?"
-            params.append(offset)
-
-        with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
-            c.execute(query, tuple(params))
-            return [Player(data=dict(row)) for row in c.fetchall()]
-
-    def get_count(self, server_id: int) -> int:
-        with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
-            c.execute(
-                "SELECT COUNT(*) FROM players WHERE server_id = ?",
-                (server_id,)
-            )
-            return c.fetchone()[0]
 
     # ---------- Mutations ----------
 

@@ -37,6 +37,16 @@ class VehicleRepository(IRepository, BaseRepository):
             )
             row = c.fetchone()
             return Vehicle(data=dict(row)) if row else None
+    
+    def get_by_name(self, name: str) -> Optional[Vehicle]:
+        with self._lock:
+            self._ensure_connection()
+            c = self.conn.cursor()
+            c.execute(
+                "SELECT * FROM vehicles WHERE name = ?", (name,)
+            )
+            row = c.fetchone()
+            return Vehicle(data=dict(row)) if row else None
 
     def get_all(self) -> List[Vehicle]:
         with self._lock:

@@ -4,45 +4,68 @@ import os
 from config import BASE_DIR
 sys.path.insert(0, os.path.abspath(BASE_DIR))
 
+
 import unittest
-from domain import User, GuildConfig
+from infrastructure import (
+    PlayerRepository, 
+    PlayerBalanceRepository,
+    ServerRepository, 
+    ServerSettingRepository,
+    CurrencyRepository,
+    BankRepository,
+    BankAccountRepository
+)
+from application import DiscordGuild, DiscordUser
 from application import PayCommand, PayCommandRequest
-from infrastructure import UserRepository, GuildConfigRepository
+
+from application.helpers.ensure_user import ensure_guild_and_users
 
 class TestPayCommand(unittest.TestCase):
     def setUp(self):
-        self.guild_config_repository = GuildConfigRepository(db_path=":memory:")
-        self.user_repository = UserRepository(db_path=":memory:")
+        self.server_repository = ServerRepository(db_path=":memory:")
+        self.server_setting_repository = ServerSettingRepository(db_path=":memory:")
+        self.currency_repository = CurrencyRepository(db_path=":memory:")
+        self.bank_repository = BankRepository(db_path=":memory:")
 
-        self.guild_config = GuildConfig(data={ 'guild_id': 12344, 'starting_balance': 0, 'currency_symbol': '$', 'currency_emoji': '' })
-        self.entity1 = User(data={
-            "user_id": 1,
-            "guild_id": 12344,
-            "username": "TestUser",
-             "avatar": "",
-            "cash_balance": 100
-        })
-        self.entity2 = User(guild_id=12344, user_id=2, username="TestUser", avatar="", cash_balance=100)
+        self.player_repository = PlayerRepository(db_path=":memory:")
+        self.player_balance_repository = PlayerBalanceRepository(db_path=":memory:")
+        self.bank_account_repository = BankAccountRepository(db_path=":memory:")
 
-        # Add test users to the database
-        self.guild_config_repository.add(self.guild_config)
-        self.user_repository.add(self.entity1)
-        self.user_repository.add(self.entity2)
+        self.discord_guild = DiscordGuild(guild_id=12345, name="TestGuild")
+        self.discord_user1 = DiscordUser(user_id=67990, name="TestUser", display_avatar="avatar_url")
+        self.discord_user2 = DiscordUser(user_id=67991, name="TestUser", display_avatar="avatar_url")
+
+        self.server_config, [self.player_profile1, self.player_profile2] = ensure_guild_and_users(self.discord_guild, [self.discord_user1, self.discord_user2])
+
+        self.player_profile1.balances[0].balance = 100
+        self.player_balance_repository.update(self.player_profile1.balances[0])
+
+        self.player_profile2.balances[0].balance = 100
+        self.player_balance_repository.update(self.player_profile2.balances[0])
 
     def tearDown(self):
-        # Remove test users from the database
-        self.guild_config_repository.delete(self.guild_config)
-        self.user_repository.delete(self.entity1)
-        self.user_repository.delete(self.entity2)
+        # Remove test user from the database
+        self.bank_account_repository.delete_all(self.player_profile1.player.player_id)
+        self.player_balance_repository.delete_all(self.player_profile1.player.player_id)
+        self.player_repository.delete(self.player_profile1.player)
+        
+        self.bank_account_repository.delete_all(self.player_profile2.player.player_id)
+        self.player_balance_repository.delete_all(self.player_profile2.player.player_id)
+        self.player_repository.delete(self.player_profile2.player)
+        
+        self.bank_repository.delete_all(self.server_config.server.server_id)
+        self.currency_repository.delete_all(self.server_config.server.server_id)
+        self.server_setting_repository.delete_all(self.server_config.server.server_id)
+        self.server_repository.delete(self.server_config.server)
 
     def test_pay(self):
         # Arrange
         amount_to_transfer = 50
 
         request = PayCommandRequest(
-            guild_id=self.entity1.guild_id,
-            user=self.entity1,
-            target=self.entity2,
+            guild=self.discord_guild,
+            user=self.discord_user1,
+            target=self.discord_user2,
             amount=amount_to_transfer
         )
 
@@ -50,8 +73,8 @@ class TestPayCommand(unittest.TestCase):
         response = PayCommand(request).execute()
 
         # Assert
-        self.assertEqual(response.user.cash_balance, self.entity1.cash_balance - amount_to_transfer)
-        self.assertEqual(response.target.cash_balance, self.entity2.cash_balance + amount_to_transfer)
+        self.assertEqual(response.player.balances[0].balance, 50)
+        self.assertEqual(response.target_player.balances[0].balance, 150)
 
 if __name__ == "__main__":
     unittest.main()

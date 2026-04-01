@@ -36,6 +36,16 @@ class EquipmentRepository(IRepository, BaseRepository):
             )
             row = c.fetchone()
             return Equipment(data=dict(row)) if row else None
+    
+    def get_by_name(self, name: str) -> Optional[Equipment]:
+        with self._lock:
+            self._ensure_connection()
+            c = self.conn.cursor()
+            c.execute(
+                "SELECT * FROM equipment WHERE name = ?", (name,)
+            )
+            row = c.fetchone()
+            return Equipment(data=dict(row)) if row else None
 
     def get_all(self) -> List[Equipment]:
         with self._lock:

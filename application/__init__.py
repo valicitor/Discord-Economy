@@ -6,7 +6,6 @@ from .dtos.player_profile import PlayerProfile
 from .handlers.galaxy_map_generator_handler import GalaxyMapGeneratorHandler
 
 from .queries.get_balance_query import GetBalanceQuery, GetBalanceQueryRequest, GetBalanceQueryResponse
-from .queries.get_top_balances_query import GetTopBalancesQuery, GetTopBalancesQueryRequest, GetTopBalancesQueryResponse
 
 from .commands.set_balance_command import SetBalanceCommand, SetBalanceCommandRequest, SetBalanceCommandResponse
 from .commands.add_balance_command import AddBalanceCommand, AddBalanceCommandRequest, AddBalanceCommandResponse
@@ -16,3 +15,5 @@ from .commands.deposit_command import DepositCommand, DepositCommandRequest, Dep
 from .commands.set_currency_symbol_command import SetCurrencySymbolCommand, SetCurrencySymbolCommandRequest, SetCurrencySymbolCommandResponse
 
 from .commands.generate_galaxy_map_command import GenerateGalaxyMapCommand, GenerateGalaxyMapCommandRequest, GenerateGalaxyMapCommandResponse
+
+from .helpers.get_default_currency import get_default_currenncy
