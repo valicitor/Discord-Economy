@@ -5,12 +5,12 @@ from config import BASE_DIR
 sys.path.insert(0, os.path.abspath(BASE_DIR))
 
 import unittest
-from infrastructure import RaceRepository, RaceStatRepository, SeedRacesAndRaceStatsIfEmpty
+from infrastructure import RaceRepository, RaceStatRepository, SeedRacesIfEmpty, SeedRaceStatsIfEmpty
 
 class TestRacesSeeder(unittest.TestCase):
     def setUp(self):
-        self.race_repository = RaceRepository(db_path=":memory:")  # Use in-memory database for testing
-        self.race_stat_repository = RaceStatRepository(db_path=":memory:")  # Use in-memory database for testing
+        self.race_repository = RaceRepository(seeder=SeedRacesIfEmpty, db_path=":memory:")  # Use in-memory database for testing
+        self.race_stat_repository = RaceStatRepository(seeder=SeedRaceStatsIfEmpty, db_path=":memory:")  # Use in-memory database for testing
 
     def tearDown(self):
         # Remove test database
@@ -19,7 +19,6 @@ class TestRacesSeeder(unittest.TestCase):
 
     def test_seed_races_and_race_stats_if_empty(self):
         # Act
-        SeedRacesAndRaceStatsIfEmpty(self.race_repository, self.race_stat_repository)
 
         # Assert
         races = self.race_repository.get_all()

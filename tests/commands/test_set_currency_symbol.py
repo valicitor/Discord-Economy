@@ -11,6 +11,7 @@ from infrastructure import (
     ServerSettingRepository,
     CurrencyRepository,
     BankRepository,
+    FactionRepository
 )
 from application import DiscordGuild
 from application import SetCurrencySymbolCommand, SetCurrencySymbolCommandRequest
@@ -24,12 +25,16 @@ class TestSetCurrencySymbolCommand(unittest.TestCase):
         self.currency_repository = CurrencyRepository(db_path=":memory:")
         self.bank_repository = BankRepository(db_path=":memory:")
 
+        self.faction_repository = FactionRepository(db_path=":memory:")
+
         self.discord_guild = DiscordGuild(guild_id=12345, name="TestGuild")
 
         self.server_config = ensure_guild(self.discord_guild)
 
     def tearDown(self):
         # Remove test user from the database
+        self.faction_repository.delete_all(self.server_config.server.server_id)
+    
         self.bank_repository.delete_all(self.server_config.server.server_id)
         self.currency_repository.delete_all(self.server_config.server.server_id)
         self.server_setting_repository.delete_all(self.server_config.server.server_id)

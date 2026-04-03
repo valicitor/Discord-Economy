@@ -6,9 +6,7 @@ from typing import List, Optional
 
 class CurrencyRepository(IRepository, BaseRepository):
     def __init__(self, seeder=None, db_path: str = None):
-        super().__init__(db_path=db_path or "dynamic_resources.db")
-        if seeder: 
-            seeder(self)
+        super().__init__(seeder=seeder, db_path=db_path or "repository.db")
 
     def init_database(self):
         with self._lock:
@@ -34,6 +32,16 @@ class CurrencyRepository(IRepository, BaseRepository):
             c = self.conn.cursor()
             c.execute(
                 "SELECT * FROM currencies WHERE currency_id = ?", (currency_id,)
+            )
+            row = c.fetchone()
+            return Currency(data=dict(row)) if row else None
+    
+    def get_by_name(self, name: str, server_id: int) -> Optional[Currency]:
+        with self._lock:
+            self._ensure_connection()
+            c = self.conn.cursor()
+            c.execute(
+                "SELECT * FROM currencies WHERE name = ? AND server_id = ?", (name, server_id)
             )
             row = c.fetchone()
             return Currency(data=dict(row)) if row else None

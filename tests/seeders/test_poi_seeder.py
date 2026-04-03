@@ -9,7 +9,7 @@ from infrastructure import PointOfInterestRepository, SeedPointOfInterestsIfEmpt
 
 class TestPOISeeder(unittest.TestCase):
     def setUp(self):
-        self.POI_repository = PointOfInterestRepository(db_path=":memory:")  # Use in-memory database for testing
+        self.POI_repository = PointOfInterestRepository(seeder=SeedPointOfInterestsIfEmpty, db_path=":memory:")  # Use in-memory database for testing
 
     def tearDown(self):
         # Remove test database
@@ -17,7 +17,6 @@ class TestPOISeeder(unittest.TestCase):
 
     def test_seed_point_of_interests_if_empty(self):
         # Act
-        SeedPointOfInterestsIfEmpty(self.POI_repository)
 
         # Assert
         pois = self.POI_repository.get_all()

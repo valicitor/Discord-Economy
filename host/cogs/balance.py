@@ -8,6 +8,7 @@ from application import (
     PayCommand, PayCommandRequest,
     WithdrawCommand, WithdrawCommandRequest,
     DepositCommand, DepositCommandRequest,
+    GetLeaderboardQuery, GetLeaderboardQueryRequest
 )
 from host.embeds.discord_balance_embed import DiscordBalanceEmbed
 import typing
@@ -44,10 +45,15 @@ class BalanceCog(commands.Cog):
         except Exception as e:
             await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
 
+    balance_group = app_commands.Group(
+        name="bal",
+        description="Balance management commands"
+    )
+
     # --- /pay ---
-    @app_commands.command(name="pay", description="Pay another user.")
+    @balance_group.command(name="pay", description="Pay another user.")
     @app_commands.guild_only()
-    async def user_pay(self, interaction: discord.Interaction, discord_user: discord.User, amount: app_commands.Range[int, 1, 100000000]):
+    async def user_pay(self, interaction: discord.Interaction, target: discord.User, amount: app_commands.Range[int, 1, 100000000]):
         try:
             guild = DiscordGuild(
                 guild_id=interaction.guild_id, 
@@ -59,9 +65,9 @@ class BalanceCog(commands.Cog):
                 display_avatar=str(interaction.user.display_avatar)
             )
             target = DiscordUser(
-                user_id=discord_user.id,
-                name=discord_user.name,
-                display_avatar=str(discord_user.display_avatar)
+                user_id=target.id,
+                name=target.name,
+                display_avatar=str(target.display_avatar)
             )
         
             request=PayCommandRequest(
@@ -73,13 +79,19 @@ class BalanceCog(commands.Cog):
 
             response = PayCommand(request).execute()
             
-            embed = DiscordBalanceEmbed.pay_balance_embed(interaction, discord_user, response)
+            embed = DiscordBalanceEmbed.pay_balance_embed(interaction, target, response)
             await interaction.response.send_message(embed=embed)
         except Exception as e:
             await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
 
+    bank_group = app_commands.Group(
+        name="bank",
+        description="Bank management commands"
+    )
+
+
     # --- /withdraw ---
-    @app_commands.command(name="withdraw", description="Withdraw money from your bank.")
+    @bank_group.command(name="withdraw", description="Withdraw money from your bank.")
     @app_commands.guild_only()
     async def user_withdraw(self, interaction: discord.Interaction, amount: typing.Optional[app_commands.Range[int, 1, 100000000]] = None):
         try:
@@ -107,7 +119,7 @@ class BalanceCog(commands.Cog):
             await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
 
     # --- /deposit ---
-    @app_commands.command(name="deposit", description="Deposit money into your bank.")
+    @bank_group.command(name="deposit", description="Deposit money into your bank.")
     @app_commands.guild_only()
     async def user_deposit(self, interaction: discord.Interaction, amount: typing.Optional[app_commands.Range[int, 1, 100000000]] = None):
         try:
@@ -135,26 +147,31 @@ class BalanceCog(commands.Cog):
             await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
 
     # --- /leaderboard ---
-    # @app_commands.command(name="leaderboard", description="Show the top users by balance.")
-    # @app_commands.guild_only()
-    # async def user_leaderboard(self, interaction: discord.Interaction, page: typing.Optional[int] = 1, sort: typing.Optional[typing.Literal['Cash', 'Bank', 'Total']] = "Cash"):
-    #     try:
-    #         request=GetTopBalancesQueryRequest(
-    #             guild_id=interaction.guild_id, 
-    #             page=page, 
-    #             sort_by=sort
-    #         )
+    @app_commands.command(name="leaderboard", description="Show the top users by balance.")
+    @app_commands.guild_only()
+    async def user_leaderboard(self, interaction: discord.Interaction, page: typing.Optional[int] = 1, sort: typing.Optional[typing.Literal['Cash', 'Bank', 'Total']] = "Cash"):
+        try:
+            guild = DiscordGuild(
+                guild_id=interaction.guild_id, 
+                name=interaction.guild.name
+            )
 
-    #         response = GetTopBalancesQuery(request).execute()
+            request=GetLeaderboardQueryRequest(
+                guild=guild, 
+                page=page, 
+                sort_by=sort
+            )
 
-    #         if not response.users:
-    #             await interaction.response.send_message("No users found.", ephemeral=True)
-    #             return
+            response = GetLeaderboardQuery(request).execute()
 
-    #         embed = DiscordBalanceEmbed.get_leaderboard_embed(interaction, response)
-    #         await interaction.response.send_message(embed=embed)
-    #     except Exception as e:
-    #         await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
+            if not response.players:
+                await interaction.response.send_message("No players found.", ephemeral=True)
+                return
+
+            embed = DiscordBalanceEmbed.get_leaderboard_embed(interaction, response)
+            await interaction.response.send_message(embed=embed)
+        except Exception as e:
+            await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
 
     # --- /work ---
     # @app_commands.command(name="work", description="Work to earn money.")

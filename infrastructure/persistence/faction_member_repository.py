@@ -6,9 +6,7 @@ from typing import List, Optional
 
 class FactionMemberRepository(IRepository, BaseRepository):
     def __init__(self, seeder=None, db_path: str = None):
-        super().__init__(db_path=db_path or "dynamic_resources.db")
-        if seeder: 
-            seeder(self)
+        super().__init__(seeder=seeder, db_path=db_path or "repository.db")
 
     def init_database(self):
         with self._lock:
@@ -105,6 +103,18 @@ class FactionMemberRepository(IRepository, BaseRepository):
             c.execute(
                 "DELETE FROM faction_members WHERE member_id = ?",
                 (faction_member.member_id,)
+            )
+
+            self.conn.commit()
+            return c.rowcount > 0
+    
+    def delete_by_player_id(self, player_id: int) -> bool:
+        with self._lock:
+            self._ensure_connection()
+            c = self.conn.cursor()
+            c.execute(
+                "DELETE FROM faction_members WHERE player_id = ?",
+                (player_id,)
             )
 
             self.conn.commit()

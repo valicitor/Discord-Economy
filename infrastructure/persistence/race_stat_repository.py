@@ -6,9 +6,7 @@ from typing import List, Optional
 
 class RaceStatRepository(IRepository, BaseRepository):
     def __init__(self, seeder=None, db_path: str = None):
-        super().__init__(db_path=db_path or "static_resources.db")
-        if seeder: 
-            seeder(self)
+        super().__init__(seeder=seeder, db_path=db_path or "repository.db")
 
     def init_database(self):
         with self._lock:
@@ -33,6 +31,16 @@ class RaceStatRepository(IRepository, BaseRepository):
             c = self.conn.cursor()
             c.execute(
                 "SELECT * FROM race_stats WHERE race_stat_id = ?", (race_stat_id,)
+            )
+            row = c.fetchone()
+            return RaceStat(data=dict(row)) if row else None
+    
+    def get_by_key(self, stat_key: str, race_id: int) -> Optional[RaceStat]:
+        with self._lock:
+            self._ensure_connection()
+            c = self.conn.cursor()
+            c.execute(
+                "SELECT * FROM race_stats WHERE stat_key = ? AND race_id = ?", (stat_key, race_id)
             )
             row = c.fetchone()
             return RaceStat(data=dict(row)) if row else None

@@ -6,9 +6,7 @@ from typing import List, Optional
 
 class FactionRepository(IRepository, BaseRepository):
     def __init__(self, seeder=None, db_path: str = None):
-        super().__init__(db_path=db_path or "dynamic_resources.db")
-        if seeder: 
-            seeder(self)
+        super().__init__(seeder=seeder, db_path=db_path or "repository.db")
 
     def init_database(self):
         with self._lock:
@@ -17,7 +15,7 @@ class FactionRepository(IRepository, BaseRepository):
                 CREATE TABLE IF NOT EXISTS factions (
                     faction_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     server_id INTEGER NOT NULL,
-                    owner_id INTEGER NOT NULL,
+                    owner_id INTEGER,
                     name TEXT NOT NULL,
                     description TEXT,
                     color TEXT,

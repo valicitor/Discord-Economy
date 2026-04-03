@@ -16,8 +16,13 @@ class AdminCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    admin_group = app_commands.Group(
+        name="admin",
+        description="Admin commands"
+    )
+
     # --- /set_currency_symbol ---
-    @app_commands.command(name="set-currency-symbol", description="Set the currency symbol for the guild.")
+    @admin_group.command(name="set-currency-symbol", description="Set the currency symbol for the guild.")
     @app_commands.checks.has_permissions(administrator=True)
     @app_commands.guild_only()
     async def admin_set_currency_symbol(self, interaction: discord.Interaction, currency_symbol: str):
@@ -40,7 +45,7 @@ class AdminCog(commands.Cog):
             await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
 
     # --- /add-balance ---
-    @app_commands.command(name="add-balance", description="Add balance to a member.")
+    @admin_group.command(name="add-balance", description="Add balance to a member.")
     @app_commands.checks.has_permissions(administrator=True)
     @app_commands.guild_only()
     async def admin_add_balance_user(self, interaction: discord.Interaction, target: discord.User, amount: app_commands.Range[int, 1, 100000000], account_type: typing.Optional[typing.Literal['Cash', 'Bank']] = "Cash"):
@@ -70,7 +75,7 @@ class AdminCog(commands.Cog):
             await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
 
     # --- /set-balance ---
-    @app_commands.command(name="set-balance", description="Set a members current balance.")
+    @admin_group.command(name="set-balance", description="Set a members current balance.")
     @app_commands.checks.has_permissions(administrator=True)
     @app_commands.guild_only()
     async def admin_set_balance_user(self, interaction: discord.Interaction, target: discord.User, amount: app_commands.Range[int, 1, 100000000], account_type: typing.Optional[typing.Literal['Cash', 'Bank']] = "Cash"):

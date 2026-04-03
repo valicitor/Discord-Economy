@@ -13,7 +13,9 @@ from infrastructure import (
     ServerSettingRepository,
     CurrencyRepository,
     BankRepository,
-    BankAccountRepository
+    BankAccountRepository,
+    FactionRepository,
+    FactionMemberRepository
 )
 from application import DiscordGuild, DiscordUser
 from application import PayCommand, PayCommandRequest
@@ -30,6 +32,9 @@ class TestPayCommand(unittest.TestCase):
         self.player_repository = PlayerRepository(db_path=":memory:")
         self.player_balance_repository = PlayerBalanceRepository(db_path=":memory:")
         self.bank_account_repository = BankAccountRepository(db_path=":memory:")
+        
+        self.faction_repository = FactionRepository(db_path=":memory:")
+        self.faction_member_repository = FactionMemberRepository(db_path=":memory:")
 
         self.discord_guild = DiscordGuild(guild_id=12345, name="TestGuild")
         self.discord_user1 = DiscordUser(user_id=67990, name="TestUser", display_avatar="avatar_url")
@@ -45,6 +50,10 @@ class TestPayCommand(unittest.TestCase):
 
     def tearDown(self):
         # Remove test user from the database
+        self.faction_member_repository.delete_by_player_id(self.player_profile1.player.player_id)
+        self.faction_member_repository.delete_by_player_id(self.player_profile2.player.player_id)
+        self.faction_repository.delete_all(self.server_config.server.server_id)
+    
         self.bank_account_repository.delete_all(self.player_profile1.player.player_id)
         self.player_balance_repository.delete_all(self.player_profile1.player.player_id)
         self.player_repository.delete(self.player_profile1.player)

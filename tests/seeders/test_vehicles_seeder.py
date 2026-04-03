@@ -5,12 +5,12 @@ from config import BASE_DIR
 sys.path.insert(0, os.path.abspath(BASE_DIR))
 
 import unittest
-from infrastructure import VehicleRepository, VehicleStatRepository, SeedVehiclesAndVehicleStatsIfEmpty
+from infrastructure import VehicleRepository, VehicleStatRepository, SeedVehiclesIfEmpty, SeedVehicleStatsIfEmpty
 
 class TestVehiclesSeeder(unittest.TestCase):
     def setUp(self):
-        self.vehicle_repository = VehicleRepository(db_path=":memory:")  # Use in-memory database for testing
-        self.vehicle_stat_repository = VehicleStatRepository(db_path=":memory:")  # Use in-memory database for testing
+        self.vehicle_repository = VehicleRepository(seeder=SeedVehiclesIfEmpty, db_path=":memory:")  # Use in-memory database for testing
+        self.vehicle_stat_repository = VehicleStatRepository(seeder=SeedVehicleStatsIfEmpty, db_path=":memory:")  # Use in-memory database for testing
 
     def tearDown(self):
         # Remove test database
@@ -19,7 +19,6 @@ class TestVehiclesSeeder(unittest.TestCase):
 
     def test_seed_vehicles_and_vehicle_stats_if_empty(self):
         # Act
-        SeedVehiclesAndVehicleStatsIfEmpty(self.vehicle_repository, self.vehicle_stat_repository)
 
         # Assert
         vehicles = self.vehicle_repository.get_all()

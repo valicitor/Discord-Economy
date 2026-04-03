@@ -1,14 +1,13 @@
 from domain import UnitStat
 from domain import IRepository
+from domain.models.server_settings import ServerSetting
 from infrastructure import BaseRepository
 from typing import List, Optional
 
 
 class UnitStatRepository(IRepository, BaseRepository):
     def __init__(self, seeder=None, db_path: str = None):
-        super().__init__(db_path=db_path or "static_resources.db")
-        if seeder: 
-            seeder(self)
+        super().__init__(seeder=seeder, db_path=db_path or "repository.db")
 
     def init_database(self):
         with self._lock:
@@ -33,6 +32,16 @@ class UnitStatRepository(IRepository, BaseRepository):
             c = self.conn.cursor()
             c.execute(
                 "SELECT * FROM unit_stats WHERE unit_stat_id = ?", (unit_stat_id,)
+            )
+            row = c.fetchone()
+            return UnitStat(data=dict(row)) if row else None
+    
+    def get_by_key(self, stat_key: str, unit_id: int) -> Optional[UnitStat]:
+        with self._lock:
+            self._ensure_connection()
+            c = self.conn.cursor()
+            c.execute(
+                "SELECT * FROM unit_stats WHERE stat_key = ? AND unit_id = ?", (stat_key, unit_id)
             )
             row = c.fetchone()
             return UnitStat(data=dict(row)) if row else None

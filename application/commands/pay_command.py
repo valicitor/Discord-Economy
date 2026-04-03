@@ -1,6 +1,6 @@
 from attr import dataclass
 
-from infrastructure import  PlayerBalanceRepository
+from infrastructure import  PlayerBalanceRepository, ServerSettingRepository
 from application.helpers.ensure_user import ensure_guild_and_users
 
 from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
@@ -32,10 +32,10 @@ class PayCommand:
     def execute(self) -> PayCommandResponse:
         server_config, [player_profile, target_player_profile] = ensure_guild_and_users(self.request.guild, [self.request.user, self.request.target])
 
-        default_currency_id = next((obj.value for obj in server_config.server_settings if obj.key == "default_currency_id"), None)
+        _, default_currency = server_config.server_settings.get_by_key("default_currency_id")
 
-        i, balance = next(((idx, obj) for idx, obj in enumerate(player_profile.balances) if obj.currency_id == int(default_currency_id)), (None, None))
-        j, target_balance = next(((idx, obj) for idx, obj in enumerate(target_player_profile.balances) if obj.currency_id == int(default_currency_id)), (None, None))
+        i, balance = player_profile.balances.get_by_currency_id(int(default_currency.value))
+        j, target_balance = target_player_profile.balances.get_by_currency_id(int(default_currency.value))
 
         balance.balance = int(balance.balance) - self.request.amount
         if balance.balance < 0:

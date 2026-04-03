@@ -5,9 +5,7 @@ from typing import List, Optional
 
 class ItemRepository(IRepository, BaseRepository):
     def __init__(self, seeder=None, db_path: str = None):
-        super().__init__(db_path=db_path or "dynamic_resources.db")
-        if seeder: 
-            seeder(self)
+        super().__init__(seeder=seeder, db_path=db_path or "repository.db")
 
     # ---------- Database Setup ----------
 

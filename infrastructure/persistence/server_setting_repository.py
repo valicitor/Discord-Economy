@@ -6,9 +6,7 @@ from typing import List, Optional
 
 class ServerSettingRepository(IRepository, BaseRepository):
     def __init__(self, seeder=None, db_path: str = None):
-        super().__init__(db_path=db_path or "dynamic_resources.db")
-        if seeder: 
-            seeder(self)
+        super().__init__(seeder=seeder, db_path=db_path or "repository.db")
 
     def init_database(self):
         with self._lock:
@@ -50,6 +48,16 @@ class ServerSettingRepository(IRepository, BaseRepository):
             c = self.conn.cursor()
             c.execute("SELECT * FROM server_settings WHERE server_id = ?", (server_id,))
             return [ServerSetting(data=dict(row)) for row in c.fetchall()]
+    
+    def get_by_key(self, key: str, server_id: int) -> Optional[ServerSetting]:
+        with self._lock:
+            self._ensure_connection()
+            c = self.conn.cursor()
+            c.execute(
+                "SELECT * FROM server_settings WHERE key = ? AND server_id = ?", (key, server_id)
+            )
+            row = c.fetchone()
+            return ServerSetting(data=dict(row)) if row else None
 
     # ---------- Mutations ----------
 

@@ -6,17 +6,22 @@ class BaseRepository:
     _instance = None
     _instance_lock = Lock()
 
+    _connections = {}
+
     def __new__(cls, *args, **kwargs):
         with cls._instance_lock:
             if not cls._instance:
                 cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, db_path: str = None):
+    def __init__(self, seeder=None, db_path: str = None):
         if not hasattr(self, "_initialized"):
-            self.db_path = db_path or "base.db"
+            self.db_path = db_path or "repository.db"
             
-            self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
+            if self.db_path not in self._connections:
+                self._connections[self.db_path] = sqlite3.connect(self.db_path, check_same_thread=False)
+
+            self.conn = self._connections[db_path]
             self.conn.row_factory = sqlite3.Row
 
             self._lock = Lock()
@@ -26,6 +31,9 @@ class BaseRepository:
             atexit.register(self.close)
 
             self._initialized = True
+
+            if seeder: 
+                seeder()
 
     def _ensure_connection(self):
         if self.conn is None:

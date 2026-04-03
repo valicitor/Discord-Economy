@@ -6,7 +6,8 @@ from application import (
     GetBalanceQueryResponse, 
     PayCommandResponse,
     WithdrawCommandResponse, 
-    DepositCommandResponse
+    DepositCommandResponse,
+    GetLeaderboardQueryResponse
 )
 
 class DiscordBalanceEmbed:
@@ -16,7 +17,7 @@ class DiscordBalanceEmbed:
         currency = get_default_currenncy(response.server_config)
 
         embed=discord.Embed(
-            description=f"Leaderboard Rank: **#1**",
+            description=f"Leaderboard Rank: **#{response.player.player.rank}**",
             color=discord.Color.blue()
         )
         
@@ -62,24 +63,24 @@ class DiscordBalanceEmbed:
         )
         return embed
     
-    # @staticmethod
-    # def get_leaderboard_embed(interaction: discord.Interaction, response: GetTopBalancesQueryResponse):
-    #     currency = get_default_currenncy(response.server_config)
+    @staticmethod
+    def get_leaderboard_embed(interaction: discord.Interaction, response: GetLeaderboardQueryResponse):
+        currency = get_default_currenncy(response.server_config)
 
-    #     description=f"View the leaderboard here:\n"
-    #     for idx, record in enumerate(response.users, start=1):
-    #         money = record.cash_balance if response.sort_by == "Cash" else record.bank_balance if response.sort_by == "Bank" else record.cash_balance + record.bank_balance
-    #         description+=f"\n**{idx}.** `{record.username}` • {currency}{money}"
+        description=f"View the leaderboard here:\n"
+        for player_profile in response.players:
+            money = player_profile.balances.total_balance() if response.sort_by == "Cash" else player_profile.bank_accounts.total_bank_balance() if response.sort_by == "Bank" else player_profile.balances.total_balance() + player_profile.bank_accounts.total_bank_balance()
+            description+=f"\n**{player_profile.player.rank}.** `{player_profile.player.username}` • {currency}{money}"
                 
-    #     embed=discord.Embed(
-    #         title=f"🏆 Leaderboard [{response.sort_by}]", 
-    #         description=description, 
-    #         color=discord.Color.gold()
-    #     )
+        embed=discord.Embed(
+            title=f"🏆 Leaderboard [{response.sort_by}]", 
+            description=description, 
+            color=discord.Color.gold()
+        )
 
-    #     embed.set_footer(text=f"Page {response.page}/{response.max_pages}")
+        embed.set_footer(text=f"Page {response.page}/{response.max_pages}")
 
-    #     return embed
+        return embed
 
     # @staticmethod
     # def work_embed(interaction: discord.Interaction, response: WorkCommandResponse):
