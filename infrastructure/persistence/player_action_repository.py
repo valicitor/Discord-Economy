@@ -15,10 +15,10 @@ class PlayerActionRepository(IRepository, BaseRepository):
                 CREATE TABLE IF NOT EXISTS player_actions (
                     player_action_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     player_id INTEGER NOT NULL,
-                    action_id INTEGER NOT NULL,
+                    type TEXT NOT NULL,
                     last_used_at DATETIME,
-                    FOREIGN KEY(player_id) REFERENCES players(player_id),
-                    FOREIGN KEY(action_id) REFERENCES actions(action_id)
+                    FOREIGN KEY(player_id) REFERENCES players(player_id)
+                    UNIQUE(player_id, type)
                 )
             """)
             self.execute("PRAGMA journal_mode=WAL;")
@@ -35,10 +35,25 @@ class PlayerActionRepository(IRepository, BaseRepository):
             row = c.fetchone()
             return PlayerAction(data=dict(row)) if row else None
 
+    def get_by_type(self, action_type: str, player_id: int) -> Optional[PlayerAction]:
+        with self._lock:
+            c = self.cursor()
+            c.execute(
+                "SELECT * FROM player_actions WHERE player_id = ? AND type = ?", (player_id, action_type)
+            )
+            row = c.fetchone()
+            return PlayerAction(data=dict(row)) if row else None
+
     def get_all(self) -> List[PlayerAction]:
         with self._lock:
             c = self.cursor()
             c.execute("SELECT * FROM player_actions")
+            return [PlayerAction(data=dict(row)) for row in c.fetchall()]
+    
+    def get_all_by_player_id(self, player_id: int) -> List[PlayerAction]:
+        with self._lock:
+            c = self.cursor()
+            c.execute("SELECT * FROM player_actions WHERE player_id = ?", (player_id,))
             return [PlayerAction(data=dict(row)) for row in c.fetchall()]
 
     # ---------- Mutations ----------
@@ -48,12 +63,12 @@ class PlayerActionRepository(IRepository, BaseRepository):
             c = self.cursor()
             c.execute("""
                 INSERT INTO player_actions (
-                    player_id, action_id, last_used_at
+                    player_id, type, last_used_at
                 )
                 VALUES (?, ?, ?)
             """, (
                 player_action.player_id,
-                player_action.action_id,
+                player_action.type,
                 player_action.last_used_at
             ))
 
@@ -65,11 +80,11 @@ class PlayerActionRepository(IRepository, BaseRepository):
             c = self.cursor()
             c.execute("""
                 UPDATE player_actions
-                SET player_id = ?, action_id = ?, last_used_at = ?
+                SET player_id = ?, type = ?, last_used_at = ?
                 WHERE player_action_id = ?
             """, (
                 player_action.player_id,
-                player_action.action_id,
+                player_action.type,
                 player_action.last_used_at,
                 player_action.player_action_id
             ))
@@ -85,6 +100,13 @@ class PlayerActionRepository(IRepository, BaseRepository):
                 (player_action.player_action_id,)
             )
 
+            self.commit()
+            return c.rowcount > 0
+    
+    def delete_all(self, player_id: int) -> bool:
+        with self._lock:
+            c = self.cursor()
+            c.execute("DELETE FROM player_actions WHERE player_id = ?", (player_id,))
             self.commit()
             return c.rowcount > 0
 

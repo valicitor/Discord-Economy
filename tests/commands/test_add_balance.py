@@ -5,80 +5,54 @@ from config import BASE_DIR
 sys.path.insert(0, os.path.abspath(BASE_DIR))
 
 import unittest
-
-from infrastructure import (
-    PlayerRepository, 
-    PlayerBalanceRepository,
-    ServerRepository, 
-    ServerSettingRepository,
-    CurrencyRepository,
-    BankRepository,
-    BankAccountRepository,
-    FactionRepository,
-    FactionMemberRepository
-)
-from application import DiscordGuild, DiscordUser
 from application import AddBalanceCommand, AddBalanceCommandRequest
-
-from application.helpers.ensure_user import ensure_guild_and_user
+from tests.helper.default_setup import DefaultSetup
 
 class TestAddBalanceCommand(unittest.TestCase):
     def setUp(self):
-        self.server_repository = ServerRepository(db_path=":memory:")
-        self.server_setting_repository = ServerSettingRepository(db_path=":memory:")
-        self.currency_repository = CurrencyRepository(db_path=":memory:")
-        self.bank_repository = BankRepository(db_path=":memory:")
-
-        self.player_repository = PlayerRepository(db_path=":memory:")
-        self.player_balance_repository = PlayerBalanceRepository(db_path=":memory:")
-        self.bank_account_repository = BankAccountRepository(db_path=":memory:")
-
-        self.faction_repository = FactionRepository(db_path=":memory:")
-        self.faction_member_repository = FactionMemberRepository(db_path=":memory:")
-
-        self.discord_guild = DiscordGuild(guild_id=12345, name="TestGuild")
-        self.discord_user = DiscordUser(user_id=67690, name="TestUser", display_avatar="avatar_url")
-
-        self.server_config, self.player_profile = ensure_guild_and_user(self.discord_guild, self.discord_user)
+        self.defaultSetup = DefaultSetup()
+        self.defaultSetup.setUp()
 
     def tearDown(self):
-        # Remove test user from the database
-        self.faction_member_repository.delete_by_player_id(self.player_profile.player.player_id)
-        self.faction_repository.delete_all(self.server_config.server.server_id)
+        self.defaultSetup.tearDown()
 
-        self.bank_account_repository.delete_all(self.player_profile.player.player_id)
-        self.player_balance_repository.delete_all(self.player_profile.player.player_id)
-        self.player_repository.delete(self.player_profile.player)
-
-        self.bank_repository.delete_all(self.server_config.server.server_id)
-        self.currency_repository.delete_all(self.server_config.server.server_id)
-        self.server_setting_repository.delete_all(self.server_config.server.server_id)
-        self.server_repository.delete(self.server_config.server)
-
-    def test_add_balance(self):
+    def test_add_balance_cash(self):
         # Arrange
         amount_to_add = 50
+        player = self.defaultSetup.player_profile1
+        initial_balance = player.balances[0].balance
 
-        cash_request = AddBalanceCommandRequest(
-            guild=self.discord_guild,
-            user=self.discord_user,
+        request = AddBalanceCommandRequest(
+            guild=self.defaultSetup.discord_guild,
+            user=self.defaultSetup.discord_user1,
             account_type="Cash",
             amount=amount_to_add
         )
-        bank_request = AddBalanceCommandRequest(
-            guild=self.discord_guild,
-            user=self.discord_user,
+
+        # Act
+        response = AddBalanceCommand(request).execute()
+
+        # Assert
+        self.assertEqual(response.player.balances[0].balance, initial_balance + amount_to_add)
+
+    def test_add_balance_bank(self):
+        # Arrange
+        amount_to_add = 50
+        player = self.defaultSetup.player_profile1
+        initial_bank_balance = player.bank_accounts[0].balance
+
+        request = AddBalanceCommandRequest(
+            guild=self.defaultSetup.discord_guild,
+            user=self.defaultSetup.discord_user1,
             account_type="Bank",
             amount=amount_to_add
         )
 
         # Act
-        cash_response = AddBalanceCommand(cash_request).execute()
-        bank_response = AddBalanceCommand(bank_request).execute()
+        response = AddBalanceCommand(request).execute()
 
         # Assert
-        self.assertEqual(cash_response.player.balances[0].balance, amount_to_add)
-        self.assertEqual(bank_response.player.bank_accounts[0].balance, amount_to_add)
+        self.assertEqual(response.player.bank_accounts[0].balance, initial_bank_balance + amount_to_add)
 
 if __name__ == "__main__":
     unittest.main()

@@ -30,6 +30,9 @@ class WithdrawCommand:
         return
 
     def execute(self) -> WithdrawCommandResponse:
+        if self.request.amount is None or self.request.amount <= 0:
+            raise ValueError("Withdrawal amount must be greater than zero.")
+
         server_config, player_profile = ensure_guild_and_user(self.request.guild, self.request.user)
 
         _, default_currency = server_config.server_settings.get_by_key("default_currency_id")

@@ -1,6 +1,7 @@
 from domain import (
     Player, 
     PlayerBalance,
+    PlayerAction,
     BankAccount
 )
 from application import BaseCollection
@@ -26,6 +27,16 @@ class PlayerBankAccountsCollection(BaseCollection):
     def total_bank_balance(self) -> int:
         return sum(bank_account.balance for bank_account in self._items)
 
+class PlayerActionsCollection(BaseCollection):
+    def __init__(self, items: list[PlayerAction]):
+        super().__init__(items)
+
+    def get_by_action_type(self, action_type: str) -> tuple[int, PlayerAction|None]:
+        return next(((idx, obj) for idx, obj in enumerate(self._items) if obj.type == action_type), (None, None))
+    
+    def total_actions(self) -> int:
+        return len(self._items)
+
 @dataclass
 class PlayerFaction:
     faction_id: int|None
@@ -39,3 +50,4 @@ class PlayerProfile:
     faction: PlayerFaction|None
     balances: PlayerBalancesCollection
     bank_accounts: PlayerBankAccountsCollection
+    actions: PlayerActionsCollection

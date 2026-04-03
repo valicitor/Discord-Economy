@@ -5,13 +5,13 @@ class PlayerAction:
 
         self.player_action_id: int|None = kwargs.get('player_action_id')
         self.player_id: int|None = kwargs.get('player_id')
-        self.action_id: int|None = kwargs.get('action_id')
+        self.type: int|None = kwargs.get('type')
         self.last_used_at: str|None = kwargs.get('last_used_at')
 
     def to_dict(self):
         return {
             'player_action_id': self.player_action_id,
             'player_id': self.player_id,
-            'action_id': self.action_id,
+            'type': self.type,
             'last_used_at': self.last_used_at
         }

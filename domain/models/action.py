@@ -5,6 +5,7 @@ class Action:
         self.action_id: int|None = kwargs.get('action_id')
         self.business_id: int|None = kwargs.get('business_id')
         self.name: str|None = kwargs.get('name')
+        self.type: str|None = kwargs.get('type', 'generic')  # e.g., "work", "crime", "gamble"
         self.cooldown_seconds: int = kwargs.get('cooldown_seconds', 86400)
         self.base_reward: int = kwargs.get('base_reward', 0)
         self.success_rate: float = kwargs.get('success_rate', 1.0)
@@ -18,6 +19,7 @@ class Action:
             'action_id': self.action_id,
             'business_id': self.business_id,
             'name': self.name,
+            'type': self.type,
             'cooldown_seconds': self.cooldown_seconds,
             'base_reward': self.base_reward,
             'success_rate': self.success_rate,
