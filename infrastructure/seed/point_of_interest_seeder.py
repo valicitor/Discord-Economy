@@ -3,16 +3,27 @@ import os
 from config import BASE_DIR
 
 from domain import PointOfInterest
+from infrastructure import PointOfInterestRepository
 
 
-def SeedPointOfInterestsIfEmpty(repo, seed_file=os.path.join(BASE_DIR, "infrastructure", "seed", "data", "point_of_interest_seed.json")):
-    existing = repo.get_all()
-    if existing:
-        return  # already seeded
+def SeedPointOfInterestsIfEmpty(seed_file=None) -> bool:
+    if seed_file is None:
+        seed_file = os.path.join(BASE_DIR, "infrastructure", "seed", "data", "point_of_interest_seed.json")
 
     with open(seed_file, "r") as f:
         data = json.load(f)
 
-    for poi_data in data["data"]:
+    poi_data = data["data"]
+    
+    existing = PointOfInterestRepository().get_all()
+    if existing:
+        return False
+
+    has_failures = False
+    for poi_data in poi_data:
         poi = PointOfInterest(data=poi_data)
-        repo.add(poi)
+        (success, _) = PointOfInterestRepository().add(poi)
+        if not success:
+            has_failures = True
+
+    return has_failures

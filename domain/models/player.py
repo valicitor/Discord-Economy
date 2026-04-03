@@ -6,6 +6,7 @@ class Player:
         self.discord_id: int|None = kwargs.get('discord_id')
         self.discord_guild_id: int|None = kwargs.get('discord_guild_id')
         self.server_id: int|None = kwargs.get('server_id')
+        self.rank: int|None = kwargs.get('rank', None)
         self.username: str|None = kwargs.get('username')
         self.avatar: str|None = kwargs.get('avatar')
         self.created_at: str|None = kwargs.get('created_at')
@@ -16,6 +17,7 @@ class Player:
             'discord_id': self.discord_id,
             'discord_guild_id': self.discord_guild_id,
             'server_id': self.server_id,
+            'rank': self.rank,
             'username': self.username,
             'avatar': self.avatar,
             'created_at': self.created_at

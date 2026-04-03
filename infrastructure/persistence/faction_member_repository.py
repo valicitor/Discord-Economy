@@ -6,13 +6,11 @@ from typing import List, Optional
 
 class FactionMemberRepository(IRepository, BaseRepository):
     def __init__(self, seeder=None, db_path: str = None):
-        super().__init__(db_path=db_path or "dynamic_resources.db")
-        if seeder: 
-            seeder(self)
+        super().__init__(seeder=seeder, db_path=db_path or "repository.db")
 
     def init_database(self):
         with self._lock:
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 CREATE TABLE IF NOT EXISTS faction_members (
                     member_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,15 +24,14 @@ class FactionMemberRepository(IRepository, BaseRepository):
             """)
             c.execute("CREATE INDEX IF NOT EXISTS idx_faction_members_faction_id ON faction_members(faction_id)")
             c.execute("CREATE INDEX IF NOT EXISTS idx_faction_members_player_id ON faction_members(player_id)")
-            self.conn.execute("PRAGMA journal_mode=WAL;")
-            self.conn.commit()
+            self.execute("PRAGMA journal_mode=WAL;")
+            self.commit()
     
     # ---------- Queries ----------
 
     def get_by_id(self, member_id: int) -> Optional[FactionMember]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT * FROM faction_members WHERE member_id = ?", (member_id,)
             )
@@ -43,16 +40,14 @@ class FactionMemberRepository(IRepository, BaseRepository):
         
     def get_by_player_id(self, player_id: int) -> Optional[FactionMember]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("SELECT * FROM faction_members WHERE player_id = ?", (player_id,))
             row = c.fetchone()
             return FactionMember(data=dict(row)) if row else None
 
     def get_all(self, faction_id: int = None) -> List[FactionMember]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             if faction_id is not None:
                 c.execute("SELECT * FROM faction_members WHERE faction_id = ?", (faction_id,))
             else:
@@ -63,8 +58,7 @@ class FactionMemberRepository(IRepository, BaseRepository):
 
     def add(self, faction_member: FactionMember) -> tuple[bool, int]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 INSERT INTO faction_members (
                     faction_id, player_id, role
@@ -77,13 +71,12 @@ class FactionMemberRepository(IRepository, BaseRepository):
                 faction_member.role
             ))
 
-            self.conn.commit()
+            self.commit()
             return (c.rowcount > 0, c.lastrowid)
 
     def update(self, faction_member: FactionMember) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 UPDATE faction_members
                 SET faction_id = ?, player_id = ?, role = ?
@@ -95,37 +88,45 @@ class FactionMemberRepository(IRepository, BaseRepository):
                 faction_member.member_id
             ))
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def delete(self, faction_member: FactionMember) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "DELETE FROM faction_members WHERE member_id = ?",
                 (faction_member.member_id,)
             )
 
-            self.conn.commit()
+            self.commit()
+            return c.rowcount > 0
+    
+    def delete_by_player_id(self, player_id: int) -> bool:
+        with self._lock:
+            c = self.cursor()
+            c.execute(
+                "DELETE FROM faction_members WHERE player_id = ?",
+                (player_id,)
+            )
+
+            self.commit()
             return c.rowcount > 0
     
     def delete_all(self, faction_id: int) -> int:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "DELETE FROM faction_members WHERE faction_id = ?",
                 (faction_id,)
             )
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount
 
     def exists(self, member_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT 1 FROM faction_members WHERE member_id = ?", (member_id,)
             )
@@ -133,8 +134,7 @@ class FactionMemberRepository(IRepository, BaseRepository):
 
     def exists_by_player_id(self, player_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT 1 FROM faction_members WHERE player_id = ?", (player_id,)
             )

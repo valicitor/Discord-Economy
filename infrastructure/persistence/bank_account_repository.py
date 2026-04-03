@@ -6,13 +6,11 @@ from typing import List, Optional
 
 class BankAccountRepository(IRepository, BaseRepository):
     def __init__(self, seeder=None, db_path: str = None):
-        super().__init__(db_path=db_path or "dynamic_resources.db")
-        if seeder: 
-            seeder(self)
+        super().__init__(seeder=seeder, db_path=db_path or "repository.db")
 
     def init_database(self):
         with self._lock:
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 CREATE TABLE IF NOT EXISTS bank_accounts (
                     account_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,15 +22,14 @@ class BankAccountRepository(IRepository, BaseRepository):
                     FOREIGN KEY(player_id) REFERENCES players(player_id)
                 )
             """)
-            self.conn.execute("PRAGMA journal_mode=WAL;")
-            self.conn.commit()
+            self.execute("PRAGMA journal_mode=WAL;")
+            self.commit()
 
     # ---------- Queries ----------
 
     def get_by_id(self, account_id: int) -> Optional[BankAccount]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT * FROM bank_accounts WHERE account_id = ?", (account_id,)
             )
@@ -41,8 +38,7 @@ class BankAccountRepository(IRepository, BaseRepository):
 
     def get_all(self, player_id: int = None) -> List[BankAccount]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             if player_id is not None:
                 c.execute("SELECT * FROM bank_accounts WHERE player_id = ?", (player_id,))
             else:
@@ -53,8 +49,7 @@ class BankAccountRepository(IRepository, BaseRepository):
 
     def add(self, bank_account: BankAccount) -> tuple[bool, int]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 INSERT INTO bank_accounts (
                     bank_id, player_id, balance, created_at
@@ -67,13 +62,12 @@ class BankAccountRepository(IRepository, BaseRepository):
                 bank_account.created_at
             ))
 
-            self.conn.commit()
+            self.commit()
             return (c.rowcount > 0, c.lastrowid)
 
     def update(self, bank_account: BankAccount) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 UPDATE bank_accounts
                 SET bank_id = ?, player_id = ?, balance = ?, created_at = ?
@@ -86,33 +80,30 @@ class BankAccountRepository(IRepository, BaseRepository):
                 bank_account.account_id
             ))
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def delete(self, bank_account: BankAccount) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "DELETE FROM bank_accounts WHERE account_id = ?",
                 (bank_account.account_id,)
             )
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
     
     def delete_all(self, player_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("DELETE FROM bank_accounts WHERE player_id = ?", (player_id,))
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def exists(self, account_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT 1 FROM bank_accounts WHERE account_id = ?",
                 (account_id,)

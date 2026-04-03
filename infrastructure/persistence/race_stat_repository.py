@@ -6,13 +6,11 @@ from typing import List, Optional
 
 class RaceStatRepository(IRepository, BaseRepository):
     def __init__(self, seeder=None, db_path: str = None):
-        super().__init__(db_path=db_path or "static_resources.db")
-        if seeder: 
-            seeder(self)
+        super().__init__(seeder=seeder, db_path=db_path or "repository.db")
 
     def init_database(self):
         with self._lock:
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 CREATE TABLE IF NOT EXISTS race_stats (
                     race_stat_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -22,25 +20,32 @@ class RaceStatRepository(IRepository, BaseRepository):
                     FOREIGN KEY(race_id) REFERENCES races(race_id)
                 )
             """)
-            self.conn.execute("PRAGMA journal_mode=WAL;")
-            self.conn.commit()
+            self.execute("PRAGMA journal_mode=WAL;")
+            self.commit()
 
     # ---------- Queries ----------
 
     def get_by_id(self, race_stat_id: int) -> Optional[RaceStat]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT * FROM race_stats WHERE race_stat_id = ?", (race_stat_id,)
+            )
+            row = c.fetchone()
+            return RaceStat(data=dict(row)) if row else None
+    
+    def get_by_key(self, stat_key: str, race_id: int) -> Optional[RaceStat]:
+        with self._lock:
+            c = self.cursor()
+            c.execute(
+                "SELECT * FROM race_stats WHERE stat_key = ? AND race_id = ?", (stat_key, race_id)
             )
             row = c.fetchone()
             return RaceStat(data=dict(row)) if row else None
 
     def get_all(self) -> List[RaceStat]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("SELECT * FROM race_stats")
             return [RaceStat(data=dict(row)) for row in c.fetchall()]
 
@@ -48,8 +53,7 @@ class RaceStatRepository(IRepository, BaseRepository):
 
     def add(self, race_stat: RaceStat) -> tuple[bool, int]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 INSERT INTO race_stats (
                     race_id, stat_key, stat_value
@@ -61,13 +65,12 @@ class RaceStatRepository(IRepository, BaseRepository):
                 race_stat.stat_value
             ))
 
-            self.conn.commit()
+            self.commit()
             return (c.rowcount > 0, c.lastrowid)
 
     def update(self, race_stat: RaceStat) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 UPDATE race_stats
                 SET race_id = ?, stat_key = ?, stat_value = ?
@@ -79,33 +82,30 @@ class RaceStatRepository(IRepository, BaseRepository):
                 race_stat.race_stat_id
             ))
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def delete(self, race_stat: RaceStat) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "DELETE FROM race_stats WHERE race_stat_id = ?",
                 (race_stat.race_stat_id,)
             )
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
     
     def delete_all(self) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("DELETE FROM race_stats")
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def exists(self, race_stat_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT 1 FROM race_stats WHERE race_stat_id = ?", (race_stat_id,)
             )

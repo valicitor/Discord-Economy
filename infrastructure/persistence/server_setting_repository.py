@@ -6,13 +6,11 @@ from typing import List, Optional
 
 class ServerSettingRepository(IRepository, BaseRepository):
     def __init__(self, seeder=None, db_path: str = None):
-        super().__init__(db_path=db_path or "dynamic_resources.db")
-        if seeder: 
-            seeder(self)
+        super().__init__(seeder=seeder, db_path=db_path or "repository.db")
 
     def init_database(self):
         with self._lock:
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 CREATE TABLE IF NOT EXISTS server_settings (
                     setting_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -22,15 +20,14 @@ class ServerSettingRepository(IRepository, BaseRepository):
                     FOREIGN KEY(server_id) REFERENCES servers(server_id)
                 )
             """)
-            self.conn.execute("PRAGMA journal_mode=WAL;")
-            self.conn.commit()
+            self.execute("PRAGMA journal_mode=WAL;")
+            self.commit()
 
     # ---------- Queries ----------
 
     def get_by_id(self, setting_id: int) -> Optional[ServerSetting]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT * FROM server_settings WHERE setting_id = ?", (setting_id,)
             )
@@ -39,24 +36,30 @@ class ServerSettingRepository(IRepository, BaseRepository):
 
     def get_all(self) -> List[ServerSetting]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("SELECT * FROM server_settings")
             return [ServerSetting(data=dict(row)) for row in c.fetchall()]
         
     def get_all_by_server_id(self, server_id: int) -> List[ServerSetting]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("SELECT * FROM server_settings WHERE server_id = ?", (server_id,))
             return [ServerSetting(data=dict(row)) for row in c.fetchall()]
+    
+    def get_by_key(self, key: str, server_id: int) -> Optional[ServerSetting]:
+        with self._lock:
+            c = self.cursor()
+            c.execute(
+                "SELECT * FROM server_settings WHERE key = ? AND server_id = ?", (key, server_id)
+            )
+            row = c.fetchone()
+            return ServerSetting(data=dict(row)) if row else None
 
     # ---------- Mutations ----------
 
     def add(self, server_setting: ServerSetting) -> tuple[bool, int]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 INSERT INTO server_settings (
                     server_id, key, value
@@ -68,13 +71,12 @@ class ServerSettingRepository(IRepository, BaseRepository):
                 server_setting.value
             ))
 
-            self.conn.commit()
+            self.commit()
             return (c.rowcount > 0, c.lastrowid)
 
     def update(self, server_setting: ServerSetting) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 UPDATE server_settings
                 SET server_id = ?, key = ?, value = ?
@@ -86,33 +88,30 @@ class ServerSettingRepository(IRepository, BaseRepository):
                 server_setting.setting_id
             ))
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def delete(self, server_setting: ServerSetting) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "DELETE FROM server_settings WHERE setting_id = ?",
                 (server_setting.setting_id,)
             )
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
     
     def delete_all(self, server_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("DELETE FROM server_settings WHERE server_id = ?", (server_id,))
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def exists(self, setting_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT 1 FROM server_settings WHERE setting_id = ?", (setting_id,)
             )

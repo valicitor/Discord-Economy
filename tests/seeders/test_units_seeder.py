@@ -5,12 +5,12 @@ from config import BASE_DIR
 sys.path.insert(0, os.path.abspath(BASE_DIR))
 
 import unittest
-from infrastructure import UnitRepository, UnitStatRepository, SeedUnitsAndUnitStatsIfEmpty
+from infrastructure import UnitRepository, UnitStatRepository, SeedUnitsIfEmpty, SeedUnitStatsIfEmpty
 
 class TestUnitsSeeder(unittest.TestCase):
     def setUp(self):
-        self.unit_repository = UnitRepository(db_path=":memory:")  # Use in-memory database for testing
-        self.unit_stat_repository = UnitStatRepository(db_path=":memory:")  # Use in-memory database for testing
+        self.unit_repository = UnitRepository(seeder=SeedUnitsIfEmpty, db_path=":memory:")  # Use in-memory database for testing
+        self.unit_stat_repository = UnitStatRepository(seeder=SeedUnitStatsIfEmpty, db_path=":memory:")  # Use in-memory database for testing
 
     def tearDown(self):
         # Remove test database
@@ -19,7 +19,6 @@ class TestUnitsSeeder(unittest.TestCase):
 
     def test_seed_units_and_unit_stats_if_empty(self):
         # Act
-        SeedUnitsAndUnitStatsIfEmpty(self.unit_repository, self.unit_stat_repository)
 
         # Assert
         units = self.unit_repository.get_all()

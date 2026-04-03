@@ -42,7 +42,7 @@ from .persistence.faction_member_repository import FactionMemberRepository
 
 # --- Seeders ---
 from .seed.point_of_interest_seeder import SeedPointOfInterestsIfEmpty
-from .seed.races_seeder import SeedRacesAndRaceStatsIfEmpty
-from .seed.equipments_seeder import SeedEquipmentsAndEquipmentStatsIfEmpty
-from .seed.vehicles_seeder import SeedVehiclesAndVehicleStatsIfEmpty
-from .seed.units_seeder import SeedUnitsAndUnitStatsIfEmpty
+from .seed.races_seeder import SeedRacesIfEmpty, SeedRaceStatsIfEmpty
+from .seed.equipments_seeder import SeedEquipmentsIfEmpty, SeedEquipmentStatsIfEmpty
+from .seed.vehicles_seeder import SeedVehiclesIfEmpty, SeedVehicleStatsIfEmpty
+from .seed.units_seeder import SeedUnitsIfEmpty, SeedUnitStatsIfEmpty

@@ -5,7 +5,9 @@ from domain import (
     ServerSetting,
     Currency, 
     Bank,
-    BankAccount
+    BankAccount,
+    Faction,
+    FactionMember
 )
 from domain import RecordNotFoundException, CreateFailedException
 from infrastructure import (
@@ -15,12 +17,31 @@ from infrastructure import (
     ServerSettingRepository,
     CurrencyRepository,
     BankRepository,
-    BankAccountRepository
+    BankAccountRepository,
+    FactionRepository,
+    FactionMemberRepository
 )
-from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
+from application import (
+    DiscordGuild, 
+    DiscordUser, 
+    ServerConfig, 
+    ServerSettingsCollection, 
+    PlayerProfile, 
+    PlayerFaction, 
+    PlayerBalancesCollection, 
+    PlayerBankAccountsCollection
+)
 
 def ensure_guild(discord_guild: DiscordGuild) -> ServerConfig:
     """Ensure a guild exists in the database, creating a config if necessary."""
+
+    # Ensure necessary repositories are initialized
+    ServerRepository()
+    CurrencyRepository()
+    FactionRepository()
+    BankRepository()
+    ServerSettingRepository()
+
     if not ServerRepository().exists_by_guild_id(discord_guild.guild_id):
         new_server = Server(guild_id=discord_guild.guild_id, name=discord_guild.name)
         (server_success, server_id) = ServerRepository().add(new_server)
@@ -31,8 +52,13 @@ def ensure_guild(discord_guild: DiscordGuild) -> ServerConfig:
         (currency_success, currency_id) = CurrencyRepository().add(new_currency)
         if not currency_success:
             raise CreateFailedException(f"Failed to create currency for guild ID {discord_guild.guild_id}.")
+        
+        new_faction = Faction(server_id=server_id, name="Unaligned", description="A neutral faction for locations and players.", color="#FFFFFF")
+        (faction_success, faction_id) = FactionRepository().add(new_faction)
+        if not faction_success:
+            raise CreateFailedException(f"Failed to create default faction for guild ID {discord_guild.guild_id}.")
 
-        new_bank = Bank(server_id=server_id, name="Bank", interest_rate=0.01, max_accounts=None)
+        new_bank = Bank(server_id=server_id, poi_id=None, name="Bank", interest_rate=0.01, max_accounts=None, range=None)
         (bank_success, bank_id) = BankRepository().add(new_bank)
         if not bank_success:
             raise CreateFailedException(f"Failed to create bank for guild ID {discord_guild.guild_id}.")
@@ -46,6 +72,11 @@ def ensure_guild(discord_guild: DiscordGuild) -> ServerConfig:
         (server_setting_success, setting_id) = ServerSettingRepository().add(new_server_setting)
         if not server_setting_success:
             raise CreateFailedException(f"Failed to create default bank setting for guild ID {discord_guild.guild_id}.")
+        
+        new_server_setting = ServerSetting(server_id=server_id, key="default_faction_id", value=str(faction_id))
+        (server_setting_success, setting_id) = ServerSettingRepository().add(new_server_setting)
+        if not server_setting_success:
+            raise CreateFailedException(f"Failed to create default faction setting for guild ID {discord_guild.guild_id}.")
     
     server = ServerRepository().get_by_guild_id(discord_guild.guild_id)
     if server is None:
@@ -53,36 +84,68 @@ def ensure_guild(discord_guild: DiscordGuild) -> ServerConfig:
     
     server_settings = ServerSettingRepository().get_all_by_server_id(server.server_id)
     
-    return ServerConfig(server, server_settings)
+    return ServerConfig(
+        server, 
+        ServerSettingsCollection(server_settings)
+    )
 
 def ensure_user(server_config: ServerConfig, discord_user: DiscordUser) -> PlayerProfile:
     """Ensure a user exists in the database, creating an account if necessary."""
+
+    # Ensure necessary repositories are initialized
+    PlayerRepository()
+    PlayerBalanceRepository()
+    BankAccountRepository()
+    FactionMemberRepository()
+
     if not PlayerRepository().exists_by_discord_id(discord_user.user_id, server_config.server.guild_id):
         new_player = Player(discord_id=discord_user.user_id, discord_guild_id=server_config.server.guild_id, server_id=server_config.server.server_id, username=discord_user.name, avatar=discord_user.display_avatar)
         (player_success, player_id) = PlayerRepository().add(new_player)
         if not player_success:
             raise CreateFailedException(f"Failed to create player for user ID {discord_user.user_id} in guild ID {server_config.server.guild_id}.")
 
-        default_currency_id = int(next((obj.value for _, obj in enumerate(server_config.server_settings) if obj.key == "default_currency_id"), None))
-        new_balance = PlayerBalance(player_id=player_id, currency_id=default_currency_id, amount=0)
-        (balance_success, balance_id) = PlayerBalanceRepository().add(new_balance)
+        _, default_currency_id = server_config.server_settings.get_by_key("default_currency_id")
+        new_balance = PlayerBalance(player_id=player_id, currency_id=default_currency_id.value, amount=0)
+        balance_success, _ = PlayerBalanceRepository().add(new_balance)
         if not balance_success:
             raise CreateFailedException(f"Failed to create balance for player ID {player_id}.")
         
-        default_bank_id = int(next((obj.value for _, obj in enumerate(server_config.server_settings) if obj.key == "default_bank_id"), None))
-        new_bank_account = BankAccount(bank_id=default_bank_id, player_id=player_id, balance=0)
-        (bank_account_success, account_id) = BankAccountRepository().add(new_bank_account)
+        _, default_bank_id = server_config.server_settings.get_by_key("default_bank_id")
+        new_bank_account = BankAccount(bank_id=default_bank_id.value, player_id=player_id, balance=0)
+        bank_account_success, _ = BankAccountRepository().add(new_bank_account)
         if not bank_account_success:
             raise CreateFailedException(f"Failed to create bank account for player ID {player_id}.")
     
+        _, default_faction_id = server_config.server_settings.get_by_key("default_faction_id")
+        new_faction_member = FactionMember(faction_id=default_faction_id.value, player_id=player_id)
+        faction_member_success, _ = FactionMemberRepository().add(new_faction_member)
+        if not faction_member_success:
+            raise CreateFailedException(f"Failed to create faction membership for player ID {player_id}.")
+
     player = PlayerRepository().get_by_discord_id(discord_user.user_id)
     if player is None:
         raise RecordNotFoundException(f"User with ID {discord_user.user_id} not found in guild {server_config.server.guild_id}.")
-    
+
+    return get_player_profile(player)
+
+def get_player_profile(player: Player) -> PlayerProfile:
+
+    faction_member = FactionMemberRepository().get_by_player_id(player.player_id)
+    faction = FactionRepository().get_by_id(faction_member.faction_id) if faction_member else None
     balances = PlayerBalanceRepository().get_all(player_id=player.player_id)
     bank_accounts = BankAccountRepository().get_all(player_id=player.player_id)
 
-    return PlayerProfile(player, balances, bank_accounts)
+    return PlayerProfile(
+        player, 
+        PlayerFaction(
+            faction.faction_id, 
+            faction.name, 
+            faction.description, 
+            faction.color
+        ) if faction else None, 
+        PlayerBalancesCollection(balances), 
+        PlayerBankAccountsCollection(bank_accounts)
+    )
 
 def ensure_users(server_config: ServerConfig, discord_users: list[DiscordUser] = []) -> list[PlayerProfile]:
     if len(discord_users) == 0:

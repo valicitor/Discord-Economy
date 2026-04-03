@@ -1,6 +1,6 @@
 from attr import dataclass
 
-from infrastructure import  PlayerBalanceRepository, BankAccountRepository
+from infrastructure import  PlayerBalanceRepository, BankAccountRepository, ServerSettingRepository
 from application.helpers.ensure_user import ensure_guild_and_user
 
 from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
@@ -32,11 +32,11 @@ class WithdrawCommand:
     def execute(self) -> WithdrawCommandResponse:
         server_config, player_profile = ensure_guild_and_user(self.request.guild, self.request.user)
 
-        default_currency_id = next((obj.value for obj in server_config.server_settings if obj.key == "default_currency_id"), None)
-        default_bank_id = next((obj.value for obj in server_config.server_settings if obj.key == "default_bank_id"), None)
+        _, default_currency = server_config.server_settings.get_by_key("default_currency_id")
+        _, default_bank = server_config.server_settings.get_by_key("default_bank_id")
 
-        i, balance = next(((idx, obj) for idx, obj in enumerate(player_profile.balances) if obj.currency_id == int(default_currency_id)), (None, None))
-        j, bank_account = next(((idx, obj) for idx, obj in enumerate(player_profile.bank_accounts) if obj.bank_id == int(default_bank_id)), (None, None))
+        i, balance = player_profile.balances.get_by_currency_id(int(default_currency.value))
+        j, bank_account = player_profile.bank_accounts.get_by_bank_id(int(default_bank.value))
         
         bank_account.balance = int(bank_account.balance) - self.request.amount
         if bank_account.balance < 0:

@@ -6,13 +6,11 @@ from typing import List, Optional
 
 class InventoryInstanceRepository(IRepository, BaseRepository):
     def __init__(self, seeder=None, db_path: str = None):
-        super().__init__(db_path=db_path or "dynamic_resources.db")
-        if seeder: 
-            seeder(self)
+        super().__init__(seeder=seeder, db_path=db_path or "repository.db")
 
     def init_database(self):
         with self._lock:
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 CREATE TABLE IF NOT EXISTS inventory_instances (
                     instance_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -23,15 +21,14 @@ class InventoryInstanceRepository(IRepository, BaseRepository):
                     FOREIGN KEY(item_id) REFERENCES items(item_id)
                 )
             """)
-            self.conn.execute("PRAGMA journal_mode=WAL;")
-            self.conn.commit()
+            self.execute("PRAGMA journal_mode=WAL;")
+            self.commit()
 
     # ---------- Queries ----------
 
     def get_by_id(self, instance_id: int) -> Optional[InventoryInstance]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT * FROM inventory_instances WHERE instance_id = ?", (instance_id,)
             )
@@ -40,8 +37,7 @@ class InventoryInstanceRepository(IRepository, BaseRepository):
 
     def get_all(self) -> List[InventoryInstance]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("SELECT * FROM inventory_instances")
             return [InventoryInstance(data=dict(row)) for row in c.fetchall()]
 
@@ -49,8 +45,7 @@ class InventoryInstanceRepository(IRepository, BaseRepository):
 
     def add(self, inventory_instance: InventoryInstance) -> tuple[bool, int]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 INSERT INTO inventory_instances (
                     player_id, item_id, metadata
@@ -62,13 +57,12 @@ class InventoryInstanceRepository(IRepository, BaseRepository):
                 str(inventory_instance.metadata)
             ))
 
-            self.conn.commit()
+            self.commit()
             return (c.rowcount > 0, c.lastrowid)
 
     def update(self, inventory_instance: InventoryInstance) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 UPDATE inventory_instances
                 SET player_id = ?, item_id = ?, metadata = ?
@@ -80,25 +74,23 @@ class InventoryInstanceRepository(IRepository, BaseRepository):
                 inventory_instance.instance_id
             ))
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def delete(self, inventory_instance: InventoryInstance) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "DELETE FROM inventory_instances WHERE instance_id = ?",
                 (inventory_instance.instance_id,)
             )
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def exists(self, instance_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT 1 FROM inventory_instances WHERE instance_id = ?", (instance_id,)
             )

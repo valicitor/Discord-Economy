@@ -1,47 +1,59 @@
 import json
 import os
 from config import BASE_DIR
-from domain import Unit, UnitStat
 
-def SeedUnitsAndUnitStatsIfEmpty(unit_repo, stat_repo, seed_file=os.path.join(BASE_DIR, "infrastructure", "seed", "data", "units_seed.json")):
+from domain import Unit, UnitStat
+from infrastructure import UnitRepository, UnitStatRepository
+
+def SeedUnitsIfEmpty(seed_file=None) -> bool:
+    if not seed_file:
+        seed_file = os.path.join(BASE_DIR, "infrastructure", "seed", "data", "units_seed.json")
+
     with open(seed_file, "r") as f:
         data = json.load(f)
 
-    name_to_id = _SeedUnitsIfEmpty(unit_repo, data["units"])
-    _SeedUnitStatsIfEmpty(stat_repo, data["unit_stats"], name_to_id)
+    unit_data = data["units"]
 
-def _SeedUnitsIfEmpty(repo, unit_data):
-    existing = repo.get_all()
+    existing = UnitRepository().get_all()
     if existing:
-        return  # already seeded
+        return False
 
-    name_to_id = {}
-    for r in unit_data["data"]:
-        unit = Unit(data=r)
-        success, new_id = repo.add(unit)
-        if success:
-            name_to_id[r["name"]] = new_id
+    has_failures = False
+    for u in unit_data["data"]:
+        unit = Unit(data=u)
+        success, _ = UnitRepository().add(unit)
+        if not success:
+            has_failures = True
 
-    return name_to_id
+    return has_failures
 
-def _SeedUnitStatsIfEmpty(repo, stat_data, name_to_id):
-    existing = repo.get_all()
+def SeedUnitStatsIfEmpty(seed_file=None) -> bool:
+    if not seed_file:
+        seed_file = os.path.join(BASE_DIR, "infrastructure", "seed", "data", "units_seed.json")
+
+    with open(seed_file, "r") as f:
+        data = json.load(f)
+
+    unit_stat_data = data["unit_stats"]
+
+    existing = UnitStatRepository().get_all()
     if existing:
-        return  # already seeded
+        return False
 
-    for stat in stat_data["data"]:
-        unit_id = name_to_id.get(stat["unit_name"])
-        if not unit_id:
+    has_failures = False
+    for stat in unit_stat_data["data"]:
+        unit = UnitRepository().get_by_name(stat["unit_name"])
+        if not unit:
             continue  # or raise error
 
-        key = (unit_id, stat["stat_key"])
-        if key in existing:
-            continue
-
         unit_stat = UnitStat(
-            unit_id=unit_id,
+            unit_id=unit.unit_id,
             stat_key=stat["stat_key"],
             stat_value=stat["stat_value"]
         )
 
-        repo.add(unit_stat)
+        success, _ = UnitStatRepository().add(unit_stat)
+        if not success:
+            has_failures = True
+
+    return has_failures
