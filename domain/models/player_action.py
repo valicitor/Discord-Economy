@@ -5,7 +5,7 @@ class PlayerAction:
 
         self.player_action_id: int|None = kwargs.get('player_action_id')
         self.player_id: int|None = kwargs.get('player_id')
-        self.type: int|None = kwargs.get('type')
+        self.type: str|None = kwargs.get('type')
         self.last_used_at: str|None = kwargs.get('last_used_at')
 
     def to_dict(self):

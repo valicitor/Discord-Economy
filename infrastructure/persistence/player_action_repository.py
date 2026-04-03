@@ -17,7 +17,7 @@ class PlayerActionRepository(IRepository, BaseRepository):
                     player_id INTEGER NOT NULL,
                     type TEXT NOT NULL,
                     last_used_at DATETIME,
-                    FOREIGN KEY(player_id) REFERENCES players(player_id)
+                    FOREIGN KEY(player_id) REFERENCES players(player_id),
                     UNIQUE(player_id, type)
                 )
             """)
