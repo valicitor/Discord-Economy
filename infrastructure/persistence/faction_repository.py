@@ -21,7 +21,8 @@ class FactionRepository(IRepository, BaseRepository):
                     color TEXT,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY(server_id) REFERENCES servers(server_id),
-                    FOREIGN KEY(owner_id) REFERENCES players(player_id)
+                    FOREIGN KEY(owner_id) REFERENCES players(player_id),
+                    UNIQUE(name, server_id)
                 )
             """)
             c.execute("CREATE INDEX IF NOT EXISTS idx_factions_name ON factions(name)")

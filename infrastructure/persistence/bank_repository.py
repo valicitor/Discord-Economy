@@ -21,7 +21,8 @@ class BankRepository(IRepository, BaseRepository):
                     max_accounts INTEGER,
                     range INTEGER,
                     FOREIGN KEY(server_id) REFERENCES servers(server_id),
-                    FOREIGN KEY(poi_id) REFERENCES points_of_interest(poi_id)
+                    FOREIGN KEY(poi_id) REFERENCES points_of_interest(poi_id),
+                    UNIQUE(name, server_id)
                 )
             """)
             self.execute("PRAGMA journal_mode=WAL;")

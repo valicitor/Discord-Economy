@@ -1,0 +1,13 @@
+{
+    "version": "1.0",
+    "businesses": {
+        "data": [
+            { "name": "Default Business",       "description": "A default business",     "type": "Warehouse",   "location": "Coruscant", "range": null, "metadata": {} }
+        ]
+    },
+    "actions": {
+        "data": [
+            { "business_name": "Default Business", "name": "Default Action",       "cooldown_seconds": 86400, "base_reward": 100, "risk_rate": 0.1, "fine_amount": 50, "success_rate": 0.9, "success_message": "You completed the default action!", "failure_message": "You failed the default action." }
+        ]
+    }
+}

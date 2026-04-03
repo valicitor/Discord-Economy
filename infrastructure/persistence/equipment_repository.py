@@ -14,10 +14,13 @@ class EquipmentRepository(IRepository, BaseRepository):
             c.execute("""
                 CREATE TABLE IF NOT EXISTS equipment (
                     equipment_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT NOT NULL UNIQUE,
+                    server_id INTEGER NOT NULL,
+                    name TEXT NOT NULL,
                     description TEXT DEFAULT '',
                     slot TEXT DEFAULT '',
-                    metadata TEXT
+                    metadata TEXT,
+                    FOREIGN KEY(server_id) REFERENCES servers(server_id),
+                    UNIQUE(name, server_id)
                 )
             """)
             self.execute("PRAGMA journal_mode=WAL;")
@@ -34,19 +37,19 @@ class EquipmentRepository(IRepository, BaseRepository):
             row = c.fetchone()
             return Equipment(data=dict(row)) if row else None
     
-    def get_by_name(self, name: str) -> Optional[Equipment]:
+    def get_by_name(self, name: str, server_id: int) -> Optional[Equipment]:
         with self._lock:
             c = self.cursor()
             c.execute(
-                "SELECT * FROM equipment WHERE name = ?", (name,)
+                "SELECT * FROM equipment WHERE name = ? AND server_id = ?", (name, server_id)
             )
             row = c.fetchone()
             return Equipment(data=dict(row)) if row else None
 
-    def get_all(self) -> List[Equipment]:
+    def get_all(self, server_id: int) -> List[Equipment]:
         with self._lock:
             c = self.cursor()
-            c.execute("SELECT * FROM equipment")
+            c.execute("SELECT * FROM equipment WHERE server_id = ?", (server_id,))
             return [Equipment(data=dict(row)) for row in c.fetchall()]
 
     # ---------- Mutations ----------
@@ -56,10 +59,11 @@ class EquipmentRepository(IRepository, BaseRepository):
             c = self.cursor()
             c.execute("""
                 INSERT INTO equipment (
-                    name, description, slot, metadata
+                    server_id, name, description, slot, metadata
                 )
-                VALUES (?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?)
             """, (
+                equipment.server_id,
                 equipment.name,
                 equipment.description,
                 equipment.slot,
@@ -74,9 +78,10 @@ class EquipmentRepository(IRepository, BaseRepository):
             c = self.cursor()
             c.execute("""
                 UPDATE equipment
-                SET name = ?, description = ?, slot = ?, metadata = ?
+                SET server_id = ?, name = ?, description = ?, slot = ?, metadata = ?
                 WHERE equipment_id = ?
             """, (
+                equipment.server_id,
                 equipment.name,
                 equipment.description,
                 equipment.slot,
@@ -98,10 +103,10 @@ class EquipmentRepository(IRepository, BaseRepository):
             self.commit()
             return c.rowcount > 0
     
-    def delete_all(self) -> bool:
+    def delete_all(self, server_id: int) -> bool:
         with self._lock:
             c = self.cursor()
-            c.execute("DELETE FROM equipment")
+            c.execute("DELETE FROM equipment WHERE server_id = ?", (server_id,))
             self.commit()
             return c.rowcount > 0
 

@@ -6,24 +6,25 @@ from domain import PointOfInterest
 from infrastructure import PointOfInterestRepository
 
 
-def SeedPointOfInterestsIfEmpty(seed_file=None) -> bool:
-    if seed_file is None:
-        seed_file = os.path.join(BASE_DIR, "infrastructure", "seed", "data", "point_of_interest_seed.json")
+class PointOfInterestSeeder:
+    def __init__(self, server_id: int):
+        self.server_id = server_id
 
-    with open(seed_file, "r") as f:
-        data = json.load(f)
+    def Seed(self, seed_file: str|None = None) -> bool:
+        if seed_file is None:
+            seed_file = os.path.join(BASE_DIR, "infrastructure", "seed", "data", "point_of_interest_seed.json")
 
-    poi_data = data["data"]
-    
-    existing = PointOfInterestRepository().get_all()
-    if existing:
-        return False
+        with open(seed_file, "r") as f:
+            data = json.load(f)
 
-    has_failures = False
-    for poi_data in poi_data:
-        poi = PointOfInterest(data=poi_data)
-        (success, _) = PointOfInterestRepository().add(poi)
-        if not success:
-            has_failures = True
+        poi_data = data["data"]
 
-    return has_failures
+        has_failures = False
+        for poi_data in poi_data:
+            poi = PointOfInterest(data=poi_data)
+            poi.server_id = self.server_id
+            (success, _) = PointOfInterestRepository().add(poi)
+            if not success:
+                has_failures = True
+
+        return has_failures

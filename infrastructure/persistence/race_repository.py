@@ -14,9 +14,12 @@ class RaceRepository(IRepository, BaseRepository):
             c.execute("""
                 CREATE TABLE IF NOT EXISTS races (
                     race_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT NOT NULL UNIQUE,
+                    server_id INTEGER NOT NULL,
+                    name TEXT NOT NULL,
                     description TEXT DEFAULT '',
-                    metadata TEXT
+                    metadata TEXT,
+                    FOREIGN KEY(server_id) REFERENCES servers(server_id),
+                    UNIQUE(name, server_id)
                 )
             """)
             self.execute("PRAGMA journal_mode=WAL;")
@@ -34,19 +37,19 @@ class RaceRepository(IRepository, BaseRepository):
             return Race(data=dict(row)) if row else None
     
         
-    def get_by_name(self, name: str) -> Optional[Race]:
+    def get_by_name(self, name: str, server_id: int) -> Optional[Race]:
         with self._lock:
             c = self.cursor()
             c.execute(
-                "SELECT * FROM races WHERE name = ?", (name,)
+                "SELECT * FROM races WHERE name = ? AND server_id = ?", (name, server_id)
             )
             row = c.fetchone()
             return Race(data=dict(row)) if row else None
 
-    def get_all(self) -> List[Race]:
+    def get_all(self, server_id: int) -> List[Race]:
         with self._lock:
             c = self.cursor()
-            c.execute("SELECT * FROM races")
+            c.execute("SELECT * FROM races WHERE server_id = ?", (server_id,))
             return [Race(data=dict(row)) for row in c.fetchall()]
 
     # ---------- Mutations ----------
@@ -56,10 +59,11 @@ class RaceRepository(IRepository, BaseRepository):
             c = self.cursor()
             c.execute("""
                 INSERT INTO races (
-                    name, description, metadata
+                    server_id, name, description, metadata
                 )
-                VALUES (?, ?, ?)
+                VALUES (?, ?, ?, ?)
             """, (
+                race.server_id,
                 race.name,
                 race.description,
                 str(race.metadata)
@@ -73,9 +77,10 @@ class RaceRepository(IRepository, BaseRepository):
             c = self.cursor()
             c.execute("""
                 UPDATE races
-                SET name = ?, description = ?, metadata = ?
+                SET server_id = ?, name = ?, description = ?, metadata = ?
                 WHERE race_id = ?
             """, (
+                race.server_id,
                 race.name,
                 race.description,
                 str(race.metadata),
@@ -96,10 +101,10 @@ class RaceRepository(IRepository, BaseRepository):
             self.commit()
             return c.rowcount > 0
     
-    def delete_all(self) -> bool:
+    def delete_all(self, server_id: int) -> bool:
         with self._lock:
             c = self.cursor()
-            c.execute("DELETE FROM races")
+            c.execute("DELETE FROM races WHERE server_id = ?", (server_id,))
             self.commit()
             return c.rowcount > 0
 

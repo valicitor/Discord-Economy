@@ -32,7 +32,7 @@ class BaseRepository:
             self._initialized = True
 
             if seeder: 
-                seeder()
+                seeder.Seed()
     
     def cursor(self):
         self._ensure_connection()
