@@ -10,7 +10,7 @@ class BankRepository(IRepository, BaseRepository):
 
     def init_database(self):
         with self._lock:
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 CREATE TABLE IF NOT EXISTS banks (
                     bank_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,15 +24,14 @@ class BankRepository(IRepository, BaseRepository):
                     FOREIGN KEY(poi_id) REFERENCES points_of_interest(poi_id)
                 )
             """)
-            self.conn.execute("PRAGMA journal_mode=WAL;")
-            self.conn.commit()
+            self.execute("PRAGMA journal_mode=WAL;")
+            self.commit()
 
     # ---------- Queries ----------
 
     def get_by_id(self, bank_id: int) -> Optional[Bank]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT * FROM banks WHERE bank_id = ?", (bank_id,)
             )
@@ -41,8 +40,7 @@ class BankRepository(IRepository, BaseRepository):
     
     def get_by_name(self, name: str, server_id: int) -> Optional[Bank]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT * FROM banks WHERE name = ? AND server_id = ?", (name, server_id)
             )
@@ -51,8 +49,7 @@ class BankRepository(IRepository, BaseRepository):
 
     def get_all(self) -> List[Bank]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("SELECT * FROM banks")
             return [Bank(data=dict(row)) for row in c.fetchall()]
 
@@ -60,8 +57,7 @@ class BankRepository(IRepository, BaseRepository):
 
     def add(self, bank: Bank) -> tuple[bool, int]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 INSERT INTO banks (
                     server_id, poi_id, name, interest_rate, max_accounts, range
@@ -76,13 +72,12 @@ class BankRepository(IRepository, BaseRepository):
                 bank.range
             ))
 
-            self.conn.commit()
+            self.commit()
             return (c.rowcount > 0, c.lastrowid)
 
     def update(self, bank: Bank) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 UPDATE banks
                 SET server_id = ?, poi_id = ?, name = ?, interest_rate = ?, max_accounts = ?, range = ?
@@ -97,33 +92,30 @@ class BankRepository(IRepository, BaseRepository):
                 bank.bank_id
             ))
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def delete(self, bank: Bank) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "DELETE FROM banks WHERE bank_id = ?",
                 (bank.bank_id,)
             )
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
     
     def delete_all(self, server_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("DELETE FROM banks WHERE server_id = ?", (server_id,))
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def exists(self, bank_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT 1 FROM banks WHERE bank_id = ?",
                 (bank_id,)

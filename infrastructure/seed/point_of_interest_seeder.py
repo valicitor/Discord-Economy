@@ -6,7 +6,7 @@ from domain import PointOfInterest
 from infrastructure import PointOfInterestRepository
 
 
-def SeedPointOfInterestsIfEmpty(seed_file=None) -> False:
+def SeedPointOfInterestsIfEmpty(seed_file=None) -> bool:
     if seed_file is None:
         seed_file = os.path.join(BASE_DIR, "infrastructure", "seed", "data", "point_of_interest_seed.json")
 
@@ -17,7 +17,7 @@ def SeedPointOfInterestsIfEmpty(seed_file=None) -> False:
     
     existing = PointOfInterestRepository().get_all()
     if existing:
-        return  False
+        return False
 
     has_failures = False
     for poi_data in poi_data:

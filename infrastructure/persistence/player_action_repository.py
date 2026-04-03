@@ -10,7 +10,7 @@ class PlayerActionRepository(IRepository, BaseRepository):
 
     def init_database(self):
         with self._lock:
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 CREATE TABLE IF NOT EXISTS player_actions (
                     player_action_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,15 +21,14 @@ class PlayerActionRepository(IRepository, BaseRepository):
                     FOREIGN KEY(action_id) REFERENCES actions(action_id)
                 )
             """)
-            self.conn.execute("PRAGMA journal_mode=WAL;")
-            self.conn.commit()
+            self.execute("PRAGMA journal_mode=WAL;")
+            self.commit()
 
     # ---------- Queries ----------
 
     def get_by_id(self, player_action_id: int) -> Optional[PlayerAction]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT * FROM player_actions WHERE player_action_id = ?", (player_action_id,)
             )
@@ -38,8 +37,7 @@ class PlayerActionRepository(IRepository, BaseRepository):
 
     def get_all(self) -> List[PlayerAction]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("SELECT * FROM player_actions")
             return [PlayerAction(data=dict(row)) for row in c.fetchall()]
 
@@ -47,8 +45,7 @@ class PlayerActionRepository(IRepository, BaseRepository):
 
     def add(self, player_action: PlayerAction) -> tuple[bool, int]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 INSERT INTO player_actions (
                     player_id, action_id, last_used_at
@@ -60,13 +57,12 @@ class PlayerActionRepository(IRepository, BaseRepository):
                 player_action.last_used_at
             ))
 
-            self.conn.commit()
+            self.commit()
             return (c.rowcount > 0, c.lastrowid)
 
     def update(self, player_action: PlayerAction) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 UPDATE player_actions
                 SET player_id = ?, action_id = ?, last_used_at = ?
@@ -78,25 +74,23 @@ class PlayerActionRepository(IRepository, BaseRepository):
                 player_action.player_action_id
             ))
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def delete(self, player_action: PlayerAction) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "DELETE FROM player_actions WHERE player_action_id = ?",
                 (player_action.player_action_id,)
             )
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def exists(self, player_action_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT 1 FROM player_actions WHERE player_action_id = ?",
                 (player_action_id,)

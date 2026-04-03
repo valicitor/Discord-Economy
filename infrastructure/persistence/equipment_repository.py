@@ -10,7 +10,7 @@ class EquipmentRepository(IRepository, BaseRepository):
 
     def init_database(self):
         with self._lock:
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 CREATE TABLE IF NOT EXISTS equipment (
                     equipment_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,15 +20,14 @@ class EquipmentRepository(IRepository, BaseRepository):
                     metadata TEXT
                 )
             """)
-            self.conn.execute("PRAGMA journal_mode=WAL;")
-            self.conn.commit()
+            self.execute("PRAGMA journal_mode=WAL;")
+            self.commit()
 
     # ---------- Queries ----------
 
     def get_by_id(self, equipment_id: int) -> Optional[Equipment]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT * FROM equipment WHERE equipment_id = ?", (equipment_id,)
             )
@@ -37,8 +36,7 @@ class EquipmentRepository(IRepository, BaseRepository):
     
     def get_by_name(self, name: str) -> Optional[Equipment]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT * FROM equipment WHERE name = ?", (name,)
             )
@@ -47,8 +45,7 @@ class EquipmentRepository(IRepository, BaseRepository):
 
     def get_all(self) -> List[Equipment]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("SELECT * FROM equipment")
             return [Equipment(data=dict(row)) for row in c.fetchall()]
 
@@ -56,8 +53,7 @@ class EquipmentRepository(IRepository, BaseRepository):
 
     def add(self, equipment: Equipment) -> tuple[bool, int]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 INSERT INTO equipment (
                     name, description, slot, metadata
@@ -70,13 +66,12 @@ class EquipmentRepository(IRepository, BaseRepository):
                 str(equipment.metadata)
             ))
 
-            self.conn.commit()
+            self.commit()
             return (c.rowcount > 0, c.lastrowid)
 
     def update(self, equipment: Equipment) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 UPDATE equipment
                 SET name = ?, description = ?, slot = ?, metadata = ?
@@ -89,33 +84,30 @@ class EquipmentRepository(IRepository, BaseRepository):
                 equipment.equipment_id
             ))
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def delete(self, equipment: Equipment) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "DELETE FROM equipment WHERE equipment_id = ?",
                 (equipment.equipment_id,)
             )
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
     
     def delete_all(self) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("DELETE FROM equipment")
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def exists(self, equipment_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT 1 FROM equipment WHERE equipment_id = ?",
                 (equipment_id,)

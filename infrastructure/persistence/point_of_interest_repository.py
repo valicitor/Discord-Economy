@@ -10,7 +10,7 @@ class PointOfInterestRepository(IRepository, BaseRepository):
 
     def init_database(self):
         with self._lock:
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 CREATE TABLE IF NOT EXISTS points_of_interest (
                     poi_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -22,15 +22,14 @@ class PointOfInterestRepository(IRepository, BaseRepository):
                     FOREIGN KEY(owner_player_id) REFERENCES players(player_id)
                 )
             """)
-            self.conn.execute("PRAGMA journal_mode=WAL;")
-            self.conn.commit()
+            self.execute("PRAGMA journal_mode=WAL;")
+            self.commit()
 
     # ---------- Queries ----------
 
     def get_by_id(self, poi_id: int) -> Optional[PointOfInterest]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT * FROM points_of_interest WHERE poi_id = ?", (poi_id,)
             )
@@ -39,8 +38,7 @@ class PointOfInterestRepository(IRepository, BaseRepository):
 
     def get_all(self) -> List[PointOfInterest]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("SELECT * FROM points_of_interest")
             return [PointOfInterest(data=dict(row)) for row in c.fetchall()]
 
@@ -48,8 +46,7 @@ class PointOfInterestRepository(IRepository, BaseRepository):
 
     def add(self, poi: PointOfInterest) -> tuple[bool, int]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 INSERT INTO points_of_interest (
                     name, type, x, y, owner_player_id
@@ -63,13 +60,12 @@ class PointOfInterestRepository(IRepository, BaseRepository):
                 poi.owner_player_id
             ))
 
-            self.conn.commit()
+            self.commit()
             return (c.rowcount > 0, c.lastrowid)
 
     def update(self, poi: PointOfInterest) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 UPDATE points_of_interest
                 SET name = ?, type = ?, x = ?, y = ?, owner_player_id = ?
@@ -83,33 +79,30 @@ class PointOfInterestRepository(IRepository, BaseRepository):
                 poi.poi_id
             ))
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def delete(self, poi: PointOfInterest) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "DELETE FROM points_of_interest WHERE poi_id = ?",
                 (poi.poi_id,)
             )
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
     
     def delete_all(self) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("DELETE FROM points_of_interest")
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def exists(self, poi_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT 1 FROM points_of_interest WHERE poi_id = ?",
                 (poi_id,)

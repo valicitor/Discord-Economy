@@ -10,7 +10,7 @@ class VehicleStatRepository(IRepository, BaseRepository):
 
     def init_database(self):
         with self._lock:
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 CREATE TABLE IF NOT EXISTS vehicle_stats (
                     vehicle_stat_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,15 +20,14 @@ class VehicleStatRepository(IRepository, BaseRepository):
                     FOREIGN KEY(vehicle_id) REFERENCES vehicles(vehicle_id)
                 )
             """)
-            self.conn.execute("PRAGMA journal_mode=WAL;")
-            self.conn.commit()
+            self.execute("PRAGMA journal_mode=WAL;")
+            self.commit()
 
     # ---------- Queries ----------
 
     def get_by_id(self, vehicle_stat_id: int) -> Optional[VehicleStat]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT * FROM vehicle_stats WHERE vehicle_stat_id = ?", (vehicle_stat_id,)
             )
@@ -37,8 +36,7 @@ class VehicleStatRepository(IRepository, BaseRepository):
 
     def get_by_key(self, stat_key: str, vehicle_id: int) -> Optional[VehicleStat]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT * FROM vehicle_stats WHERE stat_key = ? AND vehicle_id = ?", (stat_key, vehicle_id)
             )
@@ -47,8 +45,7 @@ class VehicleStatRepository(IRepository, BaseRepository):
 
     def get_all(self) -> List[VehicleStat]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("SELECT * FROM vehicle_stats")
             return [VehicleStat(data=dict(row)) for row in c.fetchall()]
 
@@ -56,8 +53,7 @@ class VehicleStatRepository(IRepository, BaseRepository):
 
     def add(self, vehicle_stat: VehicleStat) -> tuple[bool, int]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 INSERT INTO vehicle_stats (
                     vehicle_id, stat_key, stat_value
@@ -69,13 +65,12 @@ class VehicleStatRepository(IRepository, BaseRepository):
                 vehicle_stat.stat_value
             ))
 
-            self.conn.commit()
+            self.commit()
             return (c.rowcount > 0, c.lastrowid)
 
     def update(self, vehicle_stat: VehicleStat) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 UPDATE vehicle_stats
                 SET vehicle_id = ?, stat_key = ?, stat_value = ?
@@ -87,33 +82,30 @@ class VehicleStatRepository(IRepository, BaseRepository):
                 vehicle_stat.vehicle_stat_id
             ))
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def delete(self, vehicle_stat: VehicleStat) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "DELETE FROM vehicle_stats WHERE vehicle_stat_id = ?",
                 (vehicle_stat.vehicle_stat_id,)
             )
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def delete_all(self) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("DELETE FROM vehicle_stats")
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def exists(self, vehicle_stat_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT 1 FROM vehicle_stats WHERE vehicle_stat_id = ?",
                 (vehicle_stat_id,)

@@ -10,7 +10,7 @@ class ActionLogRepository(IRepository, BaseRepository):
 
     def init_database(self):
         with self._lock:
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 CREATE TABLE IF NOT EXISTS action_logs (
                     log_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,15 +26,14 @@ class ActionLogRepository(IRepository, BaseRepository):
                     FOREIGN KEY(action_id) REFERENCES actions(action_id)
                 )
             """)
-            self.conn.execute("PRAGMA journal_mode=WAL;")
-            self.conn.commit()
+            self.execute("PRAGMA journal_mode=WAL;")
+            self.commit()
 
     # ---------- Queries ----------
 
     def get_by_id(self, log_id: int) -> Optional[ActionLog]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT * FROM action_logs WHERE log_id = ?", (log_id,)
             )
@@ -43,8 +42,7 @@ class ActionLogRepository(IRepository, BaseRepository):
 
     def get_all(self) -> List[ActionLog]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("SELECT * FROM action_logs")
             return [ActionLog(data=dict(row)) for row in c.fetchall()]
 
@@ -52,8 +50,7 @@ class ActionLogRepository(IRepository, BaseRepository):
 
     def add(self, action_log: ActionLog) -> tuple[bool, int]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 INSERT INTO action_logs (
                     player_id, action_id, target_player_id, success, reward_amount, penalty_amount, result_data
@@ -69,13 +66,12 @@ class ActionLogRepository(IRepository, BaseRepository):
                 action_log.result_data
             ))
 
-            self.conn.commit()
+            self.commit()
             return (c.rowcount > 0, c.lastrowid)
 
     def update(self, action_log: ActionLog) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 UPDATE action_logs
                 SET player_id = ?, action_id = ?, target_player_id = ?, success = ?, reward_amount = ?, penalty_amount = ?, result_data = ?
@@ -91,25 +87,23 @@ class ActionLogRepository(IRepository, BaseRepository):
                 action_log.log_id
             ))
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def delete(self, action_log: ActionLog) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "DELETE FROM action_logs WHERE log_id = ?",
                 (action_log.log_id,)
             )
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def exists(self, log_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT 1 FROM action_logs WHERE log_id = ?",
                 (log_id,)

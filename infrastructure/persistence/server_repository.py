@@ -10,7 +10,7 @@ class ServerRepository(IRepository, BaseRepository):
 
     def init_database(self):
         with self._lock:
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 CREATE TABLE IF NOT EXISTS servers (
                     server_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -19,15 +19,14 @@ class ServerRepository(IRepository, BaseRepository):
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             """)
-            self.conn.execute("PRAGMA journal_mode=WAL;")
-            self.conn.commit()
+            self.execute("PRAGMA journal_mode=WAL;")
+            self.commit()
 
     # ---------- Queries ----------
 
     def get_by_id(self, server_id: int) -> Optional[Server]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT * FROM servers WHERE server_id = ?", (server_id,)
             )
@@ -36,8 +35,7 @@ class ServerRepository(IRepository, BaseRepository):
     
     def get_by_guild_id(self, guild_id: int) -> Optional[Server]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT * FROM servers WHERE guild_id = ?", (guild_id,)
             )
@@ -46,8 +44,7 @@ class ServerRepository(IRepository, BaseRepository):
 
     def get_all(self) -> List[Server]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("SELECT * FROM servers")
             return [Server(data=dict(row)) for row in c.fetchall()]
 
@@ -55,8 +52,7 @@ class ServerRepository(IRepository, BaseRepository):
 
     def add(self, server: Server) -> tuple[bool, int]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 INSERT INTO servers (
                     guild_id, name
@@ -67,13 +63,12 @@ class ServerRepository(IRepository, BaseRepository):
                 server.name
             ))
 
-            self.conn.commit()
+            self.commit()
             return (c.rowcount > 0, c.lastrowid)
 
     def update(self, server: Server) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 UPDATE servers
                 SET name = ?
@@ -83,25 +78,23 @@ class ServerRepository(IRepository, BaseRepository):
                 server.server_id
             ))
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def delete(self, server: Server) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "DELETE FROM servers WHERE server_id = ?",
                 (server.server_id,)
             )
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def exists(self, server_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT 1 FROM servers WHERE server_id = ?",
                 (server_id,)
@@ -110,8 +103,7 @@ class ServerRepository(IRepository, BaseRepository):
     
     def exists_by_guild_id(self, guild_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT 1 FROM servers WHERE guild_id = ?",
                 (guild_id,)

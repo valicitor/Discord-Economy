@@ -10,7 +10,7 @@ class PlayerRepository(IRepository, BaseRepository):
 
     def init_database(self):
         with self._lock:
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 CREATE TABLE IF NOT EXISTS players (
                     player_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,8 +24,8 @@ class PlayerRepository(IRepository, BaseRepository):
                 )
             """)
             c.execute("CREATE INDEX IF NOT EXISTS idx_players_discord ON players(discord_id, discord_guild_id)")
-            self.conn.execute("PRAGMA journal_mode=WAL;")
-            self.conn.commit()
+            self.execute("PRAGMA journal_mode=WAL;")
+            self.commit()
 
     # ---------- Queries ----------
 
@@ -41,12 +41,12 @@ class PlayerRepository(IRepository, BaseRepository):
                 ON pb.player_id = p.player_id
             LEFT JOIN bank_accounts ba
                 ON ba.player_id = p.player_id
-            WHERE player_id = ?
+            WHERE p.player_id = ?
+            GROUP BY p.player_id
         """
     
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 query, (player_id,)
             )
@@ -65,12 +65,12 @@ class PlayerRepository(IRepository, BaseRepository):
                 ON pb.player_id = p.player_id
             LEFT JOIN bank_accounts ba
                 ON ba.player_id = p.player_id
-            WHERE discord_id = ?
+            WHERE p.discord_id = ?
+            GROUP BY p.player_id
         """
     
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(query, (discord_id,))
             row = c.fetchone()
             return Player(data=dict(row)) if row else None
@@ -88,12 +88,16 @@ class PlayerRepository(IRepository, BaseRepository):
             LEFT JOIN bank_accounts ba
                 ON ba.player_id = p.player_id
         """
+        params = []
+        if server_id is not None:
+            query += f" WHERE p.server_id = ?"
+            params.append(server_id)
+        query += " GROUP BY p.player_id"
+
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
-            if server_id is not None:
-                query += f" WHERE p.server_id = ?"
-                c.execute(query, (server_id,))
+            c = self.cursor()
+            if params:
+                c.execute(query, params)
             else:
                 c.execute(query)
             return [Player(data=dict(row)) for row in c.fetchall()]
@@ -111,10 +115,10 @@ class PlayerRepository(IRepository, BaseRepository):
             LEFT JOIN bank_accounts ba
                 ON ba.player_id = p.player_id
             WHERE p.discord_guild_id = ?
+            GROUP BY p.player_id
         """
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(query, (discord_guild_id,))
             return [Player(data=dict(row)) for row in c.fetchall()]
 
@@ -122,8 +126,7 @@ class PlayerRepository(IRepository, BaseRepository):
 
     def add(self, player: Player) -> tuple[bool, int]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 INSERT INTO players (
                     discord_id, discord_guild_id, server_id, username, avatar
@@ -138,13 +141,12 @@ class PlayerRepository(IRepository, BaseRepository):
                 player.avatar
             ))
 
-            self.conn.commit()
+            self.commit()
             return (c.rowcount > 0, c.lastrowid)
 
     def update(self, player: Player) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 UPDATE players
                 SET username = ?, avatar = ?, discord_guild_id = ?, server_id = ?
@@ -157,37 +159,34 @@ class PlayerRepository(IRepository, BaseRepository):
                 player.discord_id
             ))
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def delete(self, player: Player) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "DELETE FROM players WHERE (discord_id = ? AND discord_guild_id = ?) OR player_id = ?",
                 (player.discord_id, player.discord_guild_id, player.player_id)
             )
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
     
     def delete_all(self, server_id: int) -> int:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "DELETE FROM players WHERE server_id = ?",
                 (server_id,)
             )
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount
 
     def exists(self, player_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT 1 FROM players WHERE player_id = ?", (player_id,)
             )
@@ -195,8 +194,7 @@ class PlayerRepository(IRepository, BaseRepository):
 
     def exists_by_discord_id(self, discord_id: int, discord_guild_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT 1 FROM players WHERE discord_id = ? AND discord_guild_id = ?",
                 (discord_id, discord_guild_id)
@@ -207,8 +205,7 @@ class PlayerRepository(IRepository, BaseRepository):
 
     def get_count(self, server_id: int) -> int:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT COUNT(*) as count FROM players WHERE server_id = ?", (server_id,)
             )
@@ -252,8 +249,7 @@ class PlayerRepository(IRepository, BaseRepository):
             params.append(offset)
 
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             
             c.execute(query, params)
 

@@ -10,7 +10,7 @@ class UnitEquipmentRepository(IRepository, BaseRepository):
 
     def init_database(self):
         with self._lock:
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 CREATE TABLE IF NOT EXISTS unit_equipment (
                     equip_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,15 +21,14 @@ class UnitEquipmentRepository(IRepository, BaseRepository):
                     FOREIGN KEY(inventory_instance_id) REFERENCES inventory_instances(instance_id)
                 )
             """)
-            self.conn.execute("PRAGMA journal_mode=WAL;")
-            self.conn.commit()
+            self.execute("PRAGMA journal_mode=WAL;")
+            self.commit()
 
     # ---------- Queries ----------
 
     def get_by_id(self, equip_id: int) -> Optional[UnitEquipment]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT * FROM unit_equipment WHERE equip_id = ?", (equip_id,)
             )
@@ -38,8 +37,7 @@ class UnitEquipmentRepository(IRepository, BaseRepository):
 
     def get_all(self) -> List[UnitEquipment]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("SELECT * FROM unit_equipment")
             return [UnitEquipment(data=dict(row)) for row in c.fetchall()]
 
@@ -47,8 +45,7 @@ class UnitEquipmentRepository(IRepository, BaseRepository):
 
     def add(self, unit_equipment: UnitEquipment) -> tuple[bool, int]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 INSERT INTO unit_equipment (
                     unit_id, inventory_instance_id, slot
@@ -60,13 +57,12 @@ class UnitEquipmentRepository(IRepository, BaseRepository):
                 unit_equipment.slot,
             ))
 
-            self.conn.commit()
+            self.commit()
             return (c.rowcount > 0, c.lastrowid)
 
     def update(self, unit_equipment: UnitEquipment) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 UPDATE unit_equipment
                 SET unit_id = ?, inventory_instance_id = ?, slot = ?
@@ -78,25 +74,23 @@ class UnitEquipmentRepository(IRepository, BaseRepository):
                 unit_equipment.equip_id
             ))
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def delete(self, unit_equipment: UnitEquipment) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "DELETE FROM unit_equipment WHERE equip_id = ?",
                 (unit_equipment.equip_id,)
             )
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def exists(self, equip_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT 1 FROM unit_equipment WHERE equip_id = ?",
                 (equip_id,)

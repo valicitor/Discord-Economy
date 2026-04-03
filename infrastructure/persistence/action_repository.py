@@ -10,7 +10,7 @@ class ActionRepository(IRepository, BaseRepository):
 
     def init_database(self):
         with self._lock:
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 CREATE TABLE IF NOT EXISTS actions (
                     action_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -22,15 +22,14 @@ class ActionRepository(IRepository, BaseRepository):
                     FOREIGN KEY(reward_currency_id) REFERENCES currencies(currency_id)
                 )
             """)
-            self.conn.execute("PRAGMA journal_mode=WAL;")
-            self.conn.commit()
+            self.execute("PRAGMA journal_mode=WAL;")
+            self.commit()
 
     # ---------- Queries ----------
 
     def get_by_id(self, action_id: int) -> Optional[Action]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT * FROM actions WHERE action_id = ?", (action_id,)
             )
@@ -39,8 +38,7 @@ class ActionRepository(IRepository, BaseRepository):
 
     def get_all(self) -> List[Action]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("SELECT * FROM actions")
             return [Action(data=dict(row)) for row in c.fetchall()]
 
@@ -48,8 +46,7 @@ class ActionRepository(IRepository, BaseRepository):
 
     def add(self, action: Action) -> tuple[bool, int]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 INSERT INTO actions (
                     name, cooldown_seconds, base_reward, reward_currency_id, success_rate
@@ -63,13 +60,12 @@ class ActionRepository(IRepository, BaseRepository):
                 action.success_rate
             ))
 
-            self.conn.commit()
+            self.commit()
             return (c.rowcount > 0, c.lastrowid)
 
     def update(self, action: Action) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 UPDATE actions
                 SET name = ?, cooldown_seconds = ?, base_reward = ?, reward_currency_id = ?, success_rate = ?
@@ -83,25 +79,23 @@ class ActionRepository(IRepository, BaseRepository):
                 action.action_id
             ))
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def delete(self, action: Action) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "DELETE FROM actions WHERE action_id = ?",
                 (action.action_id,)
             )
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def exists(self, action_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT 1 FROM actions WHERE action_id = ?",
                 (action_id,)

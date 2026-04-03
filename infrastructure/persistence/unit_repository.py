@@ -11,7 +11,7 @@ class UnitRepository(IRepository, BaseRepository):
 
     def init_database(self):
         with self._lock:
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 CREATE TABLE IF NOT EXISTS units (
                     unit_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,15 +20,14 @@ class UnitRepository(IRepository, BaseRepository):
                     metadata TEXT
                 )
             """)
-            self.conn.execute("PRAGMA journal_mode=WAL;")
-            self.conn.commit()
+            self.execute("PRAGMA journal_mode=WAL;")
+            self.commit()
 
     # ---------- Queries ----------
 
     def get_by_id(self, unit_id: int) -> Optional[Unit]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT * FROM units WHERE unit_id = ?", (unit_id,)
             )
@@ -37,8 +36,7 @@ class UnitRepository(IRepository, BaseRepository):
     
     def get_by_name(self, name: str) -> Optional[Unit]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT * FROM units WHERE name = ?", (name,)
             )
@@ -47,8 +45,7 @@ class UnitRepository(IRepository, BaseRepository):
 
     def get_all(self) -> List[Unit]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("SELECT * FROM units")
             return [Unit(data=dict(row)) for row in c.fetchall()]
 
@@ -56,8 +53,7 @@ class UnitRepository(IRepository, BaseRepository):
 
     def add(self, unit: Unit) -> tuple[bool, int]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 INSERT INTO units (
                     name, description, metadata
@@ -69,13 +65,12 @@ class UnitRepository(IRepository, BaseRepository):
                 str(unit.metadata),
             ))
 
-            self.conn.commit()
+            self.commit()
             return (c.rowcount > 0, c.lastrowid)
 
     def update(self, unit: Unit) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 UPDATE units
                 SET name = ?, description = ?, metadata = ?
@@ -87,33 +82,30 @@ class UnitRepository(IRepository, BaseRepository):
                 unit.unit_id
             ))
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def delete(self, unit: Unit) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "DELETE FROM units WHERE unit_id = ?",
                 (unit.unit_id,)
             )
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
     
     def delete_all(self) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("DELETE FROM units")
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def exists(self, unit_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT 1 FROM units WHERE unit_id = ?",
                 (unit_id,)

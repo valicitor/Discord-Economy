@@ -10,7 +10,7 @@ class PlayerBalanceRepository(IRepository, BaseRepository):
 
     def init_database(self):
         with self._lock:
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 CREATE TABLE IF NOT EXISTS player_balances (
                     balance_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,15 +21,14 @@ class PlayerBalanceRepository(IRepository, BaseRepository):
                     FOREIGN KEY(currency_id) REFERENCES currencies(currency_id)
                 )
             """)
-            self.conn.execute("PRAGMA journal_mode=WAL;")
-            self.conn.commit()
+            self.execute("PRAGMA journal_mode=WAL;")
+            self.commit()
 
     # ---------- Queries ----------
 
     def get_by_id(self, balance_id: int) -> Optional[PlayerBalance]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT * FROM player_balances WHERE balance_id = ?", (balance_id,)
             )
@@ -38,8 +37,7 @@ class PlayerBalanceRepository(IRepository, BaseRepository):
 
     def get_all(self, player_id: int = None) -> List[PlayerBalance]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             if player_id is not None:
                 c.execute("SELECT * FROM player_balances WHERE player_id = ?", (player_id,))
             else:
@@ -50,8 +48,7 @@ class PlayerBalanceRepository(IRepository, BaseRepository):
 
     def add(self, player_balance: PlayerBalance) -> tuple[bool, int]:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 INSERT INTO player_balances (
                     player_id, currency_id, balance
@@ -63,13 +60,12 @@ class PlayerBalanceRepository(IRepository, BaseRepository):
                 player_balance.balance
             ))
 
-            self.conn.commit()
+            self.commit()
             return (c.rowcount > 0, c.lastrowid)
 
     def update(self, player_balance: PlayerBalance) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("""
                 UPDATE player_balances
                 SET balance = ?
@@ -79,33 +75,30 @@ class PlayerBalanceRepository(IRepository, BaseRepository):
                 player_balance.balance_id
             ))
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def delete(self, player_balance: PlayerBalance) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "DELETE FROM player_balances WHERE balance_id = ?",
                 (player_balance.balance_id,)
             )
 
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
     
     def delete_all(self, player_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute("DELETE FROM player_balances WHERE player_id = ?", (player_id,))
-            self.conn.commit()
+            self.commit()
             return c.rowcount > 0
 
     def exists(self, balance_id: int) -> bool:
         with self._lock:
-            self._ensure_connection()
-            c = self.conn.cursor()
+            c = self.cursor()
             c.execute(
                 "SELECT 1 FROM player_balances WHERE balance_id = ?", (balance_id,)
             )
