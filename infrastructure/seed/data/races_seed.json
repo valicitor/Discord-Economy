@@ -2,8 +2,10 @@
     "version": "1.0",
     "races": {
         "data": [
-            { "name": "Human",     "description": "Baseline adaptable species",         "metadata": {} },
-            { "name": "Twi'lek",   "description": "Known for agility and diplomacy",    "metadata": {} }
+            { "name": "Human",          "description": "Baseline adaptable species",        "metadata": {} },
+            { "name": "Twi'lek",        "description": "Known for agility and diplomacy",   "metadata": {} },
+            { "name": "B1-BattleDroid", "description": "Standard B1 Droid.",                "metadata": {} },
+            { "name": "Droideka",       "description": "A sheilded droid unit",             "metadata": {} }
         ]
     },
     "race_stats": {
@@ -32,7 +34,33 @@
             { "race_name": "Twi'lek",   "stat_key": "D",        "stat_value": "1" },
             { "race_name": "Twi'lek",   "stat_key": "Range",    "stat_value": "Melee" },
             
-            { "race_name": "Twi'lek",   "stat_key": "Sv",       "stat_value": "6+" }
+            { "race_name": "Twi'lek",   "stat_key": "Sv",       "stat_value": "6+" },
+
+            { "race_name": "B1-BattleDroid",     "stat_key": "WS",       "stat_value": "8+" },
+            { "race_name": "B1-BattleDroid",     "stat_key": "BS",       "stat_value": "8+" },
+            { "race_name": "B1-BattleDroid",     "stat_key": "T",        "stat_value": "4" },
+            { "race_name": "B1-BattleDroid",     "stat_key": "W",        "stat_value": "1" },
+
+            { "race_name": "B1-BattleDroid",     "stat_key": "Attacks",  "stat_value": "1" },
+            { "race_name": "B1-BattleDroid",     "stat_key": "S",        "stat_value": "4" },
+            { "race_name": "B1-BattleDroid",     "stat_key": "AP",       "stat_value": "0" },
+            { "race_name": "B1-BattleDroid",     "stat_key": "D",        "stat_value": "1" },
+            { "race_name": "B1-BattleDroid",     "stat_key": "Range",    "stat_value": "Melee" },
+
+            { "race_name": "B1-BattleDroid",     "stat_key": "Sv",       "stat_value": "8+" },
+
+            { "race_name": "Droideka",     "stat_key": "WS",       "stat_value": "7+" },
+            { "race_name": "Droideka",     "stat_key": "BS",       "stat_value": "5+" },
+            { "race_name": "Droideka",     "stat_key": "T",        "stat_value": "5" },
+            { "race_name": "Droideka",     "stat_key": "W",        "stat_value": "4" },
+
+            { "race_name": "Droideka",     "stat_key": "Attacks",  "stat_value": "2" },
+            { "race_name": "Droideka",     "stat_key": "S",        "stat_value": "5" },
+            { "race_name": "Droideka",     "stat_key": "AP",       "stat_value": "0" },
+            { "race_name": "Droideka",     "stat_key": "D",        "stat_value": "1" },
+            { "race_name": "Droideka",     "stat_key": "Range",    "stat_value": "Melee" },
+
+            { "race_name": "Droideka",     "stat_key": "Sv",       "stat_value": "5+" }
         ]
     }
 }

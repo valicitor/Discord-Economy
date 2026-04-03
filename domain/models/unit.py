@@ -3,6 +3,7 @@ class Unit:
         if data:
             kwargs = {**data, **kwargs}
         self.unit_id: int|None = kwargs.get('unit_id')
+        self.server_id: int|None = kwargs.get('server_id')
         self.name: str|None = kwargs.get('name')
         self.description: str|None = kwargs.get('description')
         self.metadata: dict = kwargs.get('metadata', {})  # flexible traits
@@ -10,6 +11,7 @@ class Unit:
     def to_dict(self):
         return {
             'unit_id': self.unit_id,
+            'server_id': self.server_id,
             'name': self.name,
             'description': self.description,
             'metadata': self.metadata

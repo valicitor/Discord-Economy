@@ -14,11 +14,13 @@ class PointOfInterestRepository(IRepository, BaseRepository):
             c.execute("""
                 CREATE TABLE IF NOT EXISTS points_of_interest (
                     poi_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    server_id INTEGER NOT NULL,
                     name TEXT NOT NULL,
                     type TEXT NOT NULL,
                     x REAL NOT NULL,
                     y REAL NOT NULL,
                     owner_player_id INTEGER,
+                    FOREIGN KEY(server_id) REFERENCES servers(server_id),
                     FOREIGN KEY(owner_player_id) REFERENCES players(player_id)
                 )
             """)
@@ -36,10 +38,10 @@ class PointOfInterestRepository(IRepository, BaseRepository):
             row = c.fetchone()
             return PointOfInterest(data=dict(row)) if row else None
 
-    def get_all(self) -> List[PointOfInterest]:
+    def get_all(self, server_id: int) -> List[PointOfInterest]:
         with self._lock:
             c = self.cursor()
-            c.execute("SELECT * FROM points_of_interest")
+            c.execute("SELECT * FROM points_of_interest WHERE server_id = ?", (server_id,))
             return [PointOfInterest(data=dict(row)) for row in c.fetchall()]
 
     # ---------- Mutations ----------
@@ -49,10 +51,11 @@ class PointOfInterestRepository(IRepository, BaseRepository):
             c = self.cursor()
             c.execute("""
                 INSERT INTO points_of_interest (
-                    name, type, x, y, owner_player_id
+                    server_id, name, type, x, y, owner_player_id
                 )
-                VALUES (?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?)
             """, (
+                poi.server_id,
                 poi.name,
                 poi.type,
                 poi.x,
@@ -68,9 +71,10 @@ class PointOfInterestRepository(IRepository, BaseRepository):
             c = self.cursor()
             c.execute("""
                 UPDATE points_of_interest
-                SET name = ?, type = ?, x = ?, y = ?, owner_player_id = ?
+                SET server_id = ?, name = ?, type = ?, x = ?, y = ?, owner_player_id = ?
                 WHERE poi_id = ?
             """, (
+                poi.server_id,
                 poi.name,
                 poi.type,
                 poi.x,
@@ -93,10 +97,10 @@ class PointOfInterestRepository(IRepository, BaseRepository):
             self.commit()
             return c.rowcount > 0
     
-    def delete_all(self) -> bool:
+    def delete_all(self, server_id: int) -> bool:
         with self._lock:
             c = self.cursor()
-            c.execute("DELETE FROM points_of_interest")
+            c.execute("DELETE FROM points_of_interest WHERE server_id = ?", (server_id,))
             self.commit()
             return c.rowcount > 0
 

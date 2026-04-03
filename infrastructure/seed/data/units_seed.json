@@ -2,17 +2,28 @@
     "version": "1.0",
     "units": {
         "data": [
-            { "name": "Stormtrooper",     "description": "A soldier of the Galactic Empire",         "metadata": {} },
-            { "name": "Worker",           "description": "A hard worker from the Galactic Empire",   "metadata": {} }
+            { "name": "Stormtrooper",       "description": "A soldier of the Galactic Empire",                          "metadata": {} },
+            { "name": "Worker",             "description": "A hard worker from the Galactic Empire",                    "metadata": {} },
+            { "name": "B1-BattleDroid",     "description": "Standard B1 Droid.",                                        "metadata": {} },
+            { "name": "Droideka",           "description": "A sheilded droid unit",                                     "metadata": {} },
+            { "name": "Buzz Droid",         "description": "A swarm of Buzz droids designed to target enemy armour",    "metadata": {} }
         ]
     },
     "unit_stats": {
         "data": [
-            { "unit_name": "Stormtrooper",  "stat_key": "Race",     "stat_value": "Human" },
-            { "unit_name": "Stormtrooper",  "stat_key": "Weapon",   "stat_value": "Z-6 Rotary Blaster Cannon" },
-            { "unit_name": "Stormtrooper",  "stat_key": "Armor",    "stat_value": "Imperial Agent Armor" },
+            { "unit_name": "Stormtrooper",      "stat_key": "Race",         "stat_value": "Human" },
+            { "unit_name": "Stormtrooper",      "stat_key": "Weapon",       "stat_value": "Z-6 Rotary Blaster Cannon" },
+            { "unit_name": "Stormtrooper",      "stat_key": "Armor",        "stat_value": "Imperial Agent Armor" },
 
-            { "unit_name": "Worker",        "stat_key": "Race",     "stat_value": "Human" }
+            { "unit_name": "Worker",            "stat_key": "Race",         "stat_value": "Human" },
+
+            { "unit_name": "B1-BattleDroid",    "stat_key": "Race",         "stat_value": "Human" },
+            { "unit_name": "B1-BattleDroid",    "stat_key": "Weapon",       "stat_value": "Z-6 Rotary Blaster Cannon" },
+            { "unit_name": "B1-BattleDroid",    "stat_key": "Armor",        "stat_value": "Imperial Agent Armor" },
+
+            { "unit_name": "Droideka",          "stat_key": "Race",         "stat_value": "Human" },
+            
+            { "unit_name": "Buzz Droid",        "stat_key": "Race",         "stat_value": "Human" }
         ]
     }
 }

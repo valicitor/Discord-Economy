@@ -16,9 +16,11 @@ class VehicleRepository(IRepository, BaseRepository):
             c.execute("""
                 CREATE TABLE IF NOT EXISTS vehicles (
                     vehicle_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    server_id INTEGER NOT NULL,
                     name TEXT NOT NULL UNIQUE,
                     description TEXT DEFAULT '',
-                    metadata TEXT
+                    metadata TEXT,
+                    FOREIGN KEY(server_id) REFERENCES servers(server_id)
                 )
             """)
             self.execute("PRAGMA journal_mode=WAL;")
@@ -35,19 +37,19 @@ class VehicleRepository(IRepository, BaseRepository):
             row = c.fetchone()
             return Vehicle(data=dict(row)) if row else None
     
-    def get_by_name(self, name: str) -> Optional[Vehicle]:
+    def get_by_name(self, name: str, server_id: int) -> Optional[Vehicle]:
         with self._lock:
             c = self.cursor()
             c.execute(
-                "SELECT * FROM vehicles WHERE name = ?", (name,)
+                "SELECT * FROM vehicles WHERE name = ? AND server_id = ?", (name, server_id)
             )
             row = c.fetchone()
             return Vehicle(data=dict(row)) if row else None
 
-    def get_all(self) -> List[Vehicle]:
+    def get_all(self, server_id: int) -> List[Vehicle]:
         with self._lock:
             c = self.cursor()
-            c.execute("SELECT * FROM vehicles")
+            c.execute("SELECT * FROM vehicles WHERE server_id = ?", (server_id,))
             return [Vehicle(data=dict(row)) for row in c.fetchall()]
 
     # ---------- Mutations ----------
@@ -57,10 +59,11 @@ class VehicleRepository(IRepository, BaseRepository):
             c = self.cursor()
             c.execute("""
                 INSERT INTO vehicles (
-                    name, description, metadata
+                    server_id, name, description, metadata
                 )
-                VALUES (?, ?, ?)
+                VALUES (?, ?, ?, ?)
             """, (
+                vehicle.server_id,
                 vehicle.name,
                 vehicle.description,
                 str(vehicle.metadata),
@@ -74,9 +77,10 @@ class VehicleRepository(IRepository, BaseRepository):
             c = self.cursor()
             c.execute("""
                 UPDATE vehicles
-                SET name = ?, description = ?, metadata = ?
+                SET server_id = ?, name = ?, description = ?, metadata = ?
                 WHERE vehicle_id = ?
             """, (
+                vehicle.server_id,
                 vehicle.name,
                 vehicle.description,
                 str(vehicle.metadata),
@@ -97,10 +101,10 @@ class VehicleRepository(IRepository, BaseRepository):
             self.commit()
             return c.rowcount > 0
 
-    def delete_all(self) -> bool:
+    def delete_all(self, server_id: int) -> bool:
         with self._lock:
             c = self.cursor()
-            c.execute("DELETE FROM vehicles")
+            c.execute("DELETE FROM vehicles WHERE server_id = ?", (server_id,))
             self.commit()
             return c.rowcount > 0
         

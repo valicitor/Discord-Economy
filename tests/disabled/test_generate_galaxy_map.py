@@ -19,7 +19,7 @@ from infrastructure import (
     FactionRepository,
     FactionMemberRepository
 )
-from infrastructure import SeedPointOfInterestsIfEmpty
+from infrastructure import PointOfInterestSeeder
 from application import DiscordGuild, DiscordUser
 from application import GenerateGalaxyMapCommand, GenerateGalaxyMapCommandRequest
 
@@ -27,8 +27,6 @@ from application.helpers.ensure_user import ensure_guild_and_users
 
 class TestGenerateGalaxyMapCommand(unittest.TestCase):
     def setUp(self):
-        self.POI_repository = PointOfInterestRepository(seeder=SeedPointOfInterestsIfEmpty, db_path=":memory:")  # Use in-memory database for testing
-
         self.server_repository = ServerRepository(db_path=":memory:")
         self.server_setting_repository = ServerSettingRepository(db_path=":memory:")
         self.currency_repository = CurrencyRepository(db_path=":memory:")
@@ -47,6 +45,8 @@ class TestGenerateGalaxyMapCommand(unittest.TestCase):
         self.discord_user3 = DiscordUser(user_id=67892, name="TestUser3", display_avatar="avatar_url")
 
         self.server_config, [self.player_profile1, self.player_profile2, self.player_profile3] = ensure_guild_and_users(self.discord_guild, [self.discord_user1, self.discord_user2, self.discord_user3])
+
+        self.POI_repository = PointOfInterestRepository(seeder=PointOfInterestSeeder(self.server_config.server.server_id), db_path=":memory:")  # Use in-memory database for testing
 
         _, enemy_faction_id = self.faction_repository.add(Faction(name="Enemy Faction", description="Enemy", color="#FF0000", owner_id=self.player_profile3.player.player_id, server_id=self.server_config.server.server_id))
         _, member_id = self.faction_member_repository.add(FactionMember(faction_id=enemy_faction_id, player_id=self.player_profile3.player.player_id, role="Leader"))

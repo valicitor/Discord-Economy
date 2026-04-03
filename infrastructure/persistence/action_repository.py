@@ -14,12 +14,16 @@ class ActionRepository(IRepository, BaseRepository):
             c.execute("""
                 CREATE TABLE IF NOT EXISTS actions (
                     action_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    business_id INTEGER,
                     name TEXT NOT NULL,
                     cooldown_seconds INTEGER DEFAULT 86400,
                     base_reward INTEGER DEFAULT 0,
-                    reward_currency_id INTEGER,
+                    risk_rate REAL DEFAULT 0.0,
+                    fine_amount INTEGER DEFAULT 0,
                     success_rate REAL DEFAULT 1.0,
-                    FOREIGN KEY(reward_currency_id) REFERENCES currencies(currency_id)
+                    success_message TEXT DEFAULT "You successfully completed the action!",
+                    failure_message TEXT DEFAULT "You failed to complete the action.",
+                    FOREIGN KEY(business_id) REFERENCES businesses(business_id)
                 )
             """)
             self.execute("PRAGMA journal_mode=WAL;")
@@ -49,15 +53,19 @@ class ActionRepository(IRepository, BaseRepository):
             c = self.cursor()
             c.execute("""
                 INSERT INTO actions (
-                    name, cooldown_seconds, base_reward, reward_currency_id, success_rate
+                    business_id, name, cooldown_seconds, base_reward, risk_rate, fine_amount, success_rate, success_message, failure_message
                 )
-                VALUES (?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
+                action.business_id,
                 action.name,
                 action.cooldown_seconds,
                 action.base_reward,
-                action.reward_currency_id,
-                action.success_rate
+                action.risk_rate,
+                action.fine_amount,
+                action.success_rate,
+                action.success_message,
+                action.failure_message
             ))
 
             self.commit()
@@ -68,14 +76,18 @@ class ActionRepository(IRepository, BaseRepository):
             c = self.cursor()
             c.execute("""
                 UPDATE actions
-                SET name = ?, cooldown_seconds = ?, base_reward = ?, reward_currency_id = ?, success_rate = ?
+                SET  business_id = ?, name = ?, cooldown_seconds = ?, base_reward = ?, risk_rate = ?, fine_amount = ?, success_rate = ?, success_message = ?, failure_message = ?
                 WHERE action_id = ?
             """, (
+                action.business_id,
                 action.name,
                 action.cooldown_seconds,
                 action.base_reward,
-                action.reward_currency_id,
+                action.risk_rate,
+                action.fine_amount,
                 action.success_rate,
+                action.success_message,
+                action.failure_message,
                 action.action_id
             ))
 

@@ -5,55 +5,60 @@ from config import BASE_DIR
 from domain import Vehicle, VehicleStat
 from infrastructure import VehicleRepository, VehicleStatRepository
 
-def SeedVehiclesIfEmpty(seed_file=None) -> bool:
-    if not seed_file:
-        seed_file = os.path.join(BASE_DIR, "infrastructure", "seed", "data", "vehicles_seed.json")
+class VehiclesSeeder:
+    def __init__(self, server_id: int|None = None):
+        self.server_id = server_id
 
-    with open(seed_file, "r") as f:
-        data = json.load(f)
+    def Seed(self, seed_file: str|None = None) -> bool:
+        if not seed_file:
+            seed_file = os.path.join(BASE_DIR, "infrastructure", "seed", "data", "vehicles_seed.json")
 
-    vehicle_data = data["vehicles"]
+        with open(seed_file, "r") as f:
+            data = json.load(f)
 
-    existing = VehicleRepository().get_all()
-    if existing:
-        return False
+        vehicle_data = data["vehicles"]
 
-    has_failures = False
-    for v in vehicle_data["data"]:
-        vehicle = Vehicle(data=v)
-        success, _ = VehicleRepository().add(vehicle)
-        if not success:
-            has_failures = True
+        existing = VehicleRepository().get_all(self.server_id)
+        if existing:
+            return False
 
-    return has_failures
+        has_failures = False
+        for v in vehicle_data["data"]:
+            vehicle = Vehicle(data=v)
+            vehicle.server_id = self.server_id
+            success, _ = VehicleRepository().add(vehicle)
+            if not success:
+                has_failures = True
 
-def SeedVehicleStatsIfEmpty(seed_file=None) -> bool:
-    if not seed_file:
-        seed_file = os.path.join(BASE_DIR, "infrastructure", "seed", "data", "vehicles_seed.json")
+        return has_failures
 
-    with open(seed_file, "r") as f:
-        data = json.load(f)
+class VehicleStatsSeeder:
+    def __init__(self, server_id: int|None = None):
+        self.server_id = server_id
 
-    vehicle_stat_data = data["vehicle_stats"]
+    def Seed(self, seed_file: str|None = None) -> bool:
+        if not seed_file:
+            seed_file = os.path.join(BASE_DIR, "infrastructure", "seed", "data", "vehicles_seed.json")
 
-    existing = VehicleStatRepository().get_all()
-    if existing:
-        return False
+        with open(seed_file, "r") as f:
+            data = json.load(f)
 
-    has_failures = False
-    for stat in vehicle_stat_data["data"]:
-        vehicle = VehicleRepository().get_by_name(stat["vehicle_name"])
-        if not vehicle:
-            continue  # or raise error
+        vehicle_stat_data = data["vehicle_stats"]
 
-        vehicle_stat = VehicleStat(
-            vehicle_id=vehicle.vehicle_id,
-            stat_key=stat["stat_key"],
-            stat_value=stat["stat_value"]
-        )
+        has_failures = False
+        for stat in vehicle_stat_data["data"]:
+            vehicle = VehicleRepository().get_by_name(stat["vehicle_name"], self.server_id)
+            if not vehicle:
+                continue  # or raise error
 
-        success, _ = VehicleStatRepository().add(vehicle_stat)
-        if not success:
-            has_failures = True
+            vehicle_stat = VehicleStat(
+                vehicle_id=vehicle.vehicle_id,
+                stat_key=stat["stat_key"],
+                stat_value=stat["stat_value"]
+            )
 
-    return has_failures
+            success, _ = VehicleStatRepository().add(vehicle_stat)
+            if not success:
+                has_failures = True
+
+        return has_failures

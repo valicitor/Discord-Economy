@@ -4,6 +4,7 @@ class Race:
             kwargs = {**data, **kwargs}
 
         self.race_id: int|None = kwargs.get('race_id')
+        self.server_id: int|None = kwargs.get('server_id')
         self.name: str|None = kwargs.get('name')
         self.description: str|None = kwargs.get('description', '')
         self.metadata: dict = kwargs.get('metadata', {})  # flexible traits
@@ -11,6 +12,7 @@ class Race:
     def to_dict(self):
         return {
             'race_id': self.race_id,
+            'server_id': self.server_id,
             'name': self.name,
             'description': self.description,
             'metadata': self.metadata
