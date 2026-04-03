@@ -5,7 +5,7 @@
             { "name": "Human",          "description": "Baseline adaptable species",        "metadata": {} },
             { "name": "Twi'lek",        "description": "Known for agility and diplomacy",   "metadata": {} },
             { "name": "B1-BattleDroid", "description": "Standard B1 Droid.",                "metadata": {} },
-            { "name": "Droideka",       "description": "A sheilded droid unit",             "metadata": {} }
+            { "name": "Droideka",       "description": "A shielded droid unit",             "metadata": {} }
         ]
     },
     "race_stats": {

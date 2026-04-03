@@ -6,7 +6,7 @@ from domain import Race, RaceStat
 from infrastructure import RaceRepository, RaceStatRepository
 
 class RacesSeeder:
-    def __init__(self, server_id: int|None = None):
+    def __init__(self, server_id: int):
         self.server_id = server_id
 
     def Seed(self, seed_file: str|None = None) -> bool:
@@ -33,7 +33,7 @@ class RacesSeeder:
         return has_failures
 
 class RaceStatsSeeder:
-    def __init__(self, server_id: int|None = None):
+    def __init__(self, server_id: int):
         self.server_id = server_id
 
     def Seed(self, seed_file: str|None = None) -> bool:

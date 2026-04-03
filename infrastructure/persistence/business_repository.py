@@ -15,13 +15,15 @@ class BusinessRepository(IRepository, BaseRepository):
                 CREATE TABLE IF NOT EXISTS businesses (
                     business_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     server_id INTEGER NOT NULL,
+                    owner_id INTEGER,
                     name TEXT NOT NULL,
                     description TEXT,
                     type TEXT NOT NULL,
                     location TEXT,
                     range INTEGER,
                     metadata TEXT,
-                    FOREIGN KEY(server_id) REFERENCES servers(server_id)
+                    FOREIGN KEY(server_id) REFERENCES servers(server_id),
+                    UNIQUE(name, server_id)
                 )
             """)
             self.execute("PRAGMA journal_mode=WAL;")
@@ -60,11 +62,12 @@ class BusinessRepository(IRepository, BaseRepository):
             c = self.cursor()
             c.execute("""
                 INSERT INTO businesses (
-                    server_id, name, description, type, location, range, metadata
+                    server_id, owner_id, name, description, type, location, range, metadata
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 business.server_id,
+                business.owner_id,
                 business.name,
                 business.description,
                 business.type,
@@ -81,10 +84,11 @@ class BusinessRepository(IRepository, BaseRepository):
             c = self.cursor()
             c.execute("""
                 UPDATE businesses
-                SET server_id = ?, name = ?, description = ?, type = ?, location = ?, range = ?, metadata = ?
+                SET server_id = ?, owner_id = ?, name = ?, description = ?, type = ?, location = ?, range = ?, metadata = ?
                 WHERE business_id = ?
             """, (
                 business.server_id,
+                business.owner_id,
                 business.name,
                 business.description,
                 business.type,

@@ -17,10 +17,11 @@ class VehicleRepository(IRepository, BaseRepository):
                 CREATE TABLE IF NOT EXISTS vehicles (
                     vehicle_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     server_id INTEGER NOT NULL,
-                    name TEXT NOT NULL UNIQUE,
+                    name TEXT NOT NULL,
                     description TEXT DEFAULT '',
                     metadata TEXT,
-                    FOREIGN KEY(server_id) REFERENCES servers(server_id)
+                    FOREIGN KEY(server_id) REFERENCES servers(server_id),
+                    UNIQUE(name, server_id)
                 )
             """)
             self.execute("PRAGMA journal_mode=WAL;")

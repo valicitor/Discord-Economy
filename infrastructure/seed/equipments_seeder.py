@@ -6,7 +6,7 @@ from domain import Equipment, EquipmentStat
 from infrastructure import EquipmentRepository, EquipmentStatRepository
 
 class EquipmentsSeeder:
-    def __init__(self, server_id: int|None = None):
+    def __init__(self, server_id: int):
         self.server_id = server_id
 
     def Seed(self, seed_file: str|None = None) -> bool:
@@ -34,7 +34,7 @@ class EquipmentsSeeder:
 
 
 class EquipmentStatsSeeder:
-    def __init__(self, server_id: int|None = None):
+    def __init__(self, server_id: int):
         self.server_id = server_id
 
     def Seed(self, seed_file: str|None = None) -> bool:

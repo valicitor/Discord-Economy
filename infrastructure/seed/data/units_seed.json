@@ -5,7 +5,7 @@
             { "name": "Stormtrooper",       "description": "A soldier of the Galactic Empire",                          "metadata": {} },
             { "name": "Worker",             "description": "A hard worker from the Galactic Empire",                    "metadata": {} },
             { "name": "B1-BattleDroid",     "description": "Standard B1 Droid.",                                        "metadata": {} },
-            { "name": "Droideka",           "description": "A sheilded droid unit",                                     "metadata": {} },
+            { "name": "Droideka",           "description": "A shielded droid unit",                                     "metadata": {} },
             { "name": "Buzz Droid",         "description": "A swarm of Buzz droids designed to target enemy armour",    "metadata": {} }
         ]
     },

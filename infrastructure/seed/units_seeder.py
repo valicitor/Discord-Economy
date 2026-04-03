@@ -6,7 +6,7 @@ from domain import Unit, UnitStat
 from infrastructure import UnitRepository, UnitStatRepository
 
 class UnitsSeeder:
-    def __init__(self, server_id: int|None = None):
+    def __init__(self, server_id: int):
         self.server_id = server_id
 
     def Seed(self, seed_file: str|None = None) -> bool:
@@ -33,7 +33,7 @@ class UnitsSeeder:
         return has_failures
 
 class UnitStatsSeeder:
-    def __init__(self, server_id: int|None = None):
+    def __init__(self, server_id: int):
         self.server_id = server_id
 
     def Seed(self, seed_file: str|None = None) -> bool:
