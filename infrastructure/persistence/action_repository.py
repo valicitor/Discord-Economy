@@ -16,6 +16,7 @@ class ActionRepository(IRepository, BaseRepository):
                     action_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     business_id INTEGER,
                     name TEXT NOT NULL,
+                    type TEXT NOT NULL,
                     cooldown_seconds INTEGER DEFAULT 86400,
                     base_reward INTEGER DEFAULT 0,
                     risk_rate REAL DEFAULT 0.0,
@@ -53,12 +54,13 @@ class ActionRepository(IRepository, BaseRepository):
             c = self.cursor()
             c.execute("""
                 INSERT INTO actions (
-                    business_id, name, cooldown_seconds, base_reward, risk_rate, fine_amount, success_rate, success_message, failure_message
+                    business_id, name, type, cooldown_seconds, base_reward, risk_rate, fine_amount, success_rate, success_message, failure_message
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 action.business_id,
                 action.name,
+                action.type,
                 action.cooldown_seconds,
                 action.base_reward,
                 action.risk_rate,
@@ -76,11 +78,12 @@ class ActionRepository(IRepository, BaseRepository):
             c = self.cursor()
             c.execute("""
                 UPDATE actions
-                SET  business_id = ?, name = ?, cooldown_seconds = ?, base_reward = ?, risk_rate = ?, fine_amount = ?, success_rate = ?, success_message = ?, failure_message = ?
+                SET  business_id = ?, name = ?, type = ?, cooldown_seconds = ?, base_reward = ?, risk_rate = ?, fine_amount = ?, success_rate = ?, success_message = ?, failure_message = ?
                 WHERE action_id = ?
             """, (
                 action.business_id,
                 action.name,
+                action.type,
                 action.cooldown_seconds,
                 action.base_reward,
                 action.risk_rate,

@@ -51,17 +51,8 @@ class ActionsSeeder:
             if not business:
                 continue  # or raise error
 
-            action_obj = Action(
-                business_id=business.business_id,
-                name=action["name"],
-                cooldown_seconds=action["cooldown_seconds"],
-                base_reward=action["base_reward"],
-                risk_rate=action["risk_rate"],
-                fine_amount=action["fine_amount"],
-                success_rate=action["success_rate"],
-                success_message=action["success_message"],
-                failure_message=action["failure_message"]
-            )
+            action_obj = Action(data=action)
+            action_obj.business_id = business.business_id
 
             success, _ = ActionRepository().add(action_obj)
             if not success:

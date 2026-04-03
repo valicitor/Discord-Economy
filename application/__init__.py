@@ -2,7 +2,13 @@ from .dtos.base_collection import BaseCollection
 from .dtos.discord_user import DiscordUser
 from .dtos.discord_guild import DiscordGuild
 from .dtos.server_config import ServerConfig, ServerSettingsCollection
-from .dtos.player_profile import PlayerProfile, PlayerFaction, PlayerBalancesCollection, PlayerBankAccountsCollection
+from .dtos.player_profile import (
+    PlayerProfile, 
+    PlayerFaction, 
+    PlayerBalancesCollection, 
+    PlayerBankAccountsCollection, 
+    PlayerActionsCollection
+)
 
 from .handlers.galaxy_map_generator_handler import GalaxyMapGeneratorHandler
 

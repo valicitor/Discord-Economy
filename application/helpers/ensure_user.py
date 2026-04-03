@@ -19,7 +19,8 @@ from infrastructure import (
     BankRepository,
     BankAccountRepository,
     FactionRepository,
-    FactionMemberRepository
+    FactionMemberRepository,
+    PlayerActionRepository
 )
 from application import (
     DiscordGuild, 
@@ -29,7 +30,8 @@ from application import (
     PlayerProfile, 
     PlayerFaction, 
     PlayerBalancesCollection, 
-    PlayerBankAccountsCollection
+    PlayerBankAccountsCollection,
+    PlayerActionsCollection
 )
 
 def ensure_guild(discord_guild: DiscordGuild) -> ServerConfig:
@@ -97,6 +99,7 @@ def ensure_user(server_config: ServerConfig, discord_user: DiscordUser) -> Playe
     PlayerBalanceRepository()
     BankAccountRepository()
     FactionMemberRepository()
+    PlayerActionRepository()
 
     if not PlayerRepository().exists_by_discord_id(discord_user.user_id, server_config.server.guild_id):
         new_player = Player(discord_id=discord_user.user_id, discord_guild_id=server_config.server.guild_id, server_id=server_config.server.server_id, username=discord_user.name, avatar=discord_user.display_avatar)
@@ -134,6 +137,7 @@ def get_player_profile(player: Player) -> PlayerProfile:
     faction = FactionRepository().get_by_id(faction_member.faction_id) if faction_member else None
     balances = PlayerBalanceRepository().get_all(player_id=player.player_id)
     bank_accounts = BankAccountRepository().get_all(player_id=player.player_id)
+    actions = PlayerActionRepository().get_all_by_player_id(player_id=player.player_id)
 
     return PlayerProfile(
         player, 
@@ -144,7 +148,8 @@ def get_player_profile(player: Player) -> PlayerProfile:
             faction.color
         ) if faction else None, 
         PlayerBalancesCollection(balances), 
-        PlayerBankAccountsCollection(bank_accounts)
+        PlayerBankAccountsCollection(bank_accounts),
+        PlayerActionsCollection(actions)
     )
 
 def ensure_users(server_config: ServerConfig, discord_users: list[DiscordUser] = []) -> list[PlayerProfile]:
