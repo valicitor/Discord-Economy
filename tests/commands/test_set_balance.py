@@ -10,20 +10,20 @@ from tests.helper.default_setup import DefaultSetup
 
 class TestSetBalanceCommand(unittest.TestCase):
     def setUp(self):
-        self.defaultSetup = DefaultSetup()
-        self.defaultSetup.setUp()
+        self.default_setup = DefaultSetup()
+        self.default_setup.setUp()
 
     def tearDown(self):
-        self.defaultSetup.tearDown()
+        self.default_setup.tearDown()
 
     def test_set_balance_cash(self):
         # Arrange
         amount = 50
-        player = self.defaultSetup.player_profile1
+        player = self.default_setup.player_profile1
 
         request = SetBalanceCommandRequest(
-            guild=self.defaultSetup.discord_guild,
-            user=self.defaultSetup.discord_user1,
+            guild=self.default_setup.discord_guild,
+            user=self.default_setup.discord_user1,
             account_type="Cash",
             amount=amount
         )

@@ -3,6 +3,7 @@ class PointOfInterest:
         if data:
             kwargs = {**data, **kwargs}
         self.poi_id: int|None = kwargs.get('poi_id')
+        self.server_id: int|None = kwargs.get('server_id')
         self.name: str|None = kwargs.get('name')
         self.type: str|None = kwargs.get('type')
         self.x: float = kwargs.get('x', 0.0)
@@ -12,6 +13,7 @@ class PointOfInterest:
     def to_dict(self):
         return {
             'poi_id': self.poi_id,
+            'server_id': self.server_id,
             'name': self.name,
             'type': self.type,
             'x': self.x,

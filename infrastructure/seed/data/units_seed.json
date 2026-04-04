@@ -2,28 +2,43 @@
     "version": "1.0",
     "units": {
         "data": [
-            { "name": "Stormtrooper",       "description": "A soldier of the Galactic Empire",                          "metadata": {} },
-            { "name": "Worker",             "description": "A hard worker from the Galactic Empire",                    "metadata": {} },
-            { "name": "B1-BattleDroid",     "description": "Standard B1 Droid.",                                        "metadata": {} },
-            { "name": "Droideka",           "description": "A shielded droid unit",                                     "metadata": {} },
-            { "name": "Buzz Droid",         "description": "A swarm of Buzz droids designed to target enemy armour",    "metadata": {} }
+            { "name": "Clone Trooper",           "description": "Republic soldier, genetically modified and trained from birth",     "metadata": { "faction": "Republic" } },
+            { "name": "Clone Commander",         "description": "Experienced leader of clone forces",                                "metadata": { "faction": "Republic" } },
+            { "name": "Worker",                  "description": "A hard worker from the Galactic Republic",                          "metadata": { "faction": "Republic" } },
+            { "name": "B1-BattleDroid",          "description": "Standard B1 Droid, cheap and expendable",                           "metadata": { "faction": "CIS" } },
+            { "name": "B2-SuperBattleDroid",     "description": "Heavily armed and armored droid",                                   "metadata": { "faction": "CIS" } },
+            { "name": "Droideka",                "description": "A shielded droid unit that rolls into position",                    "metadata": { "faction": "CIS" } },
+            { "name": "Buzz Droid Swarm",        "description": "A swarm of Buzz droids designed to target enemy armour",            "metadata": { "faction": "CIS" } }
         ]
     },
     "unit_stats": {
         "data": [
-            { "unit_name": "Stormtrooper",      "stat_key": "Race",         "stat_value": "Human" },
-            { "unit_name": "Stormtrooper",      "stat_key": "Weapon",       "stat_value": "Z-6 Rotary Blaster Cannon" },
-            { "unit_name": "Stormtrooper",      "stat_key": "Armor",        "stat_value": "Imperial Agent Armor" },
+            { "unit_name": "Clone Trooper",          "stat_key": "Race",     "stat_value": "Human" },
+            { "unit_name": "Clone Trooper",          "stat_key": "Weapon",   "stat_value": "DC-15A Blaster Rifle" },
+            { "unit_name": "Clone Trooper",          "stat_key": "Armor",    "stat_value": "Phase I Clone Armor" },
 
-            { "unit_name": "Worker",            "stat_key": "Race",         "stat_value": "Human" },
+            { "unit_name": "Clone Commander",        "stat_key": "Race",     "stat_value": "Human" },
+            { "unit_name": "Clone Commander",        "stat_key": "Weapon",   "stat_value": "DC-17 Blaster Pistol" },
+            { "unit_name": "Clone Commander",        "stat_key": "Armor",    "stat_value": "Phase II Clone Armor" },
+            { "unit_name": "Clone Commander",        "stat_key": "Extra",    "stat_value": "Vibroblade" },
 
-            { "unit_name": "B1-BattleDroid",    "stat_key": "Race",         "stat_value": "Human" },
-            { "unit_name": "B1-BattleDroid",    "stat_key": "Weapon",       "stat_value": "Z-6 Rotary Blaster Cannon" },
-            { "unit_name": "B1-BattleDroid",    "stat_key": "Armor",        "stat_value": "Imperial Agent Armor" },
+            { "unit_name": "Worker",                 "stat_key": "Race",     "stat_value": "Human" },
 
-            { "unit_name": "Droideka",          "stat_key": "Race",         "stat_value": "Human" },
-            
-            { "unit_name": "Buzz Droid",        "stat_key": "Race",         "stat_value": "Human" }
+            { "unit_name": "B1-BattleDroid",         "stat_key": "Race",     "stat_value": "B1-BattleDroid" },
+            { "unit_name": "B1-BattleDroid",         "stat_key": "Weapon",   "stat_value": "E-5 Blaster Rifle" },
+            { "unit_name": "B1-BattleDroid",         "stat_key": "Armor",    "stat_value": "Droid Plating" },
+
+            { "unit_name": "B2-SuperBattleDroid",    "stat_key": "Race",     "stat_value": "B2-BattleDroid" },
+            { "unit_name": "B2-SuperBattleDroid",    "stat_key": "Weapon",   "stat_value": "Wrist Blaster" },
+            { "unit_name": "B2-SuperBattleDroid",    "stat_key": "Armor",    "stat_value": "Heavy Droid Plating" },
+
+            { "unit_name": "Droideka",               "stat_key": "Race",     "stat_value": "Droideka" },
+            { "unit_name": "Droideka",               "stat_key": "Weapon",   "stat_value": "Twin Blaster Cannons" },
+            { "unit_name": "Droideka",               "stat_key": "Armor",    "stat_value": "Droideka Shield Generator" },
+
+            { "unit_name": "Buzz Droid Swarm",       "stat_key": "Race",     "stat_value": "Buzz Droid" },
+            { "unit_name": "Buzz Droid Swarm",       "stat_key": "Weapon",   "stat_value": "Cutting Torch" },
+            { "unit_name": "Buzz Droid Swarm",       "stat_key": "Armor",    "stat_value": "None" }
         ]
     }
 }

@@ -8,7 +8,18 @@ from infrastructure import (
     BankAccountRepository,
     FactionRepository,
     FactionMemberRepository,
-    PlayerActionRepository
+    PlayerActionRepository,
+    PointOfInterestRepository,
+    RaceRepository,
+    RaceStatRepository,
+    EquipmentRepository,
+    EquipmentStatRepository,
+    UnitRepository,
+    UnitStatRepository,
+    VehicleRepository,
+    VehicleStatRepository,
+    BusinessRepository,
+    ActionRepository
 )
 from application import DiscordGuild, DiscordUser
 from application.helpers.ensure_user import ensure_guild_and_users
@@ -32,6 +43,19 @@ class DefaultSetup:
         self.discord_user1 = DiscordUser(user_id=67900, name="TestUser1", display_avatar="avatar_url")
         self.discord_user2 = DiscordUser(user_id=67901, name="TestUser2", display_avatar="avatar_url")
         self.discord_user3 = DiscordUser(user_id=67902, name="TestUser3", display_avatar="avatar_url")
+
+        # Don't use default seeder pipe as the tables will remain in memory and will be cleared after tests
+        self.business_repository = BusinessRepository(db_path=":memory:")
+        self.action_repository = ActionRepository(db_path=":memory:")
+        self.POI_repository = PointOfInterestRepository(db_path=":memory:")
+        self.equipment_repository = EquipmentRepository(db_path=":memory:")
+        self.equipment_stat_repository = EquipmentStatRepository(db_path=":memory:")
+        self.race_repository = RaceRepository(db_path=":memory:")
+        self.race_stat_repository = RaceStatRepository(db_path=":memory:")
+        self.unit_repository = UnitRepository(db_path=":memory:")
+        self.unit_stat_repository = UnitStatRepository(db_path=":memory:")
+        self.vehicle_repository = VehicleRepository(db_path=":memory:")
+        self.vehicle_stat_repository = VehicleStatRepository(db_path=":memory:")
 
         self.server_config, [self.player_profile1, self.player_profile2, self.player_profile3] = ensure_guild_and_users(self.discord_guild, [self.discord_user1, self.discord_user2, self.discord_user3])
 
@@ -58,6 +82,10 @@ class DefaultSetup:
         self.faction_member_repository.delete_by_player_id(self.player_profile1.player.player_id)
         self.faction_member_repository.delete_by_player_id(self.player_profile2.player.player_id)
         self.faction_member_repository.delete_by_player_id(self.player_profile3.player.player_id)
+
+        self.business_repository.delete_all(self.server_config.server.server_id)
+        self.action_repository.delete_all()
+
         self.bank_account_repository.delete_all(self.player_profile1.player.player_id)
         self.player_balance_repository.delete_all(self.player_profile1.player.player_id)
         self.player_repository.delete(self.player_profile1.player)
@@ -69,6 +97,16 @@ class DefaultSetup:
         self.bank_account_repository.delete_all(self.player_profile3.player.player_id)
         self.player_balance_repository.delete_all(self.player_profile3.player.player_id)
         self.player_repository.delete(self.player_profile3.player)
+
+        self.POI_repository.delete_all(self.server_config.server.server_id)
+        self.equipment_repository.delete_all(self.server_config.server.server_id)
+        self.equipment_stat_repository.delete_all()
+        self.race_repository.delete_all(self.server_config.server.server_id)
+        self.race_stat_repository.delete_all()
+        self.unit_repository.delete_all(self.server_config.server.server_id)
+        self.unit_stat_repository.delete_all()
+        self.vehicle_repository.delete_all(self.server_config.server.server_id)
+        self.vehicle_stat_repository.delete_all()
 
         self.faction_repository.delete_all(self.server_config.server.server_id)
         self.bank_repository.delete_all(self.server_config.server.server_id)

@@ -15,10 +15,11 @@ class DiscordBalanceEmbed:
     @staticmethod
     def get_balance_embed(interaction: Interaction, response: GetBalanceQueryResponse):
         currency = get_default_currenncy(response.server_config)
+        hex_color = response.player.faction.color if response.player.faction and response.player.faction.color else None
 
         embed=discord.Embed(
-            description=f"Leaderboard Rank: **#{response.player.player.rank}**",
-            color=discord.Color.blue()
+            description=f"Leaderboard Rank: **#{response.player.player.rank}** \n Faction: **{response.player.faction.name if response.player.faction else 'None'}**",
+            color=discord.Colour.from_str(hex_color) if hex_color else discord.Color.blue()
         )
         
         embed.set_author(name=f"{response.player.player.username}", icon_url=f"{response.player.player.avatar}")
@@ -31,10 +32,11 @@ class DiscordBalanceEmbed:
     @staticmethod
     def withdraw_embed(interaction: Interaction, response: WithdrawCommandResponse):
         currency = get_default_currenncy(response.server_config)
+        hex_color = response.player.faction.color if response.player.faction and response.player.faction.color else None
 
         embed=discord.Embed(
             description=f"✅ Withdrew {currency}{response.amount} from your bank!",
-            color=discord.Color.blue()
+            color=discord.Colour.from_str(hex_color) if hex_color else discord.Color.blue()
         )
         
         embed.set_author(name=f"{response.player.player.username}", icon_url=f"{response.player.player.avatar}")
@@ -43,10 +45,11 @@ class DiscordBalanceEmbed:
     @staticmethod
     def deposit_embed(interaction: Interaction, response: DepositCommandResponse):
         currency = get_default_currenncy(response.server_config)
+        hex_color = response.player.faction.color if response.player.faction and response.player.faction.color else None
 
         embed=discord.Embed(
             description=f"✅ Deposited {currency}{response.amount} into your bank!",
-            color=discord.Color.blue()
+            color=discord.Colour.from_str(hex_color) if hex_color else discord.Color.blue()
         )
         
         embed.set_author(name=f"{response.player.player.username}", icon_url=f"{response.player.player.avatar}")
@@ -55,11 +58,12 @@ class DiscordBalanceEmbed:
     @staticmethod
     def pay_balance_embed(interaction: discord.Interaction, target: discord.User, response: PayCommandResponse):
         currency = get_default_currenncy(response.server_config)
-                
+        hex_color = response.player.faction.color if response.player.faction and response.player.faction.color else None
+      
         embed = discord.Embed(
             title=f"💳 Bank Account",
             description=f"{interaction.user.mention}, you have paid {target.mention} **{currency}{response.amount}**.",
-            color=discord.Color.blue()
+            color=discord.Colour.from_str(hex_color) if hex_color else discord.Color.blue()
         )
         return embed
     

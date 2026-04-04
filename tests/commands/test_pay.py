@@ -11,24 +11,24 @@ from tests.helper.default_setup import DefaultSetup
 
 class TestPayCommand(unittest.TestCase):
     def setUp(self):
-        self.defaultSetup = DefaultSetup()
-        self.defaultSetup.setUp()
+        self.default_setup = DefaultSetup()
+        self.default_setup.setUp()
 
     def tearDown(self):
-        self.defaultSetup.tearDown()
+        self.default_setup.tearDown()
 
     def test_pay_valid(self):
         # Arrange
         amount_to_transfer = 50
-        payer = self.defaultSetup.player_profile1
-        recipient = self.defaultSetup.player_profile2
+        payer = self.default_setup.player_profile1
+        recipient = self.default_setup.player_profile2
         initial_payer_balance = payer.balances[0].balance
         initial_recipient_balance = recipient.balances[0].balance
 
         request = PayCommandRequest(
-            guild=self.defaultSetup.discord_guild,
-            user=self.defaultSetup.discord_user1,
-            target=self.defaultSetup.discord_user2,
+            guild=self.default_setup.discord_guild,
+            user=self.default_setup.discord_user1,
+            target=self.default_setup.discord_user2,
             amount=amount_to_transfer
         )
 

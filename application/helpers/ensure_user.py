@@ -11,6 +11,7 @@ from domain import (
 )
 from domain import RecordNotFoundException, CreateFailedException
 from infrastructure import (
+    BaseRepository,
     PlayerRepository, 
     PlayerBalanceRepository,
     ServerRepository, 
@@ -21,6 +22,19 @@ from infrastructure import (
     FactionRepository,
     FactionMemberRepository,
     PlayerActionRepository
+)
+from infrastructure import (
+    PointOfInterestSeeder,
+    RacesSeeder,
+    RaceStatsSeeder,
+    EquipmentsSeeder,
+    EquipmentStatsSeeder,
+    UnitsSeeder,
+    UnitStatsSeeder,
+    VehiclesSeeder,
+    VehicleStatsSeeder,
+    BusinessesSeeder,
+    ActionsSeeder
 )
 from application import (
     DiscordGuild, 
@@ -79,6 +93,28 @@ def ensure_guild(discord_guild: DiscordGuild) -> ServerConfig:
         (server_setting_success, setting_id) = ServerSettingRepository().add(new_server_setting)
         if not server_setting_success:
             raise CreateFailedException(f"Failed to create default faction setting for guild ID {discord_guild.guild_id}.")
+        
+        try:
+            BaseRepository().begin_transaction()
+
+            BusinessesSeeder(server_id).Seed()
+            ActionsSeeder(server_id).Seed()
+
+            PointOfInterestSeeder(server_id).Seed()
+
+            EquipmentsSeeder(server_id).Seed()
+            EquipmentStatsSeeder(server_id).Seed()
+            RacesSeeder(server_id).Seed()
+            RaceStatsSeeder(server_id).Seed()
+            UnitsSeeder(server_id).Seed()
+            UnitStatsSeeder(server_id).Seed()
+            VehiclesSeeder(server_id).Seed()
+            VehicleStatsSeeder(server_id).Seed()
+
+            BaseRepository().commit_transaction()
+        except Exception as e:
+            BaseRepository().rollback_transaction()
+            raise CreateFailedException(f"Failed to seed initial data for guild ID {discord_guild.guild_id}: {str(e)}")
     
     server = ServerRepository().get_by_guild_id(discord_guild.guild_id)
     if server is None:

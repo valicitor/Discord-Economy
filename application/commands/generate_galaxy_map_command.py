@@ -5,6 +5,7 @@ from infrastructure import PointOfInterestRepository
 
 @dataclass
 class GenerateGalaxyMapCommandRequest:
+    server_id: int
     output_path: str = "starmap_full.png"
     show_grid: bool = True
 
@@ -19,7 +20,7 @@ class GenerateGalaxyMapCommand:
         return
 
     def execute(self) -> GenerateGalaxyMapCommandResponse:
-        pois = PointOfInterestRepository().get_all()
+        pois = PointOfInterestRepository().get_all(self.request.server_id)
         GalaxyMapGeneratorHandler().render_full_map(pois, self.request.output_path, self.request.show_grid)
 
         return GenerateGalaxyMapCommandResponse(success=True, output_path=self.request.output_path)

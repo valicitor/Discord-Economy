@@ -9,7 +9,7 @@ class BusinessesSeeder:
     def __init__(self, server_id: int|None = None):
         self.server_id = server_id
 
-    def Seed(self, seed_file: str) -> bool:
+    def Seed(self, seed_file: str|None = None) -> bool:
         if not seed_file:
             seed_file = os.path.join(BASE_DIR, "infrastructure", "seed", "data", "businesses_seed.json")
 
