@@ -42,6 +42,8 @@ from .persistence.transaction_repository import TransactionRepository
 from .persistence.faction_repository import FactionRepository
 from .persistence.faction_member_repository import FactionMemberRepository
 
+from .persistence.keyword_repository import KeywordRepository
+
 # --- Seeders ---
 from .seed.point_of_interest_seeder import PointOfInterestSeeder
 from .seed.businesses_seeder import BusinessesSeeder, ActionsSeeder
@@ -49,3 +51,4 @@ from .seed.races_seeder import RacesSeeder, RaceStatsSeeder
 from .seed.equipments_seeder import EquipmentsSeeder, EquipmentStatsSeeder
 from .seed.vehicles_seeder import VehiclesSeeder, VehicleStatsSeeder
 from .seed.units_seeder import UnitsSeeder, UnitStatsSeeder
+from .seed.keywords_seeder import KeywordsSeeder

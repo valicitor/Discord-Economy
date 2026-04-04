@@ -1,13 +1,13 @@
 import sqlite3
 from threading import Lock, RLock
 import atexit
-import logging
 
 class BaseRepository:
     _instance = None
     _instance_lock = Lock()
 
-    _transaction_active = False
+    # Shared transaction state per db_path
+    _transaction_active_by_db_path = {}
 
     _connections = {}
 
@@ -20,24 +20,26 @@ class BaseRepository:
     def __init__(self, seeder=None, db_path: str = None):
         if not hasattr(self, "_initialized"):
             self.db_path = db_path or "repository.db"
-            
+
             if self.db_path not in self._connections:
                 self._connections[self.db_path] = sqlite3.connect(self.db_path, check_same_thread=False)
 
             self._connections[self.db_path].row_factory = sqlite3.Row
 
+            # Initialize shared transaction state for this db_path
+            if self.db_path not in self._transaction_active_by_db_path:
+                self._transaction_active_by_db_path[self.db_path] = False
+
             self._lock = RLock()  # Use reentrant lock to prevent self-deadlocks
 
-            if isinstance(self, BaseRepository):
-                self.init_database()
+            self.init_database()
 
             atexit.register(self.close)
 
             self._initialized = True
 
-            if isinstance(self, BaseRepository):
-                if seeder: 
-                    seeder.Seed()
+            if seeder: 
+                seeder.Seed()
     
     def _acquire_lock(self, timeout=5):
         if not self._lock.acquire(timeout=timeout):
@@ -61,7 +63,8 @@ class BaseRepository:
         self._acquire_lock()
         try:
             self._ensure_connection()
-            if not self._transaction_active:
+            # Check shared transaction state
+            if not self._transaction_active_by_db_path[self.db_path]:
                 self._connections[self.db_path].commit()
         finally:
             self._release_lock()
@@ -88,9 +91,9 @@ class BaseRepository:
         self._acquire_lock()
         try:
             self._ensure_connection()
-            if not self._transaction_active:
+            if not self._transaction_active_by_db_path[self.db_path]:
                 self._connections[self.db_path].execute("BEGIN")
-                self._transaction_active = True
+                self._transaction_active_by_db_path[self.db_path] = True
         finally:
             self._release_lock()
 
@@ -98,9 +101,9 @@ class BaseRepository:
         self._acquire_lock()
         try:
             self._ensure_connection()
-            if self._transaction_active:
+            if self._transaction_active_by_db_path[self.db_path]:
                 self._connections[self.db_path].commit()
-                self._transaction_active = False
+                self._transaction_active_by_db_path[self.db_path] = False
         finally:
             self._release_lock()
 
@@ -108,9 +111,9 @@ class BaseRepository:
         self._acquire_lock()
         try:
             self._ensure_connection()
-            if self._transaction_active:
+            if self._transaction_active_by_db_path[self.db_path]:
                 self._connections[self.db_path].execute("ROLLBACK")
-                self._transaction_active = False
+                self._transaction_active_by_db_path[self.db_path] = False
         finally:
             self._release_lock()
 

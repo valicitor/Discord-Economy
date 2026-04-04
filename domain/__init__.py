@@ -41,6 +41,8 @@ from .models.transaction import Transaction
 from .models.faction import Faction
 from .models.faction_member import FactionMember
 
+from .models.keyword import Keyword
+
 # --- Exceptions ---
 from .exceptions.record_not_found_exception import RecordNotFoundException
 from .exceptions.create_failed_exception import CreateFailedException

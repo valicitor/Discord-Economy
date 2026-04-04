@@ -1,0 +1,15 @@
+{
+    "version": "1.0",
+    "keywords": {
+        "data": [
+            { "name": "Walker",       "description": "Ignores difficult terrain. Can move and shoot Heavy weapons.",                "metadata": {} },
+            { "name": "Flyer",        "description": "Can only be hit on 6+ by non-AA weapons. Moves double speed.",                "metadata": {} },
+            { "name": "Transport",    "description": "Can carry X infantry models (specified in description).",                     "metadata": {} },
+            { "name": "Scout",        "description": "Can deploy outside normal deployment zone.",                                  "metadata": {} },
+            { "name": "Heavy Armor",  "description": "Reduces AP by 1 (AP2 becomes AP1, etc.).",                                    "metadata": {} },
+            { "name": "Droid",        "description": "Immune to morale. Can be repaired by CIS engineer units.",                    "metadata": {} },
+            { "name": "Huge",         "description": "Blocks line of sight. Can be targeted by any weapon regardless of range.",    "metadata": {} },
+            { "name": "Artillery",    "description": "Can shoot at targets not visible to the firer.",                              "metadata": {} }
+        ]
+    }
+}
