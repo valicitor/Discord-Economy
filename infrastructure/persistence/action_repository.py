@@ -107,6 +107,14 @@ class ActionRepository(IRepository, BaseRepository):
 
             self.commit()
             return c.rowcount > 0
+    
+    def delete_all(self) -> bool:
+        with self._lock:
+            c = self.cursor()
+            c.execute("DELETE FROM actions")
+
+            self.commit()
+            return c.rowcount > 0
 
     def exists(self, action_id: int) -> bool:
         with self._lock:

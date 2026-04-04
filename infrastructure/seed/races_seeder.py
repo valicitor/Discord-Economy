@@ -29,7 +29,7 @@ class RacesSeeder:
             success, _ = RaceRepository().add(race)
             if not success:
                 has_failures = True
-
+                
         return has_failures
 
 class RaceStatsSeeder:

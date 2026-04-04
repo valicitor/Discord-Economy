@@ -10,11 +10,11 @@ from tests.helper.default_setup import DefaultSetup
 
 class TestSetCurrencySymbolCommand(unittest.TestCase):
     def setUp(self):
-        self.defaultSetup = DefaultSetup()
-        self.defaultSetup.setUp()
+        self.default_setup = DefaultSetup()
+        self.default_setup.setUp()
 
     def tearDown(self):
-        self.defaultSetup.tearDown()
+        self.default_setup.tearDown()
 
     def test_set_currency_symbol_valid(self):
         # Arrange
@@ -28,7 +28,7 @@ class TestSetCurrencySymbolCommand(unittest.TestCase):
         for emoji, symbol in currency_symbols:
             with self.subTest(emoji=emoji, symbol=symbol):
                 request = SetCurrencySymbolCommandRequest(
-                    guild=self.defaultSetup.discord_guild,
+                    guild=self.default_setup.discord_guild,
                     currency_symbol=emoji or symbol
                 )
 

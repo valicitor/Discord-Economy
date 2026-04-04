@@ -1,20 +1,80 @@
 {
-    "version": "1.0",
-    "equipments": {
-        "data": [
-            { "name": "Z-6 Rotary Blaster Cannon",      "slot": "Weapon",      "description": "A versatile blaster cannon",                    "metadata": {} },
-            { "name": "Imperial Agent Armor",           "slot": "Armor",       "description": "A set of armor worn by Imperial agents",         "metadata": {} }
-        ]
-    },
-    "equipment_stats": {
-        "data": [
-            { "equipment_name": "Z-6 Rotary Blaster Cannon",     "stat_key": "Attacks",  "stat_value": "3" },
-            { "equipment_name": "Z-6 Rotary Blaster Cannon",     "stat_key": "S",        "stat_value": "7" },
-            { "equipment_name": "Z-6 Rotary Blaster Cannon",     "stat_key": "AP",       "stat_value": "-2" },
-            { "equipment_name": "Z-6 Rotary Blaster Cannon",     "stat_key": "D",        "stat_value": "2" },
-            { "equipment_name": "Z-6 Rotary Blaster Cannon",     "stat_key": "Range",    "stat_value": "Far" },
+  "version": "1.0",
+  "equipments": {
+    "data": [
+        { "name": "DC-15A Blaster Rifle",       "slot": "Weapon",   "description": "Standard clone trooper rifle", "metadata": { "keywords": ["Reliable"] } },
+        { "name": "E-5 Blaster Rifle",          "slot": "Weapon",   "description": "Standard droid rifle", "metadata": { "keywords": [] } },
+        { "name": "Z-6 Rotary Blaster Cannon",  "slot": "Weapon",   "description": "High rate of fire", "metadata": { "keywords": ["Heavy", "Suppressive"] } },
+        { "name": "Vibroblade",                 "slot": "Weapon",   "description": "Melee combat blade", "metadata": { "keywords": ["Melee"] } },
+        { "name": "Twin Blaster Cannons",       "slot": "Weapon",   "description": "Droideka's primary armament", "metadata": { "keywords": ["Heavy"] } },
+        { "name": "Wrist Blaster",              "slot": "Weapon",   "description": "Built into B2 units", "metadata": {} },
+        { "name": "Cutting Torch",              "slot": "Weapon",   "description": "Buzz droid melee tool", "metadata": { "keywords": ["Melee", "Anti-Vehicle"] } },
 
-            { "equipment_name": "Imperial Agent Armor",          "stat_key": "Sv",       "stat_value": "3+" }
-        ]
-    }
+        { "name": "Thermal Detonator",          "slot": "Grenade",  "description": "Anti-personnel explosive", "metadata": { "keywords": ["Blast", "One Use"] } },
+
+        { "name": "Phase I Clone Armor",        "slot": "Armor",    "description": "Early war clone protection", "metadata": {} },
+        { "name": "Phase II Clone Armor",       "slot": "Armor",    "description": "Late war improved armor", "metadata": {} },
+        { "name": "Droid Plating",              "slot": "Armor",    "description": "Standard B1 casing", "metadata": {} },
+        { "name": "Droideka Shield Generator",  "slot": "Armor",    "description": "Rolling shield projector", "metadata": { "keywords": ["Shielded(2)"] } },
+        { "name": "Heavy Droid Plating",        "slot": "Armor",    "description": "B2 casing", "metadata": {} }
+    ]
+  },
+  "equipment_stats": {
+    "data": [
+        { "equipment_name": "DC-15A Blaster Rifle", "stat_key": "Attacks", "stat_value": "1" },
+        { "equipment_name": "DC-15A Blaster Rifle", "stat_key": "S", "stat_value": "4" },
+        { "equipment_name": "DC-15A Blaster Rifle", "stat_key": "AP", "stat_value": "0" },
+        { "equipment_name": "DC-15A Blaster Rifle", "stat_key": "D", "stat_value": "1" },
+        { "equipment_name": "DC-15A Blaster Rifle", "stat_key": "Range", "stat_value": "Far" },
+
+        { "equipment_name": "E-5 Blaster Rifle", "stat_key": "Attacks", "stat_value": "1" },
+        { "equipment_name": "E-5 Blaster Rifle", "stat_key": "S", "stat_value": "3" },
+        { "equipment_name": "E-5 Blaster Rifle", "stat_key": "AP", "stat_value": "0" },
+        { "equipment_name": "E-5 Blaster Rifle", "stat_key": "D", "stat_value": "1" },
+        { "equipment_name": "E-5 Blaster Rifle", "stat_key": "Range", "stat_value": "Close" },
+
+        { "equipment_name": "Z-6 Rotary Blaster Cannon", "stat_key": "Attacks", "stat_value": "4" },
+        { "equipment_name": "Z-6 Rotary Blaster Cannon", "stat_key": "S", "stat_value": "5" },
+        { "equipment_name": "Z-6 Rotary Blaster Cannon", "stat_key": "AP", "stat_value": "-1" },
+        { "equipment_name": "Z-6 Rotary Blaster Cannon", "stat_key": "D", "stat_value": "1" },
+        { "equipment_name": "Z-6 Rotary Blaster Cannon", "stat_key": "Range", "stat_value": "Far" },
+
+        { "equipment_name": "Vibroblade", "stat_key": "Attacks", "stat_value": "1" },
+        { "equipment_name": "Vibroblade", "stat_key": "S", "stat_value": "+1" },
+        { "equipment_name": "Vibroblade", "stat_key": "AP", "stat_value": "0" },
+        { "equipment_name": "Vibroblade", "stat_key": "D", "stat_value": "1" },
+        { "equipment_name": "Vibroblade", "stat_key": "Range", "stat_value": "Melee" },
+
+        { "equipment_name": "Thermal Detonator", "stat_key": "Attacks", "stat_value": "1" },
+        { "equipment_name": "Thermal Detonator", "stat_key": "S", "stat_value": "6" },
+        { "equipment_name": "Thermal Detonator", "stat_key": "AP", "stat_value": "-1" },
+        { "equipment_name": "Thermal Detonator", "stat_key": "D", "stat_value": "2" },
+        { "equipment_name": "Thermal Detonator", "stat_key": "Range", "stat_value": "Close" },
+
+        { "equipment_name": "Phase I Clone Armor", "stat_key": "Sv", "stat_value": "5+" },
+        { "equipment_name": "Phase II Clone Armor", "stat_key": "Sv", "stat_value": "4+" },
+        { "equipment_name": "Droid Plating", "stat_key": "Sv", "stat_value": "8+" },
+        { "equipment_name": "Droideka Shield Generator", "stat_key": "Sv", "stat_value": "3+" },
+
+        { "equipment_name": "Twin Blaster Cannons", "stat_key": "Attacks", "stat_value": "4" },
+        { "equipment_name": "Twin Blaster Cannons", "stat_key": "S", "stat_value": "5" },
+        { "equipment_name": "Twin Blaster Cannons", "stat_key": "AP", "stat_value": "1" },
+        { "equipment_name": "Twin Blaster Cannons", "stat_key": "D", "stat_value": "1" },
+        { "equipment_name": "Twin Blaster Cannons", "stat_key": "Range", "stat_value": "Long" },
+
+        { "equipment_name": "Wrist Blaster", "stat_key": "Attacks", "stat_value": "2" },
+        { "equipment_name": "Wrist Blaster", "stat_key": "S", "stat_value": "4" },
+        { "equipment_name": "Wrist Blaster", "stat_key": "AP", "stat_value": "0" },
+        { "equipment_name": "Wrist Blaster", "stat_key": "D", "stat_value": "1" },
+        { "equipment_name": "Wrist Blaster", "stat_key": "Range", "stat_value": "Medium" },
+
+        { "equipment_name": "Heavy Droid Plating", "stat_key": "Sv", "stat_value": "4+" },
+
+        { "equipment_name": "Cutting Torch", "stat_key": "Attacks", "stat_value": "3" },
+        { "equipment_name": "Cutting Torch", "stat_key": "S", "stat_value": "3" },
+        { "equipment_name": "Cutting Torch", "stat_key": "AP", "stat_value": "1" },
+        { "equipment_name": "Cutting Torch", "stat_key": "D", "stat_value": "1" },
+        { "equipment_name": "Cutting Torch", "stat_key": "Range", "stat_value": "Melee" }
+    ]
+  }
 }

@@ -10,16 +10,16 @@ from tests.helper.default_setup import DefaultSetup
 
 class TestGetLeaderboardQuery(unittest.TestCase):
     def setUp(self):
-        self.defaultSetup = DefaultSetup()
-        self.defaultSetup.setUp()
+        self.default_setup = DefaultSetup()
+        self.default_setup.setUp()
 
     def tearDown(self):
-        self.defaultSetup.tearDown()
+        self.default_setup.tearDown()
 
     def test_get_leaderboard_cash(self):
         # Arrange
         request = GetLeaderboardQueryRequest(
-            guild=self.defaultSetup.discord_guild,
+            guild=self.default_setup.discord_guild,
             page=1,
             sort_by="Cash"
         )
@@ -36,7 +36,7 @@ class TestGetLeaderboardQuery(unittest.TestCase):
     def test_get_leaderboard_bank(self):
         # Arrange
         request = GetLeaderboardQueryRequest(
-            guild=self.defaultSetup.discord_guild,
+            guild=self.default_setup.discord_guild,
             page=1,
             sort_by="Bank"
         )
@@ -53,7 +53,7 @@ class TestGetLeaderboardQuery(unittest.TestCase):
     def test_get_leaderboard_total(self):
         # Arrange
         request = GetLeaderboardQueryRequest(
-            guild=self.defaultSetup.discord_guild,
+            guild=self.default_setup.discord_guild,
             page=1,
             sort_by="Total"
         )

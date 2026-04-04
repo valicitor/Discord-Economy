@@ -10,22 +10,22 @@ from tests.helper.default_setup import DefaultSetup
 
 class TestDepositCommand(unittest.TestCase):
     def setUp(self):
-        self.defaultSetup = DefaultSetup()
-        self.defaultSetup.setUp()
+        self.default_setup = DefaultSetup()
+        self.default_setup.setUp()
 
     def tearDown(self):
-        self.defaultSetup.tearDown()
+        self.default_setup.tearDown()
 
     def test_valid_deposit(self):
         # Arrange
         amount_to_deposit = 50
-        player = self.defaultSetup.player_profile1
+        player = self.default_setup.player_profile1
         initial_balance = player.balances[0].balance
         initial_bank_balance = player.bank_accounts[0].balance
 
         deposit_request = DepositCommandRequest(
-            guild=self.defaultSetup.discord_guild,
-            user=self.defaultSetup.discord_user1,
+            guild=self.default_setup.discord_guild,
+            user=self.default_setup.discord_user1,
             amount=amount_to_deposit
         )
 
@@ -40,8 +40,8 @@ class TestDepositCommand(unittest.TestCase):
         # Arrange
         amount_to_deposit = -50
         deposit_request = DepositCommandRequest(
-            guild=self.defaultSetup.discord_guild,
-            user=self.defaultSetup.discord_user1,
+            guild=self.default_setup.discord_guild,
+            user=self.default_setup.discord_user1,
             amount=amount_to_deposit
         )
 
@@ -53,8 +53,8 @@ class TestDepositCommand(unittest.TestCase):
         # Arrange
         amount_to_deposit = 0
         deposit_request = DepositCommandRequest(
-            guild=self.defaultSetup.discord_guild,
-            user=self.defaultSetup.discord_user1,
+            guild=self.default_setup.discord_guild,
+            user=self.default_setup.discord_user1,
             amount=amount_to_deposit
         )
 
