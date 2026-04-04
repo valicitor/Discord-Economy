@@ -21,22 +21,8 @@ from infrastructure import (
     BusinessRepository,
     ActionRepository
 )
-from infrastructure import (
-    PointOfInterestSeeder,
-    RacesSeeder,
-    RaceStatsSeeder,
-    EquipmentsSeeder,
-    EquipmentStatsSeeder,
-    UnitsSeeder,
-    UnitStatsSeeder,
-    VehiclesSeeder,
-    VehicleStatsSeeder,
-    BusinessesSeeder,
-    ActionsSeeder
-)
 from application import DiscordGuild, DiscordUser
 from application.helpers.ensure_user import ensure_guild_and_users
-from infrastructure.persistence.race_repository import RaceRepository
 
 class DefaultSetup:
 

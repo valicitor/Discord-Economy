@@ -1,10 +1,13 @@
 import sqlite3
-from threading import Lock
+from threading import Lock, RLock
 import atexit
+import logging
 
 class BaseRepository:
     _instance = None
     _instance_lock = Lock()
+
+    _transaction_active = False
 
     _connections = {}
 
@@ -23,27 +26,53 @@ class BaseRepository:
 
             self._connections[self.db_path].row_factory = sqlite3.Row
 
-            self._lock = Lock()
+            self._lock = RLock()  # Use reentrant lock to prevent self-deadlocks
 
-            self.init_database()
+            if isinstance(self, BaseRepository):
+                self.init_database()
 
             atexit.register(self.close)
 
             self._initialized = True
 
-            if seeder: 
-                seeder.Seed()
+            if isinstance(self, BaseRepository):
+                if seeder: 
+                    seeder.Seed()
     
+    def _acquire_lock(self, timeout=5):
+        if not self._lock.acquire(timeout=timeout):
+            raise RuntimeError("Failed to acquire lock within timeout")
+
+    def _release_lock(self):
+        try:
+            self._lock.release()
+        except RuntimeError:
+            raise RuntimeError("Failed to release lock")
+
     def cursor(self):
-        self._ensure_connection()
-        return self._connections[self.db_path].cursor()
-    
+        self._acquire_lock()
+        try:
+            self._ensure_connection()
+            return self._connections[self.db_path].cursor()
+        finally:
+            self._release_lock()
+
     def commit(self):
-        self._ensure_connection()
-        self._connections[self.db_path].commit()
+        self._acquire_lock()
+        try:
+            self._ensure_connection()
+            if not self._transaction_active:
+                self._connections[self.db_path].commit()
+        finally:
+            self._release_lock()
 
     def execute(self, query: str):
-        self._connections[self.db_path].execute(query)
+        self._acquire_lock()
+        try:
+            self._ensure_connection()
+            self._connections[self.db_path].execute(query)
+        finally:
+            self._release_lock()
 
     def _ensure_connection(self):
         if self._connections[self.db_path] is None:
@@ -54,3 +83,37 @@ class BaseRepository:
             if self._connections[self.db_path]:
                 self._connections[self.db_path].close()
                 self._connections[self.db_path] = None
+
+    def begin_transaction(self):
+        self._acquire_lock()
+        try:
+            self._ensure_connection()
+            if not self._transaction_active:
+                self._connections[self.db_path].execute("BEGIN")
+                self._transaction_active = True
+        finally:
+            self._release_lock()
+
+    def commit_transaction(self):
+        self._acquire_lock()
+        try:
+            self._ensure_connection()
+            if self._transaction_active:
+                self._connections[self.db_path].commit()
+                self._transaction_active = False
+        finally:
+            self._release_lock()
+
+    def rollback_transaction(self):
+        self._acquire_lock()
+        try:
+            self._ensure_connection()
+            if self._transaction_active:
+                self._connections[self.db_path].execute("ROLLBACK")
+                self._transaction_active = False
+        finally:
+            self._release_lock()
+
+    def init_database(self):
+        """Placeholder for child classes to override."""
+        pass

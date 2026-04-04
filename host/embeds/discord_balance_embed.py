@@ -18,7 +18,7 @@ class DiscordBalanceEmbed:
         hex_color = response.player.faction.color if response.player.faction and response.player.faction.color else None
 
         embed=discord.Embed(
-            description=f"Leaderboard Rank: **#{response.player.player.rank}** \n Faction: **{response.player.faction.name}**",
+            description=f"Leaderboard Rank: **#{response.player.player.rank}** \n Faction: **{response.player.faction.name if response.player.faction else 'None'}**",
             color=discord.Colour.from_str(hex_color) if hex_color else discord.Color.blue()
         )
         
