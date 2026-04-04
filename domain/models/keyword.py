@@ -1,0 +1,19 @@
+class Keyword:
+    def __init__(self, data: dict = None, **kwargs):
+        if data:
+            kwargs = {**data, **kwargs}
+
+        self.keyword_id: int|None = kwargs.get('keyword_id')
+        self.server_id: int|None = kwargs.get('server_id')
+        self.name: str|None = kwargs.get('name')
+        self.description: str|None = kwargs.get('description')
+        self.metadata: dict = kwargs.get('metadata', {})  # flexible traits
+
+    def to_dict(self):
+        return {
+            'keyword_id': self.keyword_id,
+            'server_id': self.server_id,
+            'name': self.name,
+            'description': self.description,
+            'metadata': self.metadata
+        }

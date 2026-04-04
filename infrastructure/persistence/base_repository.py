@@ -1,7 +1,6 @@
 import sqlite3
 from threading import Lock, RLock
 import atexit
-import logging
 
 class BaseRepository:
     _instance = None
@@ -28,16 +27,14 @@ class BaseRepository:
 
             self._lock = RLock()  # Use reentrant lock to prevent self-deadlocks
 
-            if isinstance(self, BaseRepository):
-                self.init_database()
+            self.init_database()
 
             atexit.register(self.close)
 
             self._initialized = True
 
-            if isinstance(self, BaseRepository):
-                if seeder: 
-                    seeder.Seed()
+            if seeder: 
+                seeder.Seed()
     
     def _acquire_lock(self, timeout=5):
         if not self._lock.acquire(timeout=timeout):
