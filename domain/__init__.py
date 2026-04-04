@@ -39,7 +39,7 @@ from .models.unit_garrison import UnitGarrison
 from .models.transaction import Transaction
 
 from .models.faction import Faction
-from .models.faction_member import FactionMember#
+from .models.faction_member import FactionMember
 
 from .models.keyword import Keyword
 

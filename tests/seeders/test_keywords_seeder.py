@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.abspath(BASE_DIR))
 import unittest
 from tests.helper.default_setup import DefaultSetup
 
-class TestVehiclesSeeder(unittest.TestCase):
+class TestKeywordsSeeder(unittest.TestCase):
     def setUp(self):
         self.default_setup = DefaultSetup()
         self.default_setup.setUp()

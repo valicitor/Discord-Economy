@@ -21,8 +21,7 @@ from infrastructure import (
     BankAccountRepository,
     FactionRepository,
     FactionMemberRepository,
-    PlayerActionRepository,
-    KeywordRepository
+    PlayerActionRepository
 )
 from infrastructure import (
     PointOfInterestSeeder,
