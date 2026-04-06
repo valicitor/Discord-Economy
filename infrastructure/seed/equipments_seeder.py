@@ -9,7 +9,7 @@ class EquipmentsSeeder:
     def __init__(self, server_id: int):
         self.server_id = server_id
 
-    def Seed(self, seed_file: str|None = None) -> bool:
+    async def Seed(self, seed_file: str|None = None) -> bool:
         if not seed_file:
             seed_file = os.path.join(BASE_DIR, "infrastructure", "seed", "data", "equipments_seed.json")
 
@@ -18,7 +18,7 @@ class EquipmentsSeeder:
 
         equipment_data = data["equipments"]
 
-        existing = EquipmentRepository().get_all(self.server_id)
+        existing = await EquipmentRepository().get_all(self.server_id)
         if existing:
             return False
 
@@ -26,7 +26,7 @@ class EquipmentsSeeder:
         for r in equipment_data["data"]:
             equipment = Equipment(data=r)
             equipment.server_id = self.server_id
-            success, _ = EquipmentRepository().add(equipment)
+            success, _ = await EquipmentRepository().add(equipment)
             if not success:
                 has_failures = True
 
@@ -37,7 +37,7 @@ class EquipmentStatsSeeder:
     def __init__(self, server_id: int):
         self.server_id = server_id
 
-    def Seed(self, seed_file: str|None = None) -> bool:
+    async def Seed(self, seed_file: str|None = None) -> bool:
         if not seed_file:
             seed_file = os.path.join(BASE_DIR, "infrastructure", "seed", "data", "equipments_seed.json")
 
@@ -48,7 +48,7 @@ class EquipmentStatsSeeder:
 
         has_failures = False
         for stat in equipment_stat_data["data"]:
-            equipment = EquipmentRepository().get_by_name(stat["equipment_name"], self.server_id)
+            equipment = await EquipmentRepository().get_by_name(stat["equipment_name"], self.server_id)
             if not equipment:
                 continue  # or raise error
 
@@ -58,7 +58,7 @@ class EquipmentStatsSeeder:
                 stat_value=stat["stat_value"]
             )
 
-            success, _ = EquipmentStatRepository().add(equipment_stat)
+            success, _ = await EquipmentStatRepository().add(equipment_stat)
             if not success:
                 has_failures = True
 

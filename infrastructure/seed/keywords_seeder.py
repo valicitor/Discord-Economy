@@ -9,7 +9,7 @@ class KeywordsSeeder:
     def __init__(self, server_id: int|None = None):
         self.server_id = server_id
 
-    def Seed(self, seed_file: str|None = None) -> bool:
+    async def Seed(self, seed_file: str|None = None) -> bool:
         if not seed_file:
             seed_file = os.path.join(BASE_DIR, "infrastructure", "seed", "data", "keywords_seed.json")
 
@@ -18,7 +18,7 @@ class KeywordsSeeder:
 
         keyword_data = data["keywords"]
 
-        existing = KeywordRepository().get_all(self.server_id)
+        existing = await KeywordRepository().get_all(self.server_id)
         if existing:
             return False
 
@@ -26,7 +26,7 @@ class KeywordsSeeder:
         for k in keyword_data["data"]:
             keyword = Keyword(data=k)
             keyword.server_id = self.server_id
-            success, _ = KeywordRepository().add(keyword)
+            success, _ = await KeywordRepository().add(keyword)
             if not success:
                 has_failures = True
 

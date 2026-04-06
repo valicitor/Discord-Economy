@@ -1,3 +1,4 @@
+import asyncio
 import sys
 import os
 
@@ -11,10 +12,10 @@ from tests.helper.default_setup import DefaultSetup
 class TestGetLeaderboardQuery(unittest.TestCase):
     def setUp(self):
         self.default_setup = DefaultSetup()
-        self.default_setup.setUp()
+        asyncio.run(self.default_setup.setUp())
 
     def tearDown(self):
-        self.default_setup.tearDown()
+        asyncio.run(self.default_setup.tearDown())
 
     def test_get_leaderboard_cash(self):
         # Arrange
@@ -25,7 +26,7 @@ class TestGetLeaderboardQuery(unittest.TestCase):
         )
 
         # Act
-        cash_response = GetLeaderboardQuery(request).execute()
+        cash_response = asyncio.run(GetLeaderboardQuery(request).execute())
 
         # Assert
         self.assertEqual(cash_response.server_config.server.guild_id, 12345)
@@ -42,7 +43,7 @@ class TestGetLeaderboardQuery(unittest.TestCase):
         )
 
         # Act
-        bank_response = GetLeaderboardQuery(request).execute()
+        bank_response = asyncio.run(GetLeaderboardQuery(request).execute())
 
         # Assert
         self.assertEqual(bank_response.server_config.server.guild_id, 12345)
@@ -59,7 +60,7 @@ class TestGetLeaderboardQuery(unittest.TestCase):
         )
 
         # Act
-        total_response = GetLeaderboardQuery(request).execute()
+        total_response = asyncio.run(GetLeaderboardQuery(request).execute())
 
         # Assert
         self.assertEqual(total_response.server_config.server.guild_id, 12345)

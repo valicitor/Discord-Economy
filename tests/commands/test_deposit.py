@@ -1,3 +1,4 @@
+import asyncio
 import sys
 import os
 
@@ -11,10 +12,10 @@ from tests.helper.default_setup import DefaultSetup
 class TestDepositCommand(unittest.TestCase):
     def setUp(self):
         self.default_setup = DefaultSetup()
-        self.default_setup.setUp()
+        asyncio.run(self.default_setup.setUp())
 
     def tearDown(self):
-        self.default_setup.tearDown()
+        asyncio.run(self.default_setup.tearDown())
 
     def test_valid_deposit(self):
         # Arrange
@@ -30,7 +31,7 @@ class TestDepositCommand(unittest.TestCase):
         )
 
         # Act
-        response = DepositCommand(deposit_request).execute()
+        response = asyncio.run(DepositCommand(deposit_request).execute())
 
         # Assert
         self.assertEqual(response.player.balances[0].balance, initial_balance - amount_to_deposit)
@@ -47,7 +48,7 @@ class TestDepositCommand(unittest.TestCase):
 
         # Act & Assert
         with self.assertRaises(ValueError):  # Assuming ValueError is raised for invalid deposits
-            DepositCommand(deposit_request).execute()
+            asyncio.run(DepositCommand(deposit_request).execute())
 
     def test_zero_deposit(self):
         # Arrange
@@ -60,7 +61,7 @@ class TestDepositCommand(unittest.TestCase):
 
         # Act & Assert
         with self.assertRaises(ValueError):  # Assuming ValueError is raised for invalid deposits
-            DepositCommand(deposit_request).execute()
+            asyncio.run(DepositCommand(deposit_request).execute())
 
 
 

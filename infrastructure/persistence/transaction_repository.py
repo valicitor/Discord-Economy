@@ -8,10 +8,8 @@ class TransactionRepository(IRepository, BaseRepository):
     def __init__(self, seeder=None, db_path: str = None):
         super().__init__(seeder=seeder, db_path=db_path or "repository.db")
 
-    def init_database(self):
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
+    async def init_database(self):
+        await self.execute("""
                 CREATE TABLE IF NOT EXISTS transactions (
                     transaction_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     player_id INTEGER NOT NULL,
@@ -24,83 +22,65 @@ class TransactionRepository(IRepository, BaseRepository):
                     FOREIGN KEY(currency_id) REFERENCES currencies(currency_id)
                 )
             """)
-            self.execute("PRAGMA journal_mode=WAL;")
-            self.commit()
+        await self.execute("PRAGMA journal_mode=WAL;")
 
     # ---------- Queries ----------
 
-    def get_by_id(self, transaction_id: int) -> Optional[Transaction]:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "SELECT * FROM transactions WHERE transaction_id = ?", (transaction_id,)
-            )
-            row = c.fetchone()
-            return Transaction(data=dict(row)) if row else None
+    async def get_by_id(self, transaction_id: int) -> Optional[Transaction]:
+        query = "SELECT * FROM transactions WHERE transaction_id = ?"
+        params = (transaction_id,)
+        row = await self.fetchrow(query, params)
+        return Transaction(data=dict(row)) if row else None
 
-    def get_all(self) -> List[Transaction]:
-        with self._lock:
-            c = self.cursor()
-            c.execute("SELECT * FROM transactions")
-            return [Transaction(data=dict(row)) for row in c.fetchall()]
+    async def get_all(self) -> List[Transaction]:
+        query = "SELECT * FROM transactions"
+        rows = await self.fetch(query)
+        return [Transaction(data=dict(row)) for row in rows]
 
     # ---------- Mutations ----------
 
-    def add(self, transaction: Transaction) -> tuple[bool, int]:
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
-                INSERT INTO transactions (
-                    player_id, type, currency_id, amount, reference_id
-
-                )
-                VALUES (?, ?, ?, ?, ?)
-            """, (
-                transaction.player_id,
-                transaction.type,
-                transaction.currency_id,
-                transaction.amount,
-                transaction.reference_id
-            ))
-
-            self.commit()
-            return (c.rowcount > 0, c.lastrowid)
-
-    def update(self, transaction: Transaction) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
-                UPDATE transactions
-                SET player_id = ?, type = ?, currency_id = ?, amount = ?, reference_id = ?
-                WHERE transaction_id = ?
-            """, (
-                transaction.player_id,
-                transaction.type,
-                transaction.currency_id,
-                transaction.amount,
-                transaction.reference_id,
-                transaction.transaction_id
-            ))
-
-            self.commit()
-            return c.rowcount > 0
-
-    def delete(self, transaction: Transaction) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "DELETE FROM transactions WHERE transaction_id = ?",
-                (transaction.transaction_id,)
+    async def add(self, transaction: Transaction) -> tuple[bool, int]:
+        query = """
+            INSERT INTO transactions (
+                player_id, type, currency_id, amount, reference_id
             )
+            VALUES (?, ?, ?, ?, ?)
+        """
+        params = (
+            transaction.player_id,
+            transaction.type,
+            transaction.currency_id,
+            transaction.amount,
+            transaction.reference_id
+        )
+        last_id = await self.insert(query, params)
+        return (last_id > 0, last_id)
 
-            self.commit()
-            return c.rowcount > 0
+    async def update(self, transaction: Transaction) -> bool:
+        query = """
+            UPDATE transactions
+            SET player_id = ?, type = ?, currency_id = ?, amount = ?, reference_id = ?
+            WHERE transaction_id = ?
+        """
+        params = (
+            transaction.player_id,
+            transaction.type,
+            transaction.currency_id,
+            transaction.amount,
+            transaction.reference_id,
+            transaction.transaction_id
+        )
+        last_id = await self.update(query, params)
+        return last_id > 0
 
-    def exists(self, transaction_id: int) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "SELECT 1 FROM transactions WHERE transaction_id = ?",
-                (transaction_id,)
-            )
-            return c.fetchone() is not None
+    async def delete(self, transaction: Transaction) -> bool:
+        query = "DELETE FROM transactions WHERE transaction_id = ?"
+        params = (transaction.transaction_id,)
+        last_id = await self.delete(query, params)
+        return last_id > 0
+
+    async def exists(self, transaction_id: int) -> bool:
+        query = "SELECT 1 FROM transactions WHERE transaction_id = ?"
+        params = (transaction_id,)
+        rows = await self.fetch(query, params)
+        return len(rows) > 0

@@ -29,11 +29,11 @@ class DepositCommand:
 
         return
 
-    def execute(self) -> DepositCommandResponse:
+    async def execute(self) -> DepositCommandResponse:
         if self.request.amount is None or self.request.amount <= 0:
             raise ValueError("Deposit amount must be greater than zero.")
 
-        server_config, player_profile = ensure_guild_and_user(self.request.guild, self.request.user)
+        server_config, player_profile = await ensure_guild_and_user(self.request.guild, self.request.user)
 
         _, default_currency = server_config.server_settings.get_by_key("default_currency_id")
         _, default_bank = server_config.server_settings.get_by_key("default_bank_id")
@@ -47,15 +47,15 @@ class DepositCommand:
     
         bank_account.balance = int(bank_account.balance) + self.request.amount
 
-        balance_success = PlayerBalanceRepository().update(balance)
+        balance_success = await PlayerBalanceRepository().update(balance)
         if not balance_success:
             raise UpdateFailedException("Failed to update player balance. Please try again.")
-        balance = PlayerBalanceRepository().get_by_id(balance.balance_id)
+        balance = await PlayerBalanceRepository().get_by_id(balance.balance_id)
 
-        bank_account_success = BankAccountRepository().update(bank_account)
+        bank_account_success = await BankAccountRepository().update(bank_account)
         if not bank_account_success:
             raise UpdateFailedException("Failed to update bank account. Please try again.")
-        bank_account = BankAccountRepository().get_by_id(bank_account.account_id)
+        bank_account = await BankAccountRepository().get_by_id(bank_account.account_id)
 
         player_profile.balances[i] = balance
         player_profile.bank_accounts[j] = bank_account

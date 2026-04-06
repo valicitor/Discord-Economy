@@ -8,10 +8,8 @@ class ServerRepository(IRepository, BaseRepository):
     def __init__(self, seeder=None, db_path: str = None):
         super().__init__(seeder=seeder, db_path=db_path or "repository.db")
 
-    def init_database(self):
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
+    async def init_database(self):
+        await self.execute("""
                 CREATE TABLE IF NOT EXISTS servers (
                     server_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     guild_id INTEGER UNIQUE NOT NULL,
@@ -19,93 +17,70 @@ class ServerRepository(IRepository, BaseRepository):
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             """)
-            self.execute("PRAGMA journal_mode=WAL;")
-            self.commit()
+        await self.execute("PRAGMA journal_mode=WAL;")
 
     # ---------- Queries ----------
 
-    def get_by_id(self, server_id: int) -> Optional[Server]:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "SELECT * FROM servers WHERE server_id = ?", (server_id,)
-            )
-            row = c.fetchone()
-            return Server(data=dict(row)) if row else None
+    async def get_by_id(self, server_id: int) -> Optional[Server]:
+        query = "SELECT * FROM servers WHERE server_id = ?"
+        params = (server_id,)
+        row = await self.fetchrow(query, params)
+        return Server(data=dict(row)) if row else None
     
-    def get_by_guild_id(self, guild_id: int) -> Optional[Server]:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "SELECT * FROM servers WHERE guild_id = ?", (guild_id,)
-            )
-            row = c.fetchone()
-            return Server(data=dict(row)) if row else None
+    async def get_by_guild_id(self, guild_id: int) -> Optional[Server]:
+        query = "SELECT * FROM servers WHERE guild_id = ?"
+        params = (guild_id,)
+        row = await self.fetchrow(query, params)
+        return Server(data=dict(row)) if row else None
 
-    def get_all(self) -> List[Server]:
-        with self._lock:
-            c = self.cursor()
-            c.execute("SELECT * FROM servers")
-            return [Server(data=dict(row)) for row in c.fetchall()]
+    async def get_all(self) -> List[Server]:
+        query = "SELECT * FROM servers"
+        rows = await self.fetch(query)
+        return [Server(data=dict(row)) for row in rows]
 
     # ---------- Mutations ----------
 
-    def add(self, server: Server) -> tuple[bool, int]:
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
-                INSERT INTO servers (
-                    guild_id, name
-                )
-                VALUES (?, ?)
-            """, (
-                server.guild_id,
-                server.name
-            ))
-
-            self.commit()
-            return (c.rowcount > 0, c.lastrowid)
-
-    def update(self, server: Server) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
-                UPDATE servers
-                SET name = ?
-                WHERE server_id = ?
-            """, (
-                server.name,
-                server.server_id
-            ))
-
-            self.commit()
-            return c.rowcount > 0
-
-    def delete(self, server: Server) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "DELETE FROM servers WHERE server_id = ?",
-                (server.server_id,)
+    async def add(self, server: Server) -> tuple[bool, int]:
+        query = """
+            INSERT INTO servers (
+                guild_id, name
             )
+            VALUES (?, ?)
+        """
+        params = (
+            server.guild_id,
+            server.name
+        )
+        last_id = await self.insert(query, params)
+        return (last_id > 0, last_id)
 
-            self.commit()
-            return c.rowcount > 0
+    async def update(self, server: Server) -> bool:
+        query = """
+            UPDATE servers
+            SET name = ?
+            WHERE server_id = ?
+        """
+        params = (
+            server.name,
+            server.server_id
+        )
+        last_id = await self.update(query, params)
+        return last_id > 0
 
-    def exists(self, server_id: int) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "SELECT 1 FROM servers WHERE server_id = ?",
-                (server_id,)
-            )
-            return c.fetchone() is not None
+    async def delete(self, server: Server) -> bool:
+        query = "DELETE FROM servers WHERE server_id = ?"
+        params = (server.server_id,)
+        last_id = await self.delete(query, params)
+        return last_id > 0
+
+    async def exists(self, server_id: int) -> bool:
+        query = "SELECT 1 FROM servers WHERE server_id = ?"
+        params = (server_id,)
+        rows = await self.fetch(query, params)
+        return len(rows) > 0
     
-    def exists_by_guild_id(self, guild_id: int) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "SELECT 1 FROM servers WHERE guild_id = ?",
-                (guild_id,)
-            )
-            return c.fetchone() is not None
+    async def exists_by_guild_id(self, guild_id: int) -> bool:
+        query = "SELECT 1 FROM servers WHERE guild_id = ?"
+        params = (guild_id,)
+        rows = await self.fetch(query, params)
+        return len(rows) > 0

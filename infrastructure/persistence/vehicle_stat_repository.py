@@ -8,10 +8,8 @@ class VehicleStatRepository(IRepository, BaseRepository):
     def __init__(self, seeder=None, db_path: str = None):
         super().__init__(seeder=seeder, db_path=db_path or "repository.db")
 
-    def init_database(self):
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
+    async def init_database(self):
+        await self.execute("""
                 CREATE TABLE IF NOT EXISTS vehicle_stats (
                     vehicle_stat_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     vehicle_id INTEGER NOT NULL,
@@ -20,94 +18,72 @@ class VehicleStatRepository(IRepository, BaseRepository):
                     FOREIGN KEY(vehicle_id) REFERENCES vehicles(vehicle_id)
                 )
             """)
-            self.execute("PRAGMA journal_mode=WAL;")
-            self.commit()
+        await self.execute("PRAGMA journal_mode=WAL;")
 
     # ---------- Queries ----------
 
-    def get_by_id(self, vehicle_stat_id: int) -> Optional[VehicleStat]:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "SELECT * FROM vehicle_stats WHERE vehicle_stat_id = ?", (vehicle_stat_id,)
-            )
-            row = c.fetchone()
-            return VehicleStat(data=dict(row)) if row else None
+    async def get_by_id(self, vehicle_stat_id: int) -> Optional[VehicleStat]:
+        query = "SELECT * FROM vehicle_stats WHERE vehicle_stat_id = ?"
+        params = (vehicle_stat_id,)
+        row = await self.fetchrow(query, params)
+        return VehicleStat(data=dict(row)) if row else None
 
-    def get_by_key(self, stat_key: str, vehicle_id: int) -> Optional[VehicleStat]:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "SELECT * FROM vehicle_stats WHERE stat_key = ? AND vehicle_id = ?", (stat_key, vehicle_id)
-            )
-            row = c.fetchone()
-            return VehicleStat(data=dict(row)) if row else None
+    async def get_by_key(self, stat_key: str, vehicle_id: int) -> Optional[VehicleStat]:
+        query = "SELECT * FROM vehicle_stats WHERE stat_key = ? AND vehicle_id = ?"
+        params = (stat_key, vehicle_id)
+        row = await self.fetchrow(query, params)
+        return VehicleStat(data=dict(row)) if row else None
 
-    def get_all(self) -> List[VehicleStat]:
-        with self._lock:
-            c = self.cursor()
-            c.execute("SELECT * FROM vehicle_stats")
-            return [VehicleStat(data=dict(row)) for row in c.fetchall()]
+    async def get_all(self) -> List[VehicleStat]:
+        query = "SELECT * FROM vehicle_stats"
+        rows = await self.fetch(query)
+        return [VehicleStat(data=dict(row)) for row in rows]
 
     # ---------- Mutations ----------
 
-    def add(self, vehicle_stat: VehicleStat) -> tuple[bool, int]:
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
-                INSERT INTO vehicle_stats (
-                    vehicle_id, stat_key, stat_value
-                )
-                VALUES (?, ?, ?)
-            """, (
-                vehicle_stat.vehicle_id,
-                vehicle_stat.stat_key,
-                vehicle_stat.stat_value
-            ))
-
-            self.commit()
-            return (c.rowcount > 0, c.lastrowid)
-
-    def update(self, vehicle_stat: VehicleStat) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
-                UPDATE vehicle_stats
-                SET vehicle_id = ?, stat_key = ?, stat_value = ?
-                WHERE vehicle_stat_id = ?
-            """, (
-                vehicle_stat.vehicle_id,
-                vehicle_stat.stat_key,
-                vehicle_stat.stat_value,
-                vehicle_stat.vehicle_stat_id
-            ))
-
-            self.commit()
-            return c.rowcount > 0
-
-    def delete(self, vehicle_stat: VehicleStat) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "DELETE FROM vehicle_stats WHERE vehicle_stat_id = ?",
-                (vehicle_stat.vehicle_stat_id,)
+    async def add(self, vehicle_stat: VehicleStat) -> tuple[bool, int]:
+        query = """
+            INSERT INTO vehicle_stats (
+                vehicle_id, stat_key, stat_value
             )
+            VALUES (?, ?, ?)
+        """
+        params = (
+            vehicle_stat.vehicle_id,
+            vehicle_stat.stat_key,
+            vehicle_stat.stat_value
+        )
+        last_id = await self.insert(query, params)
+        return (last_id > 0, last_id)
 
-            self.commit()
-            return c.rowcount > 0
+    async def update(self, vehicle_stat: VehicleStat) -> bool:
+        query = """
+            UPDATE vehicle_stats
+            SET vehicle_id = ?, stat_key = ?, stat_value = ?
+            WHERE vehicle_stat_id = ?
+        """
+        params = (
+            vehicle_stat.vehicle_id,
+            vehicle_stat.stat_key,
+            vehicle_stat.stat_value,
+            vehicle_stat.vehicle_stat_id
+        )
+        last_id = await self.update(query, params)
+        return last_id > 0
 
-    def delete_all(self) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute("DELETE FROM vehicle_stats")
-            self.commit()
-            return c.rowcount > 0
+    async def delete(self, vehicle_stat: VehicleStat) -> bool:
+        query = "DELETE FROM vehicle_stats WHERE vehicle_stat_id = ?"
+        params = (vehicle_stat.vehicle_stat_id,)
+        last_id = await self.delete(query, params)
+        return last_id > 0
 
-    def exists(self, vehicle_stat_id: int) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "SELECT 1 FROM vehicle_stats WHERE vehicle_stat_id = ?",
-                (vehicle_stat_id,)
-            )
-            return c.fetchone() is not None
+    async def delete_all(self) -> bool:
+        query = "DELETE FROM vehicle_stats"
+        last_id = await self.delete(query)
+        return last_id > 0
+
+    async def exists(self, vehicle_stat_id: int) -> bool:
+        query = "SELECT 1 FROM vehicle_stats WHERE vehicle_stat_id = ?"
+        params = (vehicle_stat_id,)
+        rows = await self.fetch(query, params)
+        return len(rows) > 0

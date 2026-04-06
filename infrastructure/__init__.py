@@ -22,6 +22,7 @@ from .persistence.player_action_repository import PlayerActionRepository
 from .persistence.action_log_repository import ActionLogRepository
 
 from .persistence.point_of_interest_repository import PointOfInterestRepository
+from .persistence.location_repository import LocationRepository
 
 from .persistence.race_repository import RaceRepository
 from .persistence.race_stat_repository import RaceStatRepository
@@ -45,7 +46,7 @@ from .persistence.faction_member_repository import FactionMemberRepository
 from .persistence.keyword_repository import KeywordRepository
 
 # --- Seeders ---
-from .seed.point_of_interest_seeder import PointOfInterestSeeder
+from .seed.point_of_interest_seeder import PointOfInterestSeeder, LocationsSeeder
 from .seed.businesses_seeder import BusinessesSeeder, ActionsSeeder
 from .seed.races_seeder import RacesSeeder, RaceStatsSeeder
 from .seed.equipments_seeder import EquipmentsSeeder, EquipmentStatsSeeder

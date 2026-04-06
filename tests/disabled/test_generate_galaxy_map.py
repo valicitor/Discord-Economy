@@ -31,29 +31,13 @@ class TestGenerateGalaxyMapCommand(unittest.TestCase):
         self.default_setup = DefaultSetup()
         self.default_setup.setUp()
 
-        _, enemy_faction_id = self.default_setup.faction_repository.add(Faction(name="Enemy Faction", description="Enemy", color="#FF0000", owner_id=self.default_setup.player_profile3.player.player_id, server_id=self.default_setup.server_config.server.server_id))
-        self.default_setup.faction_member_repository.delete_by_player_id(self.default_setup.player_profile3.player.player_id)  # Remove existing faction membership
-        _, member_id = self.default_setup.faction_member_repository.add(FactionMember(faction_id=enemy_faction_id, player_id=self.default_setup.player_profile3.player.player_id, role="Leader"))
-
-        poi = self.default_setup.POI_repository.get_all(self.default_setup.server_config.server.server_id)[0]
-        poi.owner_player_id = self.default_setup.player_profile3.player.player_id
-        self.default_setup.POI_repository.update(poi)
-
-        _, ally_faction_id = self.default_setup.faction_repository.add(Faction(name="Ally Faction", description="Ally", color="#00FF00", owner_id=self.default_setup.player_profile1.player.player_id, server_id=self.default_setup.server_config.server.server_id))
-        self.default_setup.faction_member_repository.delete_by_player_id(self.default_setup.player_profile1.player.player_id)  # Remove existing faction membership
-        _, member_id = self.default_setup.faction_member_repository.add(FactionMember(faction_id=ally_faction_id, player_id=self.default_setup.player_profile1.player.player_id, role="Leader"))
-
-        poi = self.default_setup.POI_repository.get_all(self.default_setup.server_config.server.server_id)[2]
-        poi.owner_player_id = self.default_setup.player_profile1.player.player_id
-        self.default_setup.POI_repository.update(poi)
-
     def tearDown(self):
         self.default_setup.tearDown()
 
     def test_generate_galaxy_map(self):
         # Arrange
         request = GenerateGalaxyMapCommandRequest(
-            server_id=self.default_setup.server_config.server.server_id,
+            guild=self.default_setup.discord_guild,
             output_path="test_galaxy_map.png", 
             show_grid=True
         )
@@ -62,9 +46,8 @@ class TestGenerateGalaxyMapCommand(unittest.TestCase):
         response = GenerateGalaxyMapCommand(request).execute()
 
         # Assert
-        pois = self.default_setup.POI_repository.get_all(self.default_setup.server_config.server.server_id)
-        self.assertGreater(len(pois), 0)  # Assuming the seed file has at least 1 POI
-
+        locations = self.default_setup.location_repository.get_all()
+        self.assertGreater(len(locations), 0)  # Assuming the seed file has at least 1 location
         self.assertTrue(response.success)
         self.assertEqual(response.output_path, "test_galaxy_map.png")
 

@@ -8,10 +8,8 @@ class RaceStatRepository(IRepository, BaseRepository):
     def __init__(self, seeder=None, db_path: str = None):
         super().__init__(seeder=seeder, db_path=db_path or "repository.db")
 
-    def init_database(self):
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
+    async def init_database(self):
+        await self.execute("""
                 CREATE TABLE IF NOT EXISTS race_stats (
                     race_stat_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     race_id INTEGER NOT NULL,
@@ -20,93 +18,78 @@ class RaceStatRepository(IRepository, BaseRepository):
                     FOREIGN KEY(race_id) REFERENCES races(race_id)
                 )
             """)
-            self.execute("PRAGMA journal_mode=WAL;")
-            self.commit()
+        await self.execute("PRAGMA journal_mode=WAL;")
 
     # ---------- Queries ----------
 
-    def get_by_id(self, race_stat_id: int) -> Optional[RaceStat]:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "SELECT * FROM race_stats WHERE race_stat_id = ?", (race_stat_id,)
-            )
-            row = c.fetchone()
-            return RaceStat(data=dict(row)) if row else None
+    async def get_by_id(self, race_stat_id: int) -> Optional[RaceStat]:
+        query = "SELECT * FROM race_stats WHERE race_stat_id = ?"
+        params = (race_stat_id,)
+        row = await self.fetchrow(query, params)
+        return RaceStat(data=dict(row)) if row else None
     
-    def get_by_key(self, stat_key: str, race_id: int) -> Optional[RaceStat]:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "SELECT * FROM race_stats WHERE stat_key = ? AND race_id = ?", (stat_key, race_id)
-            )
-            row = c.fetchone()
-            return RaceStat(data=dict(row)) if row else None
+    async def get_by_key(self, stat_key: str, race_id: int) -> Optional[RaceStat]:
+        query = "SELECT * FROM race_stats WHERE stat_key = ? AND race_id = ?"
+        params = (stat_key, race_id)
+        row = await self.fetchrow(query, params)
+        return RaceStat(data=dict(row)) if row else None
 
-    def get_all(self) -> List[RaceStat]:
-        with self._lock:
-            c = self.cursor()
-            c.execute("SELECT * FROM race_stats")
-            return [RaceStat(data=dict(row)) for row in c.fetchall()]
+    async def get_all(self, race_id: int|None = None) -> List[RaceStat]:
+        if race_id is not None:
+            query = "SELECT * FROM race_stats WHERE race_id = ?"
+            params = (race_id,)
+        else:
+            query = "SELECT * FROM race_stats"
+            params = ()
+        rows = await self.fetch(query, params)
+        return [RaceStat(data=dict(row)) for row in rows]
 
     # ---------- Mutations ----------
 
-    def add(self, race_stat: RaceStat) -> tuple[bool, int]:
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
-                INSERT INTO race_stats (
-                    race_id, stat_key, stat_value
-                )
-                VALUES (?, ?, ?)
-            """, (
-                race_stat.race_id,
-                race_stat.stat_key,
-                race_stat.stat_value
-            ))
-
-            self.commit()
-            return (c.rowcount > 0, c.lastrowid)
-
-    def update(self, race_stat: RaceStat) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
-                UPDATE race_stats
-                SET race_id = ?, stat_key = ?, stat_value = ?
-                WHERE race_stat_id = ?
-            """, (
-                race_stat.race_id,
-                race_stat.stat_key,
-                race_stat.stat_value,
-                race_stat.race_stat_id
-            ))
-
-            self.commit()
-            return c.rowcount > 0
-
-    def delete(self, race_stat: RaceStat) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "DELETE FROM race_stats WHERE race_stat_id = ?",
-                (race_stat.race_stat_id,)
+    async def add(self, race_stat: RaceStat) -> tuple[bool, int]:
+        query = """
+            INSERT INTO race_stats (
+                race_id, stat_key, stat_value
             )
+            VALUES (?, ?, ?)
+        """
+        params = (
+            race_stat.race_id,
+            race_stat.stat_key,
+            race_stat.stat_value
+        )
+        last_id = await self.insert(query, params)
+        return (last_id > 0, last_id)
 
-            self.commit()
-            return c.rowcount > 0
+    async def update(self, race_stat: RaceStat) -> bool:
+        query = """
+            UPDATE race_stats
+            SET race_id = ?, stat_key = ?, stat_value = ?
+            WHERE race_stat_id = ?
+        """
+        params = (
+            race_stat.race_id,
+            race_stat.stat_key,
+            race_stat.stat_value,
+            race_stat.race_stat_id
+        )
+        last_id = await self.update(query, params)
+        return last_id > 0
+
+    async def delete(self, race_stat: RaceStat) -> bool:
+        query = "DELETE FROM race_stats WHERE race_stat_id = ?"
+        params = (race_stat.race_stat_id,)
+        last_id = await self.delete(query, params)
+        return last_id > 0
     
-    def delete_all(self) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute("DELETE FROM race_stats")
-            self.commit()
-            return c.rowcount > 0
+    async def delete_all(self) -> bool:
+        query = "DELETE FROM race_stats"
+        params = ()
+        last_id = await self.delete(query, params)
+        return last_id > 0
 
-    def exists(self, race_stat_id: int) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "SELECT 1 FROM race_stats WHERE race_stat_id = ?", (race_stat_id,)
-            )
-            return c.fetchone() is not None
+    async def exists(self, race_stat_id: int) -> bool:
+        query = "SELECT 1 FROM race_stats WHERE race_stat_id = ?"
+        params = (race_stat_id,)
+        rows = await self.fetch(query, params)
+        return len(rows) > 0

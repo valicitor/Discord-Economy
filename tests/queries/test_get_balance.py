@@ -1,3 +1,4 @@
+import asyncio
 import sys
 import os
 
@@ -11,10 +12,10 @@ from tests.helper.default_setup import DefaultSetup
 class TestGetBalanceQuery(unittest.TestCase):
     def setUp(self):
         self.default_setup = DefaultSetup()
-        self.default_setup.setUp()
+        asyncio.run(self.default_setup.setUp())
 
     def tearDown(self):
-        self.default_setup.tearDown()
+        asyncio.run(self.default_setup.tearDown())
 
     def test_get_balance_valid(self):
         # Arrange
@@ -28,7 +29,7 @@ class TestGetBalanceQuery(unittest.TestCase):
         )
 
         # Act
-        response = GetBalanceQuery(request).execute()
+        response = asyncio.run(GetBalanceQuery(request).execute())
 
         # Assert
         self.assertEqual(response.server_config.server.guild_id, 12345)

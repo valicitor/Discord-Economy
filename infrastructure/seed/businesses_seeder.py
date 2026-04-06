@@ -9,7 +9,7 @@ class BusinessesSeeder:
     def __init__(self, server_id: int|None = None):
         self.server_id = server_id
 
-    def Seed(self, seed_file: str|None = None) -> bool:
+    async def Seed(self, seed_file: str|None = None) -> bool:
         if not seed_file:
             seed_file = os.path.join(BASE_DIR, "infrastructure", "seed", "data", "businesses_seed.json")
 
@@ -18,7 +18,7 @@ class BusinessesSeeder:
 
         business_data = data["businesses"]
 
-        existing = BusinessRepository().get_all(self.server_id)
+        existing = await BusinessRepository().get_all(self.server_id)
         if existing:
             return False
 
@@ -26,7 +26,7 @@ class BusinessesSeeder:
         for b in business_data["data"]:
             business = Business(data=b)
             business.server_id = self.server_id
-            success, _ = BusinessRepository().add(business)
+            success, _ = await BusinessRepository().add(business)
             if not success:
                 has_failures = True
 
@@ -36,7 +36,7 @@ class ActionsSeeder:
     def __init__(self, server_id: int):
         self.server_id = server_id
 
-    def Seed(self, seed_file: str|None = None) -> bool:
+    async def Seed(self, seed_file: str|None = None) -> bool:
         if not seed_file:
             seed_file = os.path.join(BASE_DIR, "infrastructure", "seed", "data", "businesses_seed.json")
 
@@ -47,14 +47,14 @@ class ActionsSeeder:
 
         has_failures = False
         for action in action_data["data"]:
-            business = BusinessRepository().get_by_name(action["business_name"], self.server_id)
+            business = await BusinessRepository().get_by_name(action["business_name"], self.server_id)
             if not business:
                 continue  # or raise error
 
             action_obj = Action(data=action)
             action_obj.business_id = business.business_id
 
-            success, _ = ActionRepository().add(action_obj)
+            success, _ = await ActionRepository().add(action_obj)
             if not success:
                 has_failures = True
 

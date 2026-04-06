@@ -8,10 +8,8 @@ class PlayerRepository(IRepository, BaseRepository):
     def __init__(self, seeder=None, db_path: str = None):
         super().__init__(seeder=seeder, db_path=db_path or "repository.db")
 
-    def init_database(self):
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
+    async def init_database(self):
+        await self.execute("""
                 CREATE TABLE IF NOT EXISTS players (
                     player_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     server_id INTEGER NOT NULL,
@@ -23,13 +21,12 @@ class PlayerRepository(IRepository, BaseRepository):
                     FOREIGN KEY(server_id) REFERENCES servers(server_id)
                 )
             """)
-            c.execute("CREATE INDEX IF NOT EXISTS idx_players_discord ON players(discord_id, discord_guild_id)")
-            self.execute("PRAGMA journal_mode=WAL;")
-            self.commit()
+        await self.execute("CREATE INDEX IF NOT EXISTS idx_players_discord ON players(discord_id, discord_guild_id)")
+        await self.execute("PRAGMA journal_mode=WAL;")
 
     # ---------- Queries ----------
 
-    def get_by_id(self, player_id: int) -> Optional[Player]:
+    async def get_by_id(self, player_id: int) -> Optional[Player]:
         query = f"""
             SELECT 
                 p.*,
@@ -44,16 +41,12 @@ class PlayerRepository(IRepository, BaseRepository):
             WHERE p.player_id = ?
             GROUP BY p.player_id
         """
+
+        row = await self.fetchrow(query, (player_id,))
+        return Player(data=dict(row)) if row else None
     
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                query, (player_id,)
-            )
-            row = c.fetchone()
-            return Player(data=dict(row)) if row else None
         
-    def get_by_discord_id(self, discord_id: int) -> Optional[Player]:
+    async def get_by_discord_id(self, discord_id: int) -> Optional[Player]:
         query = f"""
             SELECT 
                 p.*,
@@ -68,14 +61,11 @@ class PlayerRepository(IRepository, BaseRepository):
             WHERE p.discord_id = ?
             GROUP BY p.player_id
         """
-    
-        with self._lock:
-            c = self.cursor()
-            c.execute(query, (discord_id,))
-            row = c.fetchone()
-            return Player(data=dict(row)) if row else None
+        
+        row = await self.fetchrow(query, (discord_id,))
+        return Player(data=dict(row)) if row else None
 
-    def get_all(self, server_id: int = None) -> List[Player]:
+    async def get_all(self, server_id: int = None) -> List[Player]:
         query = f"""
             SELECT 
                 p.*,
@@ -94,15 +84,12 @@ class PlayerRepository(IRepository, BaseRepository):
             params.append(server_id)
         query += " GROUP BY p.player_id"
 
-        with self._lock:
-            c = self.cursor()
-            if params:
-                c.execute(query, params)
-            else:
-                c.execute(query)
-            return [Player(data=dict(row)) for row in c.fetchall()]
+        params = tuple(params)
+        rows = await self.fetch(query, params)
+        return [Player(data=dict(row)) for row in rows]
+    
 
-    def get_all_by_discord_guild(self, discord_guild_id: int) -> List[Player]:
+    async def get_all_by_discord_guild(self, discord_guild_id: int) -> List[Player]:
         query = f"""
             SELECT 
                 p.*,
@@ -117,17 +104,13 @@ class PlayerRepository(IRepository, BaseRepository):
             WHERE p.discord_guild_id = ?
             GROUP BY p.player_id
         """
-        with self._lock:
-            c = self.cursor()
-            c.execute(query, (discord_guild_id,))
-            return [Player(data=dict(row)) for row in c.fetchall()]
+        rows = await self.fetch(query, (discord_guild_id,))
+        return [Player(data=dict(row)) for row in rows]
 
     # ---------- Mutations ----------
 
-    def add(self, player: Player) -> tuple[bool, int]:
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
+    async def add(self, player: Player) -> tuple[bool, int]:
+        last_id = await self.insert("""
                 INSERT INTO players (
                     discord_id, discord_guild_id, server_id, username, avatar
                 )
@@ -140,14 +123,11 @@ class PlayerRepository(IRepository, BaseRepository):
                 player.username,
                 player.avatar
             ))
+        
+        return (last_id > 0, last_id)
 
-            self.commit()
-            return (c.rowcount > 0, c.lastrowid)
-
-    def update(self, player: Player) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
+    async def update(self, player: Player) -> bool:
+        last_id = await self.update("""
                 UPDATE players
                 SET username = ?, avatar = ?, discord_guild_id = ?, server_id = ?
                 WHERE discord_id = ?
@@ -158,59 +138,44 @@ class PlayerRepository(IRepository, BaseRepository):
                 player.server_id,
                 player.discord_id
             ))
+        return last_id > 0
 
-            self.commit()
-            return c.rowcount > 0
-
-    def delete(self, player: Player) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "DELETE FROM players WHERE (discord_id = ? AND discord_guild_id = ?) OR player_id = ?",
-                (player.discord_id, player.discord_guild_id, player.player_id)
-            )
-
-            self.commit()
-            return c.rowcount > 0
+    async def delete(self, player: Player) -> bool:
+        last_id = await self.delete("""
+                DELETE FROM players WHERE (discord_id = ? AND discord_guild_id = ?) OR player_id = ?
+            """, (
+                player.discord_id,
+                player.discord_guild_id,
+                player.player_id
+            ))
+        return last_id > 0
     
-    def delete_all(self, server_id: int) -> int:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "DELETE FROM players WHERE server_id = ?",
-                (server_id,)
-            )
+    async def delete_all(self, server_id: int) -> int:
+        last_id = await self.delete(
+            "DELETE FROM players WHERE server_id = ?",
+            (server_id,)
+        )
+        return last_id
 
-            self.commit()
-            return c.rowcount
+    async def exists(self, player_id: int) -> bool:
+        query = "SELECT 1 FROM players WHERE player_id = ?"
+        params = (player_id,)
+        rows = await self.fetch(query, params)
+        return len(rows) > 0
 
-    def exists(self, player_id: int) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "SELECT 1 FROM players WHERE player_id = ?", (player_id,)
-            )
-            return c.fetchone() is not None
-
-    def exists_by_discord_id(self, discord_id: int, discord_guild_id: int) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "SELECT 1 FROM players WHERE discord_id = ? AND discord_guild_id = ?",
-                (discord_id, discord_guild_id)
-            )
-            return c.fetchone() is not None
+    async def exists_by_discord_id(self, discord_id: int, discord_guild_id: int) -> bool:
+        query = "SELECT 1 FROM players WHERE discord_id = ? AND discord_guild_id = ?"
+        params = (discord_id, discord_guild_id)
+        rows = await self.fetch(query, params)
+        return len(rows) > 0
     
     # ---------- Custom Methods ----------
 
-    def get_count(self, server_id: int) -> int:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "SELECT COUNT(*) as count FROM players WHERE server_id = ?", (server_id,)
-            )
-            row = c.fetchone()
-            return row["count"] if row else 0
+    async def get_count(self, server_id: int) -> int:
+        query = "SELECT COUNT(*) as count FROM players WHERE server_id = ?"
+        params = (server_id,)
+        rows = await self.fetch(query, params)
+        return rows[0]["count"] if rows else 0
 
     def _get_sort_column(self, sort_by: str) -> str:
         mapping = {
@@ -224,7 +189,7 @@ class PlayerRepository(IRepository, BaseRepository):
 
         return mapping[sort_by]
 
-    def get_leaderboard(self, server_id: int, page: int, sort_by: str = "Total") -> List[Player]:
+    async def get_leaderboard(self, server_id: int, page: int, sort_by: str = "Total") -> List[Player]:
         query = f"""
             SELECT 
                 p.*,
@@ -248,9 +213,5 @@ class PlayerRepository(IRepository, BaseRepository):
             query += " LIMIT 10 OFFSET ?"
             params.append(offset)
 
-        with self._lock:
-            c = self.cursor()
-            
-            c.execute(query, params)
-
-            return [Player(data=dict(row)) for row in c.fetchall()]
+        rows = await self.fetch(query, params)
+        return [Player(data=dict(row)) for row in rows]

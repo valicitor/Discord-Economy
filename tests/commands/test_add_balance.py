@@ -1,3 +1,4 @@
+import asyncio
 import sys
 import os
 
@@ -11,10 +12,10 @@ from tests.helper.default_setup import DefaultSetup
 class TestAddBalanceCommand(unittest.TestCase):
     def setUp(self):
         self.default_setup = DefaultSetup()
-        self.default_setup.setUp()
+        asyncio.run(self.default_setup.setUp())
 
     def tearDown(self):
-        self.default_setup.tearDown()
+        asyncio.run(self.default_setup.tearDown())
 
     def test_add_balance_cash(self):
         # Arrange
@@ -30,7 +31,7 @@ class TestAddBalanceCommand(unittest.TestCase):
         )
 
         # Act
-        response = AddBalanceCommand(request).execute()
+        response = asyncio.run(AddBalanceCommand(request).execute())
 
         # Assert
         self.assertEqual(response.player.balances[0].balance, initial_balance + amount_to_add)
@@ -49,7 +50,7 @@ class TestAddBalanceCommand(unittest.TestCase):
         )
 
         # Act
-        response = AddBalanceCommand(request).execute()
+        response = asyncio.run(AddBalanceCommand(request).execute())
 
         # Assert
         self.assertEqual(response.player.bank_accounts[0].balance, initial_bank_balance + amount_to_add)

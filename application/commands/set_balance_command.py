@@ -29,8 +29,8 @@ class SetBalanceCommand:
 
         return
 
-    def execute(self) -> SetBalanceCommandResponse:
-        server_config, player_profile = ensure_guild_and_user(self.request.guild, self.request.user)
+    async def execute(self) -> SetBalanceCommandResponse:
+        server_config, player_profile = await ensure_guild_and_user(self.request.guild, self.request.user)
 
         if self.request.account_type == "Cash":
             _, default_currency = server_config.server_settings.get_by_key("default_currency_id")
@@ -38,11 +38,11 @@ class SetBalanceCommand:
             i, balance = player_profile.balances.get_by_currency_id(int(default_currency.value))
             balance.balance = self.request.amount
 
-            success = PlayerBalanceRepository().update(balance)
+            success = await PlayerBalanceRepository().update(balance)
             if not success:
                 raise UpdateFailedException("Failed to update player balance. Please try again.")
             
-            balance = PlayerBalanceRepository().get_by_id(balance.balance_id)
+            balance = await PlayerBalanceRepository().get_by_id(balance.balance_id)
 
             player_profile.balances[i] = balance
         elif self.request.account_type == "Bank":
@@ -51,11 +51,11 @@ class SetBalanceCommand:
             i, bank_account = player_profile.bank_accounts.get_by_bank_id(int(default_bank.value))
             bank_account.balance = self.request.amount
 
-            success = BankAccountRepository().update(bank_account)
+            success = await BankAccountRepository().update(bank_account)
             if not success:
                 raise UpdateFailedException("Failed to update bank account. Please try again.")
             
-            bank_account = BankAccountRepository().get_by_id(bank_account.account_id)
+            bank_account = await BankAccountRepository().get_by_id(bank_account.account_id)
 
             player_profile.bank_accounts[i] = bank_account
 

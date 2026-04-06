@@ -9,7 +9,7 @@ class RacesSeeder:
     def __init__(self, server_id: int):
         self.server_id = server_id
 
-    def Seed(self, seed_file: str|None = None) -> bool:
+    async def Seed(self, seed_file: str|None = None) -> bool:
         if not seed_file:
             seed_file = os.path.join(BASE_DIR, "infrastructure", "seed", "data", "races_seed.json")
 
@@ -18,7 +18,7 @@ class RacesSeeder:
 
         race_data = data["races"]
 
-        existing = RaceRepository().get_all(self.server_id)
+        existing = await RaceRepository().get_all(self.server_id)
         if existing:
             return False
 
@@ -26,7 +26,7 @@ class RacesSeeder:
         for r in race_data["data"]:
             race = Race(data=r)
             race.server_id = self.server_id
-            success, _ = RaceRepository().add(race)
+            success, _ = await RaceRepository().add(race)
             if not success:
                 has_failures = True
                 
@@ -36,7 +36,7 @@ class RaceStatsSeeder:
     def __init__(self, server_id: int):
         self.server_id = server_id
 
-    def Seed(self, seed_file: str|None = None) -> bool:
+    async def Seed(self, seed_file: str|None = None) -> bool:
         if not seed_file:
             seed_file = os.path.join(BASE_DIR, "infrastructure", "seed", "data", "races_seed.json")
 
@@ -47,7 +47,7 @@ class RaceStatsSeeder:
 
         has_failures = False
         for stat in race_stat_data["data"]:
-            race = RaceRepository().get_by_name(stat["race_name"], self.server_id)
+            race = await RaceRepository().get_by_name(stat["race_name"], self.server_id)
             if not race:
                 continue  # or raise error
 
@@ -57,7 +57,7 @@ class RaceStatsSeeder:
                 stat_value=stat["stat_value"]
             )
 
-            success, _ = RaceStatRepository().add(race_stat)
+            success, _ = await RaceStatRepository().add(race_stat)
             if not success:
                 has_failures = True
 

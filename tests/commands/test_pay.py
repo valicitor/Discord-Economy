@@ -1,3 +1,4 @@
+import asyncio
 import sys
 import os
 
@@ -12,10 +13,10 @@ from tests.helper.default_setup import DefaultSetup
 class TestPayCommand(unittest.TestCase):
     def setUp(self):
         self.default_setup = DefaultSetup()
-        self.default_setup.setUp()
+        asyncio.run(self.default_setup.setUp())
 
     def tearDown(self):
-        self.default_setup.tearDown()
+        asyncio.run(self.default_setup.tearDown())
 
     def test_pay_valid(self):
         # Arrange
@@ -33,7 +34,7 @@ class TestPayCommand(unittest.TestCase):
         )
 
         # Act
-        response = PayCommand(request).execute()
+        response = asyncio.run(PayCommand(request).execute())
 
         # Assert
         self.assertEqual(response.player.balances[0].balance, initial_payer_balance - amount_to_transfer)

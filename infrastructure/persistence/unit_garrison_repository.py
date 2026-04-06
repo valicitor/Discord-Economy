@@ -8,10 +8,8 @@ class UnitGarrisonRepository(IRepository, BaseRepository):
     def __init__(self, seeder=None, db_path: str = None):
         super().__init__(seeder=seeder, db_path=db_path or "repository.db")
 
-    def init_database(self):
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
+    async def init_database(self):
+        await self.execute("""
                 CREATE TABLE IF NOT EXISTS unit_garrisons (
                     garrison_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     unit_id INTEGER NOT NULL,
@@ -21,78 +19,61 @@ class UnitGarrisonRepository(IRepository, BaseRepository):
                     FOREIGN KEY(poi_id) REFERENCES points_of_interest(poi_id)
                 )
             """)
-            self.execute("PRAGMA journal_mode=WAL;")
-            self.commit()
+        await self.execute("PRAGMA journal_mode=WAL;")
 
     # ---------- Queries ----------
 
-    def get_by_id(self, garrison_id: int) -> Optional[UnitGarrison]:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "SELECT * FROM unit_garrisons WHERE garrison_id = ?", (garrison_id,)
-            )
-            row = c.fetchone()
-            return UnitGarrison(data=dict(row)) if row else None
+    async def get_by_id(self, garrison_id: int) -> Optional[UnitGarrison]:
+        query = "SELECT * FROM unit_garrisons WHERE garrison_id = ?"
+        params = (garrison_id,)
+        row = await self.fetchrow(query, params)
+        return UnitGarrison(data=dict(row)) if row else None
 
-    def get_all(self) -> List[UnitGarrison]:
-        with self._lock:
-            c = self.cursor()
-            c.execute("SELECT * FROM unit_garrisons")
-            return [UnitGarrison(data=dict(row)) for row in c.fetchall()]
+    async def get_all(self) -> List[UnitGarrison]:
+        query = "SELECT * FROM unit_garrisons"
+        rows = await self.fetch(query)
+        return [UnitGarrison(data=dict(row)) for row in rows]
 
     # ---------- Mutations ----------
 
-    def add(self, garrison: UnitGarrison) -> tuple[bool, int]:
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
-                INSERT INTO unit_garrisons (
-                    unit_id, poi_id, assigned_at
-                )
-                VALUES (?, ?, ?)
-            """, (
-                garrison.unit_id,
-                garrison.poi_id,
-                garrison.assigned_at
-            ))
-
-            self.commit()
-            return (c.rowcount > 0, c.lastrowid)
-
-    def update(self, garrison: UnitGarrison) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
-                UPDATE unit_garrisons
-                SET unit_id = ?, poi_id = ?, assigned_at = ?
-                WHERE garrison_id = ?
-            """, (
-                garrison.unit_id,
-                garrison.poi_id,
-                garrison.assigned_at,
-                garrison.garrison_id
-            ))
-
-            self.commit()
-            return c.rowcount > 0
-
-    def delete(self, garrison: UnitGarrison) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "DELETE FROM unit_garrisons WHERE garrison_id = ?",
-                (garrison.garrison_id,)
+    async def add(self, garrison: UnitGarrison) -> tuple[bool, int]:
+        query = """
+            INSERT INTO unit_garrisons (
+                unit_id, poi_id, assigned_at
             )
+            VALUES (?, ?, ?)
+        """
+        params = (
+            garrison.unit_id,
+            garrison.poi_id,
+            garrison.assigned_at
+        )
+        last_id = await self.insert(query, params)
+        return (last_id > 0, last_id)
 
-            self.commit()
-            return c.rowcount > 0
+    async def update(self, garrison: UnitGarrison) -> bool:
+        query = """
+            UPDATE unit_garrisons
+            SET unit_id = ?, poi_id = ?, assigned_at = ?
+            WHERE garrison_id = ?
+        """
+        params = (
+            garrison.unit_id,
+            garrison.poi_id,
+            garrison.assigned_at,
+            garrison.garrison_id
+        )
+        last_id = await self.update(query, params)
+        return last_id > 0
 
-    def exists(self, garrison_id: int) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "SELECT 1 FROM unit_garrisons WHERE garrison_id = ?",
-                (garrison_id,)
-            )
-            return c.fetchone() is not None
+    async def delete(self, garrison: UnitGarrison) -> bool:
+        query = "DELETE FROM unit_garrisons WHERE garrison_id = ?"
+        params = (garrison.garrison_id,)
+        last_id = await self.delete(query, params)
+        return last_id > 0
+
+    async def exists(self, garrison_id: int) -> bool:
+        query = "SELECT 1 FROM unit_garrisons WHERE garrison_id = ?"
+        params = (garrison_id,)
+        rows = await self.fetch(query, params)
+        return len(rows) > 0
