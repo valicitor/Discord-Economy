@@ -15,8 +15,8 @@ from application import (
 class DiscordBalanceEmbed:
 
     @staticmethod
-    def get_balance_embed(interaction: Interaction, response: GetBalanceQueryResponse):
-        currency = get_default_currenncy(response.server_config)
+    async def get_balance_embed(interaction: Interaction, response: GetBalanceQueryResponse):
+        currency = await get_default_currenncy(response.server_config)
         hex_color = response.player.faction.color if response.player.faction and response.player.faction.color else None
 
         embed=discord.Embed(
@@ -32,8 +32,8 @@ class DiscordBalanceEmbed:
         return embed
     
     @staticmethod
-    def withdraw_embed(interaction: Interaction, response: WithdrawCommandResponse):
-        currency = get_default_currenncy(response.server_config)
+    async def withdraw_embed(interaction: Interaction, response: WithdrawCommandResponse):
+        currency = await get_default_currenncy(response.server_config)
         hex_color = response.player.faction.color if response.player.faction and response.player.faction.color else None
 
         embed=discord.Embed(
@@ -45,8 +45,8 @@ class DiscordBalanceEmbed:
         return embed
 
     @staticmethod
-    def deposit_embed(interaction: Interaction, response: DepositCommandResponse):
-        currency = get_default_currenncy(response.server_config)
+    async def deposit_embed(interaction: Interaction, response: DepositCommandResponse):
+        currency = await get_default_currenncy(response.server_config)
         hex_color = response.player.faction.color if response.player.faction and response.player.faction.color else None
 
         embed=discord.Embed(
@@ -58,8 +58,8 @@ class DiscordBalanceEmbed:
         return embed
 
     @staticmethod
-    def pay_balance_embed(interaction: discord.Interaction, target: discord.User, response: PayCommandResponse):
-        currency = get_default_currenncy(response.server_config)
+    async def pay_balance_embed(interaction: discord.Interaction, target: discord.User, response: PayCommandResponse):
+        currency = await get_default_currenncy(response.server_config)
         hex_color = response.player.faction.color if response.player.faction and response.player.faction.color else None
       
         embed = discord.Embed(
@@ -70,8 +70,8 @@ class DiscordBalanceEmbed:
         return embed
     
     @staticmethod
-    def get_leaderboard_embed(interaction: discord.Interaction, response: GetLeaderboardQueryResponse):
-        currency = get_default_currenncy(response.server_config)
+    async def get_leaderboard_embed(interaction: discord.Interaction, response: GetLeaderboardQueryResponse):
+        currency = await get_default_currenncy(response.server_config)
 
         description=f"View the leaderboard here:\n"
         for player_profile in response.players:
@@ -89,7 +89,7 @@ class DiscordBalanceEmbed:
         return embed
     
     @staticmethod
-    def get_equipment_stat_block_embed(interaction: discord.Interaction, response: GetEquipmentQueryResponse):
+    async def get_equipment_stat_block_embed(interaction: discord.Interaction, response: GetEquipmentQueryResponse):
         embed = discord.Embed(
             title=f"{response.equipment.name}", 
             description=response.equipment.description, 
@@ -116,7 +116,7 @@ class DiscordBalanceEmbed:
         return embed
     
     @staticmethod
-    def get_race_stat_block_embed(interaction: discord.Interaction, response: GetRaceQueryResponse):
+    async def get_race_stat_block_embed(interaction: discord.Interaction, response: GetRaceQueryResponse):
         embed = discord.Embed(
             title=f"{response.race.name}", 
             description=response.race.description, 
@@ -150,8 +150,8 @@ class DiscordBalanceEmbed:
         return embed
 
     # @staticmethod
-    # def work_embed(interaction: discord.Interaction, response: WorkCommandResponse):
-    #     currency = get_default_currenncy(response.server_config)
+    # async def work_embed(interaction: discord.Interaction, response: WorkCommandResponse):
+    #     currency = await get_default_currenncy(response.server_config)
 
     #     embed=discord.Embed(
     #         description=f"💼 You worked and earned {currency}{response.amount}!",

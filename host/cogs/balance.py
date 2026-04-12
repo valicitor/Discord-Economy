@@ -42,9 +42,9 @@ class BalanceCog(commands.Cog):
                 user=user, 
             )
 
-            response = GetBalanceQuery(request).execute()
+            response = await GetBalanceQuery(request).execute()
 
-            embed = DiscordBalanceEmbed.get_balance_embed(interaction, response)
+            embed = await DiscordBalanceEmbed.get_balance_embed(interaction, response)
             await interaction.response.send_message(embed=embed)
         except Exception as e:
             await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
@@ -81,9 +81,9 @@ class BalanceCog(commands.Cog):
                 amount=amount
             )
 
-            response = PayCommand(request).execute()
+            response = await PayCommand(request).execute()
             
-            embed = DiscordBalanceEmbed.pay_balance_embed(interaction, target, response)
+            embed = await DiscordBalanceEmbed.pay_balance_embed(interaction, target, response)
             await interaction.response.send_message(embed=embed)
         except Exception as e:
             await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
@@ -115,9 +115,9 @@ class BalanceCog(commands.Cog):
                 amount=amount
             )
 
-            response = WithdrawCommand(request).execute()
+            response = await WithdrawCommand(request).execute()
 
-            embed = DiscordBalanceEmbed.withdraw_embed(interaction, response)
+            embed = await DiscordBalanceEmbed.withdraw_embed(interaction, response)
             await interaction.response.send_message(embed=embed)
         except Exception as e:
             await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
@@ -143,9 +143,9 @@ class BalanceCog(commands.Cog):
                 amount=amount
             )
 
-            response = DepositCommand(request).execute()
+            response = await DepositCommand(request).execute()
 
-            embed = DiscordBalanceEmbed.deposit_embed(interaction, response)
+            embed = await DiscordBalanceEmbed.deposit_embed(interaction, response)
             await interaction.response.send_message(embed=embed)
         except Exception as e:
             await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
@@ -166,13 +166,13 @@ class BalanceCog(commands.Cog):
                 sort_by=sort
             )
 
-            response = GetLeaderboardQuery(request).execute()
+            response = await GetLeaderboardQuery(request).execute()
 
             if not response.players:
                 await interaction.response.send_message("No players found.", ephemeral=True)
                 return
 
-            embed = DiscordBalanceEmbed.get_leaderboard_embed(interaction, response)
+            embed = await DiscordBalanceEmbed.get_leaderboard_embed(interaction, response)
             await interaction.response.send_message(embed=embed)
         except Exception as e:
             await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
@@ -197,13 +197,13 @@ class BalanceCog(commands.Cog):
                 name=equipment_name
             )
 
-            response = GetEquipmentQuery(request).execute()
+            response = await GetEquipmentQuery(request).execute()
 
             if not response.equipment:
                 await interaction.response.send_message("No equipment found.", ephemeral=True)
                 return
 
-            embed = DiscordBalanceEmbed.get_equipment_stat_block_embed(interaction, response)
+            embed = await DiscordBalanceEmbed.get_equipment_stat_block_embed(interaction, response)
             await interaction.response.send_message(embed=embed)
         except Exception as e:
             await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
@@ -224,21 +224,24 @@ class BalanceCog(commands.Cog):
                 name=race_name
             )
 
-            response = GetRaceQuery(request).execute()
+            response = await GetRaceQuery(request).execute()
 
             if not response.race:
                 await interaction.response.send_message("No race found.", ephemeral=True)
                 return
 
-            embed = DiscordBalanceEmbed.get_race_stat_block_embed(interaction, response)
+            embed = await DiscordBalanceEmbed.get_race_stat_block_embed(interaction, response)
             await interaction.response.send_message(embed=embed)
         except Exception as e:
             await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
     
     @user_race_stat_block.autocomplete("race_name")
     async def race_autocomplete(self, interaction: discord.Interaction, current: str):
-        server_id = ServerRepository().get_by_guild_id(interaction.guild_id).server_id
-        races = RaceRepository().get_all(server_id)
+        server_repo = await ServerRepository().get_instance()
+        race_repo = await RaceRepository().get_instance()
+        
+        server_id = (await server_repo.get_by_guild_id(interaction.guild_id)).server_id
+        races = await race_repo.get_all(server_id)
 
         if not current:
             matches = [r.name for r in races][:25]
@@ -268,9 +271,9 @@ class BalanceCog(commands.Cog):
     #             )
     #         )
 
-    #         response = WorkCommand(request).execute()
+    #         response = await WorkCommand(request).execute()
 
-    #         embed = DiscordBalanceEmbed.work_embed(interaction, response)
+    #         embed = await DiscordBalanceEmbed.work_embed(interaction, response)
     #         await interaction.response.send_message(embed=embed)
     #     except Exception as e:
     #         await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)

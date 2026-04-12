@@ -1,89 +1,115 @@
-from domain import VehicleStat
-from domain import IRepository
+from domain import VehicleStat, IRepository
 from infrastructure import BaseRepository
 from typing import List, Optional
 
-
-class VehicleStatRepository(IRepository, BaseRepository):
-    def __init__(self, seeder=None, db_path: str = None):
-        super().__init__(seeder=seeder, db_path=db_path or "repository.db")
+class VehicleStatRepository(BaseRepository, IRepository):
+    
+    # ---------- Schema Setup ----------
 
     async def init_database(self):
-        await self.execute("""
-                CREATE TABLE IF NOT EXISTS vehicle_stats (
-                    vehicle_stat_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    vehicle_id INTEGER NOT NULL,
-                    stat_key TEXT NOT NULL,
-                    stat_value TEXT NOT NULL,
-                    FOREIGN KEY(vehicle_id) REFERENCES vehicles(vehicle_id)
-                )
-            """)
-        await self.execute("PRAGMA journal_mode=WAL;")
+        """
+        initalizes the database schema for the actions table. Called automatically on first use. Override in child classes to create tables.
+        connection is managed by BaseRepository, so we can use super() to execute our schema setup queries.
+        """
+        conn = await super().acquire_connection()
+
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS vehicle_stats (
+                vehicle_stat_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                vehicle_id INTEGER NOT NULL,
+                stat_key TEXT NOT NULL,
+                stat_value TEXT NOT NULL,
+                FOREIGN KEY(vehicle_id) REFERENCES vehicles(vehicle_id)
+            )
+        """)
+
+        await conn.commit()
+    
+    # ---------- Teardown ----------
+
+    async def drop_table(self):
+        """
+        Drops the vehicle_stats table. Use with caution! This will delete all data in the table and cannot be undone.
+        """
+        await super().execute(f"DROP TABLE IF EXISTS vehicle_stats")
+
+    async def clear_all(self) -> bool:
+        """
+        Clears all data from the vehicle_stats table. Use with caution! This will delete all data in the table and cannot be undone.
+        """
+        affected = await super().delete(
+            "DELETE FROM vehicle_stats"
+        )
+        await super().execute("DELETE FROM sqlite_sequence WHERE name = ?", "vehicle_stats")
+        return affected > 0
 
     # ---------- Queries ----------
 
     async def get_by_id(self, vehicle_stat_id: int) -> Optional[VehicleStat]:
-        query = "SELECT * FROM vehicle_stats WHERE vehicle_stat_id = ?"
-        params = (vehicle_stat_id,)
-        row = await self.fetchrow(query, params)
+        row = await super().fetchrow(
+            "SELECT * FROM vehicle_stats WHERE vehicle_stat_id = ?",
+            vehicle_stat_id
+        )
         return VehicleStat(data=dict(row)) if row else None
+
+    async def get_all(self, vehicle_id: int|None = None) -> List[VehicleStat]:
+        if vehicle_id is not None:
+            rows = await super().fetch("SELECT * FROM vehicle_stats WHERE vehicle_id = ?", vehicle_id)
+        else:
+            rows = await super().fetch("SELECT * FROM vehicle_stats")
+        return [VehicleStat(data=dict(row)) for row in rows]
+    
+    # ---------- Additional Queries ----------
 
     async def get_by_key(self, stat_key: str, vehicle_id: int) -> Optional[VehicleStat]:
-        query = "SELECT * FROM vehicle_stats WHERE stat_key = ? AND vehicle_id = ?"
-        params = (stat_key, vehicle_id)
-        row = await self.fetchrow(query, params)
+        row = await super().fetchrow(
+            "SELECT * FROM vehicle_stats WHERE stat_key = ? AND vehicle_id = ?", 
+            stat_key, 
+            vehicle_id
+        )
         return VehicleStat(data=dict(row)) if row else None
+    
+    # ---------- Existence Checks ----------
 
-    async def get_all(self) -> List[VehicleStat]:
-        query = "SELECT * FROM vehicle_stats"
-        rows = await self.fetch(query)
-        return [VehicleStat(data=dict(row)) for row in rows]
+    async def exists(self, vehicle_stat_id: int) -> bool:
+        row = await super().fetchrow(
+            "SELECT 1 FROM vehicle_stats WHERE vehicle_stat_id = ?",
+            vehicle_stat_id
+        )
+        return row is not None
+    
+    # ---------- Additional Existence Checks ----------
 
     # ---------- Mutations ----------
 
-    async def add(self, vehicle_stat: VehicleStat) -> tuple[bool, int]:
-        query = """
-            INSERT INTO vehicle_stats (
-                vehicle_id, stat_key, stat_value
-            )
-            VALUES (?, ?, ?)
-        """
-        params = (
+    async def insert(self, vehicle_stat: VehicleStat) -> int:
+        return await super().insert(
+            "INSERT INTO vehicle_stats (vehicle_id, stat_key, stat_value) VALUES (?, ?, ?)",
             vehicle_stat.vehicle_id,
             vehicle_stat.stat_key,
             vehicle_stat.stat_value
         )
-        last_id = await self.insert(query, params)
-        return (last_id > 0, last_id)
-
+    
     async def update(self, vehicle_stat: VehicleStat) -> bool:
-        query = """
-            UPDATE vehicle_stats
-            SET vehicle_id = ?, stat_key = ?, stat_value = ?
-            WHERE vehicle_stat_id = ?
-        """
-        params = (
+        affected = await super().update(
+            "UPDATE vehicle_stats SET vehicle_id = ?, stat_key = ?, stat_value = ? WHERE vehicle_stat_id = ?",
             vehicle_stat.vehicle_id,
             vehicle_stat.stat_key,
             vehicle_stat.stat_value,
             vehicle_stat.vehicle_stat_id
         )
-        last_id = await self.update(query, params)
-        return last_id > 0
+        return affected > 0
 
     async def delete(self, vehicle_stat: VehicleStat) -> bool:
-        query = "DELETE FROM vehicle_stats WHERE vehicle_stat_id = ?"
-        params = (vehicle_stat.vehicle_stat_id,)
-        last_id = await self.delete(query, params)
-        return last_id > 0
-
+        affected = await super().delete(
+            "DELETE FROM vehicle_stats WHERE vehicle_stat_id = ?",
+            vehicle_stat.vehicle_stat_id
+        )
+        return affected > 0
+    
     async def delete_all(self) -> bool:
-        query = "DELETE FROM vehicle_stats"
-        last_id = await self.delete(query)
-        return last_id > 0
-
-    async def exists(self, vehicle_stat_id: int) -> bool:
-        query = "SELECT 1 FROM vehicle_stats WHERE vehicle_stat_id = ?"
-        params = (vehicle_stat_id,)
-        rows = await self.fetch(query, params)
-        return len(rows) > 0
+        # Delete_all and clear_all do the same in this repository since there are no environment variables to restrict by.
+        affected = await super().delete(
+            "DELETE FROM vehicle_stats"
+        )
+        return affected > 0

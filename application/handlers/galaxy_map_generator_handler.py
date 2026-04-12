@@ -40,22 +40,24 @@ class LightweightGalaxyMapGenerator:
         self.claimability_map = claimability_map or ClaimabilityMap()
         self.territory_resolution = territory_resolution  # Lower = faster, more pixelated
 
-    def _get_territory_radius(self, poi_type: str, radius_type: str = "core") -> int:
+    async def _get_territory_radius(self, poi_type: str, radius_type: str = "core") -> int:
         """Get core or influence radius for a POI type in world coordinates"""
         factors = self.RADIUS_FACTORS.get(poi_type, (0.02, 0.03))
         idx = 0 if radius_type == "core" else 1
         return int(factors[idx] * self.map_size)
         
-    def _get_faction_color(self, owner_player_id: int) -> Optional[Tuple[int, int, int]]:
+    async def _get_faction_color(self, owner_player_id: int) -> Optional[Tuple[int, int, int]]:
         if not owner_player_id:
             return None
 
         if owner_player_id in self._faction_color_cache:
             return self._faction_color_cache[owner_player_id]
         
-        member = FactionMemberRepository().get_by_player_id(owner_player_id)
+        faction_member_repo = await FactionMemberRepository().get_instance()
+        member = await faction_member_repo.get_by_player_id(owner_player_id)
         if member:
-            faction = FactionRepository().get_by_id(member.faction_id)
+            faction_repo = await FactionRepository().get_instance()
+            faction = await faction_repo.get_by_id(member.faction_id)
             if faction:
                 if isinstance(faction.color, str) and faction.color.startswith('#'):
                     hex_color = faction.color.lstrip('#')
@@ -68,7 +70,7 @@ class LightweightGalaxyMapGenerator:
         self._faction_color_cache[owner_player_id] = None
         return None
     
-    def _draw_circle_alpha(self, img: Image.Image, x: float, y: float, radius: int, 
+    async def _draw_circle_alpha(self, img: Image.Image, x: float, y: float, radius: int, 
                         color: Tuple[int, int, int], alpha: int):
         img_width, img_height = img.size
         
@@ -97,7 +99,7 @@ class LightweightGalaxyMapGenerator:
             cropped_circle = circle_img.crop((src_left, src_top, src_right, src_bottom))
             img.paste(cropped_circle, (dst_left, dst_top), cropped_circle)
     
-    def _draw_circle_border(self, img: Image.Image, x: float, y: float, radius: int, 
+    async def _draw_circle_border(self, img: Image.Image, x: float, y: float, radius: int, 
                         color: Tuple[int, int, int]):
         img_width, img_height = img.size
         
@@ -127,13 +129,13 @@ class LightweightGalaxyMapGenerator:
             cropped_border = border_img.crop((src_left, src_top, src_right, src_bottom))
             img.paste(cropped_border, (dst_left, dst_top), cropped_border)
     
-    def _draw_flood_fill_territories(self, img: Image.Image, 
+    async def _draw_flood_fill_territories(self, img: Image.Image, 
                                     locations: List[Location], 
                                     scale: float):
         """Draw territories using flood fill with connectivity guaranteed"""
         
         if not self.claimability_map:
-            self._draw_territories(img, locations, scale)
+            await self._draw_territories(img, locations, scale)
             return
         
         # Group locations by faction
@@ -152,7 +154,7 @@ class LightweightGalaxyMapGenerator:
         print(f"Generating territories at {territory_img_size}x{territory_img_size} resolution...")
         
         # Create a low-resolution claimability map for faster processing
-        low_res_claim_map = self._create_low_res_claimability_map(territory_img_size)
+        low_res_claim_map = await self._create_low_res_claimability_map(territory_img_size)
         
         # Initialize flood fill with low-res map
         flood_fill = TerritoryFloodFill(low_res_claim_map, self.map_size)
@@ -169,7 +171,7 @@ class LightweightGalaxyMapGenerator:
         low_res_territory = Image.new('RGBA', (territory_img_size, territory_img_size), (0, 0, 0, 0))
         
         for faction_id, territory_cells in resolved_territories.items():
-            color = self._get_faction_color(faction_id)
+            color = await self._get_faction_color(faction_id)
             if not color:
                 continue
             
@@ -185,13 +187,13 @@ class LightweightGalaxyMapGenerator:
         
         # Draw barrier overlay at full resolution
         if self.claimability_map and self.claimability_map.barriers:
-            barrier_layer = self._draw_barrier_overlay(img.size, scale)
+            barrier_layer = await self._draw_barrier_overlay(img.size, scale)
             scaled_territory = Image.alpha_composite(scaled_territory, barrier_layer)
         
         # Composite onto main image
         img.alpha_composite(scaled_territory)
 
-    def _create_low_res_claimability_map(self, target_resolution: int) -> ClaimabilityMap:
+    async def _create_low_res_claimability_map(self, target_resolution: int) -> ClaimabilityMap:
         """Create a lower resolution version of the claimability map for faster processing"""
         
         low_res_map = ClaimabilityMap(size=self.map_size, resolution=target_resolution)
@@ -211,7 +213,7 @@ class LightweightGalaxyMapGenerator:
         
         return low_res_map
 
-    def _draw_barrier_overlay(self, img_size: Tuple[int, int], 
+    async def _draw_barrier_overlay(self, img_size: Tuple[int, int], 
                               scale: float) -> Image.Image:
         """Draw visual representation of unclaimable areas"""
         barrier_img = Image.new('RGBA', img_size, (0, 0, 0, 0))
@@ -250,28 +252,28 @@ class LightweightGalaxyMapGenerator:
         
         return barrier_img
     
-    def _draw_territories(self, img: Image.Image, locations: List[Location], scale: float):
+    async def _draw_territories(self, img: Image.Image, locations: List[Location], scale: float):
         """Fallback territory drawing method"""
         for location in locations:
             if not location.owner_player_id:
                 continue
                 
-            color = self._get_faction_color(location.owner_player_id)
+            color = await self._get_faction_color(location.owner_player_id)
             if not color:
                 continue
 
             poi_type = location.type or "Secondary World"
-            radius_world = self._get_territory_radius(poi_type, "core")
+            radius_world = await self._get_territory_radius(poi_type, "core")
             
             if radius_world > 0:
                 px = location.x * scale
                 py = location.y * scale
                 radius_px = max(1, int(radius_world * scale))
                 
-                self._draw_circle_alpha(img, px, py, radius_px, color, 80)
-                self._draw_circle_border(img, px, py, radius_px, color)
+                await self._draw_circle_alpha(img, px, py, radius_px, color, 80)
+                await self._draw_circle_border(img, px, py, radius_px, color)
     
-    def _draw_grid(self, draw: ImageDraw, img_size: int, scale: float):
+    async def _draw_grid(self, draw: ImageDraw, img_size: int, scale: float):
         step = self.map_size / self.GRID_SIZE
         positions = [self.MAP_MIN + step * i for i in range(self.GRID_SIZE + 1)]
         pixel_positions = [pos * scale for pos in positions]
@@ -302,7 +304,7 @@ class LightweightGalaxyMapGenerator:
             if 0 <= y_pos <= img_size - 20:
                 draw.text((25, y_pos), str(row), fill=(255, 255, 255, 100), font=grid_font)
 
-    def _draw_pois(self, draw: ImageDraw, pois: List[PointOfInterest], locations: List[Location], scale: float):
+    async def _draw_pois(self, draw: ImageDraw, pois: List[PointOfInterest], locations: List[Location], scale: float):
         def to_pixel(x: float, y: float) -> Tuple[float, float]:
             return (x * scale, y * scale)
 
@@ -326,7 +328,7 @@ class LightweightGalaxyMapGenerator:
 
                 color = None
                 if location.owner_player_id:
-                    color = self._get_faction_color(location.owner_player_id)
+                    color = await self._get_faction_color(location.owner_player_id)
                 
                 text_color = color if color else (255, 255, 255, 255)
                 
@@ -360,7 +362,7 @@ class LightweightGalaxyMapGenerator:
                         draw.text((name_x, name_y), location.name, 
                                     fill=(255, 255, 255, 255), font=poi_font)
                     
-    def render_full_map(self, pois: List[PointOfInterest], locations: List[Location], output_path: str, 
+    async def render_full_map(self, pois: List[PointOfInterest], locations: List[Location], output_path: str, 
                     show_grid: bool = True, show_territories: bool = True, 
                     show_voronoi: bool = False, weighted_voronoi: bool = False,
                     include_barriers: bool = True, use_flood_fill: bool = True,
@@ -384,36 +386,36 @@ class LightweightGalaxyMapGenerator:
         if show_territories:
             if include_barriers and use_flood_fill and self.claimability_map:
                 print("Using optimized flood fill territory generation...")
-                self._draw_flood_fill_territories(img, locations, scale)
+                await self._draw_flood_fill_territories(img, locations, scale)
             elif include_barriers and self.claimability_map:
                 print("Using circle-based territories with barriers...")
-                self._draw_territories_with_barriers(img, locations, scale)
+                await self._draw_territories_with_barriers(img, locations, scale)
             else:
                 print("Using basic circle territories...")
-                self._draw_territories(img, locations, scale)
+                await self._draw_territories(img, locations, scale)
         
         # Draw Voronoi boundaries
         if show_voronoi:
             draw = ImageDraw.Draw(img, 'RGBA')
             if weighted_voronoi:
-                self._draw_weighted_voronoi(draw, locations, scale)
+                await self._draw_weighted_voronoi(draw, locations, scale)
             else:
-                self._draw_voronoi_boundaries(draw, locations, scale)
+                await self._draw_voronoi_boundaries(draw, locations, scale)
         
         # Draw grid
         if show_grid:
             draw = ImageDraw.Draw(img, 'RGBA')
-            self._draw_grid(draw, img_size, scale)
+            await self._draw_grid(draw, img_size, scale)
         
         # Draw POIs (at full resolution)
         draw = ImageDraw.Draw(img, 'RGBA')
-        self._draw_pois(draw, pois, locations, scale)
+        await self._draw_pois(draw, pois, locations, scale)
         
         # Save image
         img.save(output_path, 'PNG', optimize=True)
         print(f"Map saved to {output_path}")
     
-    def _draw_territories_with_barriers(self, img: Image.Image, locations: List[Location], scale: float):
+    async def _draw_territories_with_barriers(self, img: Image.Image, locations: List[Location], scale: float):
         """Fallback territory drawing with simple barrier influence"""
         territory_layer = Image.new('RGBA', img.size, (0, 0, 0, 0))
         
@@ -421,12 +423,12 @@ class LightweightGalaxyMapGenerator:
             if not location.owner_player_id:
                 continue
                 
-            color = self._get_faction_color(location.owner_player_id)
+            color = await self._get_faction_color(location.owner_player_id)
             if not color:
                 continue
 
             poi_type = location.type or "Secondary World"
-            base_radius_world = self._get_territory_radius(poi_type, "core")
+            base_radius_world = await self._get_territory_radius(poi_type, "core")
             
             # Simple barrier influence
             if self.claimability_map:
@@ -440,16 +442,16 @@ class LightweightGalaxyMapGenerator:
                 py = location.y * scale
                 radius_px = max(5, int(radius_world * scale))
                 
-                self._draw_circle_alpha(territory_layer, px, py, radius_px, color, 80)
-                self._draw_circle_border(territory_layer, px, py, radius_px, color)
+                await self._draw_circle_alpha(territory_layer, px, py, radius_px, color, 80)
+                await self._draw_circle_border(territory_layer, px, py, radius_px, color)
         
         if self.claimability_map and self.claimability_map.barriers:
-            barrier_layer = self._draw_barrier_overlay(img.size, scale)
+            barrier_layer = await self._draw_barrier_overlay(img.size, scale)
             territory_layer = Image.alpha_composite(territory_layer, barrier_layer)
         
         img.alpha_composite(territory_layer)
     
-    def _draw_voronoi_boundaries(self, draw: ImageDraw, locations: List[Location], scale: float):
+    async def _draw_voronoi_boundaries(self, draw: ImageDraw, locations: List[Location], scale: float):
         owned_locations = [loc for loc in locations if loc.owner_player_id]
         
         if len(owned_locations) < 2:
@@ -472,7 +474,7 @@ class LightweightGalaxyMapGenerator:
         for start, end in boundaries:
             draw.line([start, end], fill=self.VORONOI_LINE_COLOR, width=self.VORONOI_LINE_WIDTH)
     
-    def _calculate_bisector_line(self, loc1: Location, loc2: Location, extent: float = None):
+    async def _calculate_bisector_line(self, loc1: Location, loc2: Location, extent: float = None):
         if extent is None:
             extent = self.map_size * 0.3
         
@@ -496,7 +498,7 @@ class LightweightGalaxyMapGenerator:
         
         return ((x1, y1), (x2, y2))
     
-    def _draw_weighted_voronoi(self, draw: ImageDraw, locations: List[Location], scale: float):
+    async def _draw_weighted_voronoi(self, draw: ImageDraw, locations: List[Location], scale: float):
         owned_locations = [loc for loc in locations if loc.owner_player_id]
         
         if len(owned_locations) < 2:
@@ -510,8 +512,8 @@ class LightweightGalaxyMapGenerator:
                     poi_type1 = loc1.type or "Secondary World"
                     poi_type2 = loc2.type or "Secondary World"
                     
-                    radius1 = self._get_territory_radius(poi_type1, "core")
-                    radius2 = self._get_territory_radius(poi_type2, "core")
+                    radius1 = await self._get_territory_radius(poi_type1, "core")
+                    radius2 = await self._get_territory_radius(poi_type2, "core")
                     
                     total_radius = radius1 + radius2
                     if total_radius > 0:
@@ -546,7 +548,7 @@ class LightweightGalaxyMapGenerator:
                                  joint='curve')
 
 
-def create_default_claimability_map(map_size: int = 6400, resolution: int = 200) -> ClaimabilityMap:
+async def create_default_claimability_map(map_size: int = 6400, resolution: int = 200) -> ClaimabilityMap:
     """Create a default claimability map with interesting features"""
     print(f"Creating claimability map with size={map_size}, resolution={resolution}")
     claim_map = ClaimabilityMap(size=map_size, resolution=resolution)

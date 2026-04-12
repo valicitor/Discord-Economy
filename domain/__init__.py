@@ -55,5 +55,7 @@ from .exceptions.permission_denied_exception import PermissionDeniedException
 
 from .exceptions.insufficient_funds_exception import InsufficientFundsException
 
+from .exceptions.seeder_error_exception import SeederErrorException
+
 # --- Interfaces ---
 from .interfaces.i_repository import IRepository

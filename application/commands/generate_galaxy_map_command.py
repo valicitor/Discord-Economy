@@ -29,25 +29,28 @@ class GenerateGalaxyMapCommand:
         return
     
     async def execute(self) -> GenerateGalaxyMapCommandResponse:
+        self.point_of_interest_repo = await PointOfInterestRepository().get_instance()
+        self.location_repo = await LocationRepository().get_instance()
+
         server_config = await ensure_guild(self.request.guild)
 
-        pois = await PointOfInterestRepository().get_all(server_config.server.server_id)
+        pois = await self.point_of_interest_repo.get_all(server_config.server.server_id)
         locations = []
         for poi in pois:
-            locs = await LocationRepository().get_all(poi.poi_id)
+            locs = await self.location_repo.get_all(poi.poi_id)
             locations.extend(locs)
 
         # Create generator with or without barriers
         if self.request.use_barriers:
             print("Creating map WITH barriers using flood fill...")
-            claimability_map = create_default_claimability_map(map_size=6400, resolution=150)  # Lower resolution for faster flood fill
+            claimability_map = await create_default_claimability_map(map_size=6400, resolution=150)  # Lower resolution for faster flood fill
             generator = LightweightGalaxyMapGenerator(claimability_map=claimability_map)
         else:
             print("Creating map WITHOUT barriers...")
             generator = LightweightGalaxyMapGenerator()
         
         # Render the map
-        generator.render_full_map(
+        await generator.render_full_map(
             pois=pois,
             locations=locations,
             output_path=self.request.output_path,

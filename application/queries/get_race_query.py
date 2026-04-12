@@ -28,19 +28,23 @@ class GetRaceQuery:
         return
 
     async def execute(self) -> GetRaceQueryResponse:
+        self.race_repository = await RaceRepository().get_instance()
+        self.race_stat_repository = await RaceStatRepository().get_instance()
+        self.keyword_repository = await KeywordRepository().get_instance()
+
         server_config = await ensure_guild(self.request.guild)
 
-        race = await RaceRepository().get_by_name(self.request.name, server_config.server.server_id)
+        race = await self.race_repository.get_by_name(self.request.name, server_config.server.server_id)
         if not race:
             raise RecordNotFoundException(f"Race with name '{self.request.name}' not found in guild '{self.request.guild.guild_id}'")
         
-        stats = await RaceStatRepository().get_all(race.race_id)
+        stats = await self.race_stat_repository.get_all(race.race_id)
 
         # Convert metadata string to dictionary using ast.literal_eval
         keywords = ast.literal_eval(race.metadata).get("keywords", [])
         found_keywords = []
         for keyword in keywords:
-            keyword_record = await KeywordRepository().get_by_name(keyword, server_config.server.server_id)
+            keyword_record = await self.keyword_repository.get_by_name(keyword, server_config.server.server_id)
             if keyword_record:
                 found_keywords.append(keyword_record)
 

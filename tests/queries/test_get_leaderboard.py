@@ -10,12 +10,20 @@ from application import GetLeaderboardQuery, GetLeaderboardQueryRequest
 from tests.helper.default_setup import DefaultSetup
 
 class TestGetLeaderboardQuery(unittest.TestCase):
-    def setUp(self):
-        self.default_setup = DefaultSetup()
-        asyncio.run(self.default_setup.setUp())
+    @classmethod
+    def setUpClass(cls):
+        # Initialize shared resources for all tests
+        cls.default_setup = DefaultSetup()
+        asyncio.run(cls.default_setup.setUpClass())
 
-    def tearDown(self):
-        asyncio.run(self.default_setup.tearDown())
+    @classmethod
+    def tearDownClass(cls):
+        # Cleanup shared resources after all tests. Technically not needed for in-memory, and close_all will shutdown all connections for all repositories, but good practice.
+        asyncio.run(cls.default_setup.tearDownClass())
+
+    def setUp(self):
+        asyncio.run(self.default_setup.setUp())
+        asyncio.run(self.default_setup.setupData())
 
     def test_get_leaderboard_cash(self):
         # Arrange

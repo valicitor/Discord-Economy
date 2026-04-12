@@ -28,16 +28,18 @@ class GetLeaderboardQuery:
         return
 
     async def execute(self) -> GetLeaderboardQueryResponse:
+        self.player_repository = await PlayerRepository().get_instance()
+
         server_config = await ensure_guild(self.request.guild)
 
-        count = await PlayerRepository().get_count(server_config.server.server_id)
+        count = await self.player_repository.get_count(server_config.server.server_id)
         if count == 0:
             return GetLeaderboardQueryResponse(success=True, server_config=server_config, players=[], page=1, max_pages=1, sort_by=self.request.sort_by)
 
         max_pages = math.ceil(count / 10)
         if(self.request.page > max_pages):
             self.request.page = 1
-        players = await PlayerRepository().get_leaderboard(server_config.server.server_id, self.request.page, self.request.sort_by)
+        players = await self.player_repository.get_leaderboard(server_config.server.server_id, self.request.page, self.request.sort_by)
 
         player_profiles = []
         for idx, player in enumerate(players):

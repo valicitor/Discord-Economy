@@ -28,10 +28,12 @@ class SetCurrencySymbolCommand:
         return
 
     async def execute(self) -> SetCurrencySymbolCommandResponse:
+        self.currency_repository = await CurrencyRepository().get_instance()
+
         server_config = await ensure_guild(self.request.guild)
 
         _, default_currency = server_config.server_settings.get_by_key("default_currency_id")
-        currency = await CurrencyRepository().get_by_id(int(default_currency.value))
+        currency = await self.currency_repository.get_by_id(int(default_currency.value))
 
         symbol = (self.request.currency_symbol or "").strip()
 
@@ -45,7 +47,7 @@ class SetCurrencySymbolCommand:
             currency.emoji = ""
             currency.symbol = symbol[:10]
 
-        success = await CurrencyRepository().update(currency)
+        success = await self.currency_repository.update(currency)
         if not success:
             raise UpdateFailedException("Failed to update currency. Please try again.")
 
