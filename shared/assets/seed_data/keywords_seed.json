@@ -9,7 +9,12 @@
             { "name": "Heavy Armor",  "description": "Reduces AP by 1 (AP2 becomes AP1, etc.).",                                    "metadata": {} },
             { "name": "Droid",        "description": "Immune to morale. Can be repaired by CIS engineer units.",                    "metadata": {} },
             { "name": "Huge",         "description": "Blocks line of sight. Can be targeted by any weapon regardless of range.",    "metadata": {} },
-            { "name": "Artillery",    "description": "Can shoot at targets not visible to the firer.",                              "metadata": {} }
+            { "name": "Artillery",    "description": "Can shoot at targets not visible to the firer.",                              "metadata": {} },
+            { "name": "Stealth",       "description": "Can only be hit on 6+ by non-thermal weapons.",                              "metadata": {} },
+            { "name": "AA",           "description": "Can target flyers. Non-flyers can only target this unit with AA weapons.",    "metadata": {} },
+            { "name": "Infantry",     "description": "Can be deployed in transports. Can capture objectives.",                      "metadata": {} },
+            { "name": "Vehicle",      "description": "Cannot capture objectives. Cannot be deployed in transports.",                "metadata": {} },
+            { "name": "Shielded(2)",  "description": "Reduces damage from all attacks by 2 (5 damage becomes 3, etc.).",            "metadata": {} }
         ]
     }
 }

@@ -1,5 +1,8 @@
+from domain import (
+    Faction,
+    FactionMember
+)
 from infrastructure import (
-    BaseRepository,
     PlayerRepository, 
     PlayerBalanceRepository,
     ServerRepository, 
@@ -11,6 +14,7 @@ from infrastructure import (
     FactionMemberRepository,
     PlayerActionRepository,
     PointOfInterestRepository,
+    LocationRepository,
     RaceRepository,
     RaceStatRepository,
     EquipmentRepository,
@@ -28,92 +32,149 @@ from application.helpers.ensure_user import ensure_guild_and_users
 
 class DefaultSetup:
 
-    def setUp(self):
-        self.server_repository = ServerRepository(db_path=":memory:")
-        self.server_setting_repository = ServerSettingRepository(db_path=":memory:")
-        self.currency_repository = CurrencyRepository(db_path=":memory:")
-        self.bank_repository = BankRepository(db_path=":memory:")
-        self.faction_repository = FactionRepository(db_path=":memory:")
+    @classmethod
+    async def setUpClass(cls):
+        cls.server_repository = await ServerRepository().get_instance(db_path=":memory:")
+        cls.server_setting_repository = await ServerSettingRepository().get_instance(db_path=":memory:")
+        cls.currency_repository = await CurrencyRepository().get_instance(db_path=":memory:")
+        cls.bank_repository = await BankRepository().get_instance(db_path=":memory:")
+        cls.faction_repository = await FactionRepository().get_instance(db_path=":memory:")
 
-        self.player_repository = PlayerRepository(db_path=":memory:")
-        self.player_balance_repository = PlayerBalanceRepository(db_path=":memory:")
-        self.bank_account_repository = BankAccountRepository(db_path=":memory:")
-        self.faction_member_repository = FactionMemberRepository(db_path=":memory:")
-        self.player_action_repository = PlayerActionRepository(db_path=":memory:")
+        cls.player_repository = await PlayerRepository().get_instance(db_path=":memory:")
+        cls.player_balance_repository = await PlayerBalanceRepository().get_instance(db_path=":memory:")
+        cls.bank_account_repository = await BankAccountRepository().get_instance(db_path=":memory:")
+        cls.faction_member_repository = await FactionMemberRepository().get_instance(db_path=":memory:")
+        cls.player_action_repository = await PlayerActionRepository().get_instance(db_path=":memory:")
 
-        self.business_repository = BusinessRepository(db_path=":memory:")
-        self.action_repository = ActionRepository(db_path=":memory:")
-        self.POI_repository = PointOfInterestRepository(db_path=":memory:")
-        self.equipment_repository = EquipmentRepository(db_path=":memory:")
-        self.equipment_stat_repository = EquipmentStatRepository(db_path=":memory:")
-        self.race_repository = RaceRepository(db_path=":memory:")
-        self.race_stat_repository = RaceStatRepository(db_path=":memory:")
-        self.unit_repository = UnitRepository(db_path=":memory:")
-        self.unit_stat_repository = UnitStatRepository(db_path=":memory:")
-        self.vehicle_repository = VehicleRepository(db_path=":memory:")
-        self.vehicle_stat_repository = VehicleStatRepository(db_path=":memory:")
-        self.keyword_repository = KeywordRepository(db_path=":memory:")
+        cls.business_repository = await BusinessRepository().get_instance(db_path=":memory:")
+        cls.action_repository = await ActionRepository().get_instance(db_path=":memory:")
+        cls.POI_repository = await PointOfInterestRepository().get_instance(db_path=":memory:")
+        cls.location_repository = await LocationRepository().get_instance(db_path=":memory:")
+        cls.equipment_repository = await EquipmentRepository().get_instance(db_path=":memory:")
+        cls.equipment_stat_repository = await EquipmentStatRepository().get_instance(db_path=":memory:")
+        cls.race_repository = await RaceRepository().get_instance(db_path=":memory:")
+        cls.race_stat_repository = await RaceStatRepository().get_instance(db_path=":memory:")
+        cls.unit_repository = await UnitRepository().get_instance(db_path=":memory:")
+        cls.unit_stat_repository = await UnitStatRepository().get_instance(db_path=":memory:")
+        cls.vehicle_repository = await VehicleRepository().get_instance(db_path=":memory:")
+        cls.vehicle_stat_repository = await VehicleStatRepository().get_instance(db_path=":memory:")
 
-        self.base_repository = BaseRepository(db_path=":memory:")  # Use in-memory database for testing
+        cls.keyword_repository = await KeywordRepository().get_instance(db_path=":memory:")
 
+    @classmethod
+    async def tearDownClass(cls):
+        await cls.server_repository.close_all()
+        await cls.server_setting_repository.close_all()
+        await cls.currency_repository.close_all()
+        await cls.bank_repository.close_all()
+        await cls.faction_repository.close_all()
+
+        await cls.player_repository.close_all()
+        await cls.player_balance_repository.close_all()
+        await cls.bank_account_repository.close_all()
+        await cls.faction_member_repository.close_all()
+        await cls.player_action_repository.close_all()
+
+        await cls.business_repository.close_all()
+        await cls.action_repository.close_all()
+        await cls.POI_repository.close_all()
+        await cls.location_repository.close_all()
+        await cls.equipment_repository.close_all()
+        await cls.equipment_stat_repository.close_all()
+        await cls.race_repository.close_all()
+        await cls.race_stat_repository.close_all()
+        await cls.unit_repository.close_all()
+        await cls.unit_stat_repository.close_all()
+        await cls.vehicle_repository.close_all()
+        await cls.vehicle_stat_repository.close_all()
+
+        await cls.keyword_repository.close_all()
+
+    async def setUp(self):
+        await self.server_repository.clear_all()
+        await self.server_setting_repository.clear_all()
+        await self.currency_repository.clear_all()
+        await self.bank_repository.clear_all()
+        await self.faction_repository.clear_all()
+
+        await self.player_repository.clear_all()
+        await self.player_balance_repository.clear_all()
+        await self.bank_account_repository.clear_all()
+        await self.faction_member_repository.clear_all()
+        await self.player_action_repository.clear_all()
+
+        await self.business_repository.clear_all()
+        await self.action_repository.clear_all()
+        await self.POI_repository.clear_all()
+        await self.location_repository.clear_all()
+        await self.equipment_repository.clear_all()
+        await self.equipment_stat_repository.clear_all()
+        await self.race_repository.clear_all()
+        await self.race_stat_repository.clear_all()
+        await self.unit_repository.clear_all()
+        await self.unit_stat_repository.clear_all()
+        await self.vehicle_repository.clear_all()
+        await self.vehicle_stat_repository.clear_all()
+
+        await self.keyword_repository.clear_all()
+
+    async def setupData(self):
         self.discord_guild = DiscordGuild(guild_id=12345, name="TestGuild")
         self.discord_user1 = DiscordUser(user_id=67900, name="TestUser1", display_avatar="avatar_url")
         self.discord_user2 = DiscordUser(user_id=67901, name="TestUser2", display_avatar="avatar_url")
         self.discord_user3 = DiscordUser(user_id=67902, name="TestUser3", display_avatar="avatar_url")
 
-        self.server_config, [self.player_profile1, self.player_profile2, self.player_profile3] = ensure_guild_and_users(self.discord_guild, [self.discord_user1, self.discord_user2, self.discord_user3])
+        self.server_config, [self.player_profile1, self.player_profile2, self.player_profile3] = await ensure_guild_and_users(self.discord_guild, [self.discord_user1, self.discord_user2, self.discord_user3])
 
         self.player_profile1.balances[0].balance = 1500
-        self.player_balance_repository.update(self.player_profile1.balances[0])
+        await self.player_balance_repository.update(self.player_profile1.balances[0])
         self.player_profile1.bank_accounts[0].balance = 1500
-        self.bank_account_repository.update(self.player_profile1.bank_accounts[0])
+        await self.bank_account_repository.update(self.player_profile1.bank_accounts[0])
 
         self.player_profile2.balances[0].balance = 50
-        self.player_balance_repository.update(self.player_profile2.balances[0])
+        await self.player_balance_repository.update(self.player_profile2.balances[0])
         self.player_profile2.bank_accounts[0].balance = 2000
-        self.bank_account_repository.update(self.player_profile2.bank_accounts[0])
+        await self.bank_account_repository.update(self.player_profile2.bank_accounts[0])
 
         self.player_profile3.balances[0].balance = 2000
-        self.player_balance_repository.update(self.player_profile3.balances[0])
+        await self.player_balance_repository.update(self.player_profile3.balances[0])
         self.player_profile3.bank_accounts[0].balance = 25
-        self.bank_account_repository.update(self.player_profile3.bank_accounts[0])
+        await self.bank_account_repository.update(self.player_profile3.bank_accounts[0])
 
-    def tearDown(self):
-        # Remove test user from the database
-        self.player_action_repository.delete_all(self.player_profile1.player.player_id)
-        self.player_action_repository.delete_all(self.player_profile2.player.player_id)
-        self.player_action_repository.delete_all(self.player_profile3.player.player_id)
-        self.faction_member_repository.delete_by_player_id(self.player_profile1.player.player_id)
-        self.faction_member_repository.delete_by_player_id(self.player_profile2.player.player_id)
-        self.faction_member_repository.delete_by_player_id(self.player_profile3.player.player_id)
+        enemy_faction_id = await self.faction_repository.insert(Faction(name="Enemy Faction", description="Enemy", color="#FF0000", owner_id=self.player_profile3.player.player_id, server_id=self.server_config.server.server_id))
+        await self.faction_member_repository.delete_by_player_id(self.player_profile3.player.player_id)  # Remove existing faction membership
+        member_id = await  self.faction_member_repository.insert(FactionMember(faction_id=enemy_faction_id, player_id=self.player_profile3.player.player_id, role="Leader"))
 
-        self.bank_account_repository.delete_all(self.player_profile1.player.player_id)
-        self.player_balance_repository.delete_all(self.player_profile1.player.player_id)
-        self.player_repository.delete(self.player_profile1.player)
+        ally_faction_id = await self.faction_repository.insert(Faction(name="Ally Faction", description="Ally", color="#00FF00", owner_id=self.player_profile2.player.player_id, server_id=self.server_config.server.server_id))
+        await self.faction_member_repository.delete_by_player_id(self.player_profile2.player.player_id)  # Remove existing faction membership
+        member_id = await self.faction_member_repository.insert(FactionMember(faction_id=ally_faction_id, player_id=self.player_profile2.player.player_id, role="Leader"))
 
-        self.bank_account_repository.delete_all(self.player_profile2.player.player_id)
-        self.player_balance_repository.delete_all(self.player_profile2.player.player_id)
-        self.player_repository.delete(self.player_profile2.player)
+        ally_faction_id = await self.faction_repository.insert(Faction(name="Third Faction", description="Someone else", color="#0000FF", owner_id=self.player_profile1.player.player_id, server_id=self.server_config.server.server_id))
+        await self.faction_member_repository.delete_by_player_id(self.player_profile1.player.player_id)  # Remove existing faction membership
+        member_id = await self.faction_member_repository.insert(FactionMember(faction_id=ally_faction_id, player_id=self.player_profile1.player.player_id, role="Leader"))
 
-        self.bank_account_repository.delete_all(self.player_profile3.player.player_id)
-        self.player_balance_repository.delete_all(self.player_profile3.player.player_id)
-        self.player_repository.delete(self.player_profile3.player)
+        locations = await self.location_repository.get_all()
 
-        self.business_repository.delete_all(self.server_config.server.server_id)
-        self.action_repository.delete_all()
-        self.POI_repository.delete_all(self.server_config.server.server_id)
-        self.equipment_repository.delete_all(self.server_config.server.server_id)
-        self.equipment_stat_repository.delete_all()
-        self.race_repository.delete_all(self.server_config.server.server_id)
-        self.race_stat_repository.delete_all()
-        self.unit_repository.delete_all(self.server_config.server.server_id)
-        self.unit_stat_repository.delete_all()
-        self.vehicle_repository.delete_all(self.server_config.server.server_id)
-        self.vehicle_stat_repository.delete_all()
-        self.keyword_repository.delete_all(self.server_config.server.server_id)
+        location = locations[2]
+        location.owner_player_id = self.player_profile1.player.player_id
+        await self.location_repository.update(location)
 
-        self.faction_repository.delete_all(self.server_config.server.server_id)
-        self.bank_repository.delete_all(self.server_config.server.server_id)
-        self.currency_repository.delete_all(self.server_config.server.server_id)
-        self.server_setting_repository.delete_all(self.server_config.server.server_id)
-        self.server_repository.delete(self.server_config.server)
+        location = locations[7]
+        location.owner_player_id = self.player_profile1.player.player_id
+        await self.location_repository.update(location)
+
+        location = locations[3]
+        location.owner_player_id = self.player_profile2.player.player_id
+        await self.location_repository.update(location)
+
+        location = locations[5]
+        location.owner_player_id = self.player_profile2.player.player_id
+        await self.location_repository.update(location)
+
+        location = locations[0]
+        location.owner_player_id = self.player_profile3.player.player_id
+        await self.location_repository.update(location)
+
+        location = locations[8]
+        location.owner_player_id = self.player_profile3.player.player_id
+        await self.location_repository.update(location)

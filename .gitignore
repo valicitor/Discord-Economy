@@ -213,3 +213,5 @@ guild_config.db
 items.db
 test_galaxy_map.png
 repository.db
+repository.db-shm
+repository.db-wal

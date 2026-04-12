@@ -4,111 +4,115 @@ from infrastructure import BaseRepository
 from typing import List, Optional
 
 
-class PointOfInterestRepository(IRepository, BaseRepository):
-    def __init__(self, seeder=None, db_path: str = None):
-        super().__init__(seeder=seeder, db_path=db_path or "repository.db")
+class PointOfInterestRepository(BaseRepository, IRepository):
+    
+    # ---------- Schema Setup ----------
 
-    def init_database(self):
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS points_of_interest (
-                    poi_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    server_id INTEGER NOT NULL,
-                    name TEXT NOT NULL,
-                    type TEXT NOT NULL,
-                    x REAL NOT NULL,
-                    y REAL NOT NULL,
-                    owner_player_id INTEGER,
-                    FOREIGN KEY(server_id) REFERENCES servers(server_id),
-                    FOREIGN KEY(owner_player_id) REFERENCES players(player_id)
-                )
-            """)
-            self.execute("PRAGMA journal_mode=WAL;")
-            self.commit()
+    async def init_database(self):
+        """
+        initalizes the database schema for the points_of_interest table. Called automatically on first use. Override in child classes to create tables.
+        connection is managed by BaseRepository, so we can use super() to execute our schema setup queries.
+        """
+        conn = await super().acquire_connection()
+
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS points_of_interest (
+                poi_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                server_id INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                icon TEXT NOT NULL,
+                size INTEGER NOT NULL,
+                FOREIGN KEY(server_id) REFERENCES servers(server_id)
+            )
+        """)
+
+        await conn.commit()
+    
+    # ---------- Teardown ----------
+
+    async def drop_table(self):
+        """
+        Drops the points_of_interest table. Use with caution! This will delete all data in the table and cannot be undone.
+        """
+        await super().execute(f"DROP TABLE IF EXISTS points_of_interest")
+
+    async def clear_all(self) -> bool:
+        """
+        Clears all data from the points_of_interest table. Use with caution! This will delete all data in the table and cannot be undone.
+        """
+        affected = await super().delete(
+            "DELETE FROM points_of_interest"
+        )
+        await super().execute("DELETE FROM sqlite_sequence WHERE name = ?", "points_of_interest")
+        return affected > 0
 
     # ---------- Queries ----------
 
-    def get_by_id(self, poi_id: int) -> Optional[PointOfInterest]:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "SELECT * FROM points_of_interest WHERE poi_id = ?", (poi_id,)
-            )
-            row = c.fetchone()
-            return PointOfInterest(data=dict(row)) if row else None
+    async def get_by_id(self, poi_id: int) -> Optional[PointOfInterest]:
+        row = await super().fetchrow(
+            "SELECT * FROM points_of_interest WHERE poi_id = ?",
+            poi_id
+        )
+        return PointOfInterest(data=dict(row)) if row else None
 
-    def get_all(self, server_id: int) -> List[PointOfInterest]:
-        with self._lock:
-            c = self.cursor()
-            c.execute("SELECT * FROM points_of_interest WHERE server_id = ?", (server_id,))
-            return [PointOfInterest(data=dict(row)) for row in c.fetchall()]
+    async def get_all(self, server_id: int) -> List[PointOfInterest]:
+        rows = await super().fetch("SELECT * FROM points_of_interest WHERE server_id = ?", server_id)
+        return [PointOfInterest(data=dict(row)) for row in rows]
+    
+    # ---------- Additional Queries ----------
+    
+    async def get_by_name(self, name: str, server_id: int) -> Optional[PointOfInterest]:
+        row = await super().fetchrow(
+            "SELECT * FROM points_of_interest WHERE name = ? AND server_id = ?", 
+            name, 
+            server_id
+        )
+        return PointOfInterest(data=dict(row)) if row else None
+
+    # ---------- Existence Checks ----------
+
+    async def exists(self, poi_id: int) -> bool:
+        row = await super().fetchrow(
+            "SELECT 1 FROM points_of_interest WHERE poi_id = ?",
+            poi_id
+        )
+        return row is not None
+    
+    # ---------- Additional Existence Checks ----------
 
     # ---------- Mutations ----------
 
-    def add(self, poi: PointOfInterest) -> tuple[bool, int]:
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
-                INSERT INTO points_of_interest (
-                    server_id, name, type, x, y, owner_player_id
-                )
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (
-                poi.server_id,
-                poi.name,
-                poi.type,
-                poi.x,
-                poi.y,
-                poi.owner_player_id
-            ))
+    async def insert(self, poi: PointOfInterest) -> int:
+        return await super().insert(
+            "INSERT INTO points_of_interest (server_id, name, icon, size) VALUES (?, ?, ?, ?)",
+            poi.server_id,
+            poi.name,
+            poi.icon,
+            poi.size
+        )
 
-            self.commit()
-            return (c.rowcount > 0, c.lastrowid)
+    async def update(self, poi: PointOfInterest) -> bool:
+        affected = await super().update(
+            "UPDATE points_of_interest SET server_id = ?, name = ?, icon = ?, size = ? WHERE poi_id = ?",
+            poi.server_id,
+            poi.name,
+            poi.icon,
+            poi.size,
+            poi.poi_id
+        )
+        return affected > 0
 
-    def update(self, poi: PointOfInterest) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
-                UPDATE points_of_interest
-                SET server_id = ?, name = ?, type = ?, x = ?, y = ?, owner_player_id = ?
-                WHERE poi_id = ?
-            """, (
-                poi.server_id,
-                poi.name,
-                poi.type,
-                poi.x,
-                poi.y,
-                poi.owner_player_id,
-                poi.poi_id
-            ))
-
-            self.commit()
-            return c.rowcount > 0
-
-    def delete(self, poi: PointOfInterest) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "DELETE FROM points_of_interest WHERE poi_id = ?",
-                (poi.poi_id,)
-            )
-
-            self.commit()
-            return c.rowcount > 0
+    async def delete(self, poi: PointOfInterest) -> bool:
+        affected = await super().delete(
+            "DELETE FROM points_of_interest WHERE poi_id = ?",
+            poi.poi_id
+        )
+        return affected > 0
     
-    def delete_all(self, server_id: int) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute("DELETE FROM points_of_interest WHERE server_id = ?", (server_id,))
-            self.commit()
-            return c.rowcount > 0
-
-    def exists(self, poi_id: int) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "SELECT 1 FROM points_of_interest WHERE poi_id = ?",
-                (poi_id,)
-            )
-            return c.fetchone() is not None
+    async def delete_all(self, server_id: int) -> bool:
+        # Delete_all and clear_all do the same in this repository since there are no environment variables to restrict by.
+        affected = await super().delete(
+            "DELETE FROM points_of_interest WHERE server_id = ?",
+            server_id
+        )
+        return affected > 0

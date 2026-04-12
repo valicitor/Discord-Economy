@@ -10,10 +10,12 @@ from .dtos.player_profile import (
     PlayerActionsCollection
 )
 
-from .handlers.galaxy_map_generator_handler import GalaxyMapGeneratorHandler
+from .handlers.galaxy_map_generator_handler import LightweightGalaxyMapGenerator, create_default_claimability_map
 
 from .queries.get_balance_query import GetBalanceQuery, GetBalanceQueryRequest, GetBalanceQueryResponse
 from .queries.get_leaderboard import GetLeaderboardQuery, GetLeaderboardQueryRequest, GetLeaderboardQueryResponse
+from .queries.get_equipment_query import GetEquipmentQuery, GetEquipmentQueryRequest, GetEquipmentQueryResponse
+from .queries.get_race_query import GetRaceQuery, GetRaceQueryRequest, GetRaceQueryResponse
 
 from .commands.set_balance_command import SetBalanceCommand, SetBalanceCommandRequest, SetBalanceCommandResponse
 from .commands.add_balance_command import AddBalanceCommand, AddBalanceCommandRequest, AddBalanceCommandResponse

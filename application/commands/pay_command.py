@@ -29,8 +29,10 @@ class PayCommand:
 
         return
 
-    def execute(self) -> PayCommandResponse:
-        server_config, [player_profile, target_player_profile] = ensure_guild_and_users(self.request.guild, [self.request.user, self.request.target])
+    async def execute(self) -> PayCommandResponse:
+        self.player_balance_repository = await PlayerBalanceRepository().get_instance()
+    
+        server_config, [player_profile, target_player_profile] = await ensure_guild_and_users(self.request.guild, [self.request.user, self.request.target])
 
         _, default_currency = server_config.server_settings.get_by_key("default_currency_id")
 
@@ -41,16 +43,16 @@ class PayCommand:
         if balance.balance < 0:
             raise InsufficientFundsException("You do not have enough funds to complete this withdrawal.")
         
-        balance_success = PlayerBalanceRepository().update(balance)
+        balance_success = await self.player_balance_repository.update(balance)
         if not balance_success:
             raise UpdateFailedException("Failed to update player balance. Please try again.")
-        balance = PlayerBalanceRepository().get_by_id(balance.balance_id)
+        balance = await self.player_balance_repository.get_by_id(balance.balance_id)
 
         target_balance.balance = int(target_balance.balance) + self.request.amount
-        target_balance_success = PlayerBalanceRepository().update(target_balance)
+        target_balance_success = await self.player_balance_repository.update(target_balance)
         if not target_balance_success:
             raise UpdateFailedException("Failed to update target player balance. Please try again.")
-        target_balance = PlayerBalanceRepository().get_by_id(target_balance.balance_id)
+        target_balance = await self.player_balance_repository.get_by_id(target_balance.balance_id)
 
         player_profile.balances[i] = balance
         target_player_profile.balances[j] = target_balance

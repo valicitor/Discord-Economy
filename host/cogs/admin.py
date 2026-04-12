@@ -37,9 +37,9 @@ class AdminCog(commands.Cog):
                 currency_symbol=currency_symbol
             )
 
-            response = SetCurrencySymbolCommand(request).execute()
+            response = await SetCurrencySymbolCommand(request).execute()
 
-            embed = DiscordAdminEmbed.set_currency_symbol_embed(interaction, response)
+            embed = await DiscordAdminEmbed.set_currency_symbol_embed(interaction, response)
             await interaction.response.send_message(embed=embed)
         except Exception as e:
             await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
@@ -67,9 +67,9 @@ class AdminCog(commands.Cog):
                 amount=amount
             )
 
-            response = AddBalanceCommand(request).execute()
+            response = await AddBalanceCommand(request).execute()
 
-            embed = DiscordAdminEmbed.add_balance_embed(interaction, target, response)
+            embed = await DiscordAdminEmbed.add_balance_embed(interaction, target, response)
             await interaction.response.send_message(embed=embed)
         except Exception as e:
             await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
@@ -97,9 +97,9 @@ class AdminCog(commands.Cog):
                 amount=amount
             )
 
-            response = SetBalanceCommand(request).execute()
+            response = await SetBalanceCommand(request).execute()
 
-            embed = DiscordAdminEmbed.set_balance_embed(interaction, target, response)
+            embed = await DiscordAdminEmbed.set_balance_embed(interaction, target, response)
             await interaction.response.send_message(embed=embed)
         except Exception as e:
             await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
@@ -142,7 +142,7 @@ class AdminCog(commands.Cog):
     #             )
     #         )
 
-    #         response = CreateItemCommand(request).execute()
+    #         response = await CreateItemCommand(request).execute()
 
     #         embed = DiscordAdminEmbed.create_item_embed(interaction, response)
     #         await interaction.response.send_message(embed=embed)

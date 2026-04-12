@@ -1,3 +1,4 @@
+import asyncio
 import sys
 import os
 
@@ -9,12 +10,20 @@ from application import WithdrawCommand, WithdrawCommandRequest
 from tests.helper.default_setup import DefaultSetup
 
 class TestWithdrawCommand(unittest.TestCase):
-    def setUp(self):
-        self.default_setup = DefaultSetup()
-        self.default_setup.setUp()
+    @classmethod
+    def setUpClass(cls):
+        # Initialize shared resources for all tests
+        cls.default_setup = DefaultSetup()
+        asyncio.run(cls.default_setup.setUpClass())
 
-    def tearDown(self):
-        self.default_setup.tearDown()
+    @classmethod
+    def tearDownClass(cls):
+        # Cleanup shared resources after all tests. Technically not needed for in-memory, and close_all will shutdown all connections for all repositories, but good practice.
+        asyncio.run(cls.default_setup.tearDownClass())
+
+    def setUp(self):
+        asyncio.run(self.default_setup.setUp())
+        asyncio.run(self.default_setup.setupData())
 
     def test_valid_withdraw(self):
         # Arrange
@@ -30,7 +39,7 @@ class TestWithdrawCommand(unittest.TestCase):
         )
 
         # Act
-        response = WithdrawCommand(withdraw_request).execute()
+        response = asyncio.run(WithdrawCommand(withdraw_request).execute())
 
         # Assert
         self.assertEqual(response.player.balances[0].balance, initial_balance + amount_to_withdraw)
@@ -47,7 +56,7 @@ class TestWithdrawCommand(unittest.TestCase):
 
         # Act & Assert
         with self.assertRaises(ValueError):  # Assuming ValueError is raised for invalid withdrawals
-            WithdrawCommand(withdraw_request).execute()
+            asyncio.run(WithdrawCommand(withdraw_request).execute())
 
     def test_zero_withdraw(self):
         # Arrange
@@ -60,7 +69,7 @@ class TestWithdrawCommand(unittest.TestCase):
 
         # Act & Assert
         with self.assertRaises(ValueError):  # Assuming ValueError is raised for invalid withdrawals
-            WithdrawCommand(withdraw_request).execute()
+            asyncio.run(WithdrawCommand(withdraw_request).execute())
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,111 +1,112 @@
-from domain import BankAccount
-from domain import IRepository
+from domain import BankAccount, IRepository
 from infrastructure import BaseRepository
 from typing import List, Optional
 
+class BankAccountRepository(BaseRepository, IRepository):
+    
+    # ---------- Schema Setup ----------
 
-class BankAccountRepository(IRepository, BaseRepository):
-    def __init__(self, seeder=None, db_path: str = None):
-        super().__init__(seeder=seeder, db_path=db_path or "repository.db")
+    async def init_database(self):
+        """
+        initalizes the database schema for the actions table. Called automatically on first use. Override in child classes to create tables.
+        connection is managed by BaseRepository, so we can use super() to execute our schema setup queries.
+        """
+        conn = await super().acquire_connection()
 
-    def init_database(self):
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS bank_accounts (
-                    account_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    bank_id INTEGER NOT NULL,
-                    player_id INTEGER NOT NULL,
-                    balance INTEGER NOT NULL,
-                    created_at TEXT,
-                    FOREIGN KEY(bank_id) REFERENCES banks(bank_id),
-                    FOREIGN KEY(player_id) REFERENCES players(player_id)
-                )
-            """)
-            self.execute("PRAGMA journal_mode=WAL;")
-            self.commit()
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS bank_accounts (
+                account_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                bank_id INTEGER NOT NULL,
+                player_id INTEGER NOT NULL,
+                balance INTEGER NOT NULL,
+                created_at TEXT,
+                FOREIGN KEY(bank_id) REFERENCES banks(bank_id),
+                FOREIGN KEY(player_id) REFERENCES players(player_id)
+            )
+        """)
+
+        await conn.commit()
+    
+    # ---------- Teardown ----------
+
+    async def drop_table(self):
+        """
+        Drops the bank_accounts table. Use with caution! This will delete all data in the table and cannot be undone.
+        """
+        await super().execute(f"DROP TABLE IF EXISTS bank_accounts")
+
+    async def clear_all(self) -> bool:
+        """
+        Clears all data from the bank_accounts table. Use with caution! This will delete all data in the table and cannot be undone.
+        """
+        affected = await super().delete(
+            "DELETE FROM bank_accounts"
+        )
+        await super().execute("DELETE FROM sqlite_sequence WHERE name = ?", "bank_accounts")
+        return affected > 0
 
     # ---------- Queries ----------
 
-    def get_by_id(self, account_id: int) -> Optional[BankAccount]:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "SELECT * FROM bank_accounts WHERE account_id = ?", (account_id,)
-            )
-            row = c.fetchone()
-            return BankAccount(data=dict(row)) if row else None
+    async def get_by_id(self, account_id: int) -> Optional[BankAccount]:
+        row = await super().fetchrow(
+            "SELECT * FROM bank_accounts WHERE account_id = ?",
+            account_id
+        )
+        return BankAccount(data=dict(row)) if row else None
 
-    def get_all(self, player_id: int = None) -> List[BankAccount]:
-        with self._lock:
-            c = self.cursor()
-            if player_id is not None:
-                c.execute("SELECT * FROM bank_accounts WHERE player_id = ?", (player_id,))
-            else:
-                c.execute("SELECT * FROM bank_accounts")
-            return [BankAccount(data=dict(row)) for row in c.fetchall()]
+    async def get_all(self, player_id: int = None) -> List[BankAccount]:
+        if player_id is not None:
+            rows = await super().fetch("SELECT * FROM bank_accounts WHERE player_id = ?", player_id)
+        else:
+            rows = await super().fetch("SELECT * FROM bank_accounts")
+        return [BankAccount(data=dict(row)) for row in rows]
+    
+    # ---------- Additional Queries ----------
+    
+    # ---------- Existence Checks ----------
+
+    async def exists(self, account_id: int) -> bool:
+        row = await super().fetchrow(
+            "SELECT 1 FROM bank_accounts WHERE account_id = ?",
+            account_id
+        )
+        return row is not None
+    
+    # ---------- Additional Existence Checks ----------
 
     # ---------- Mutations ----------
 
-    def add(self, bank_account: BankAccount) -> tuple[bool, int]:
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
-                INSERT INTO bank_accounts (
-                    bank_id, player_id, balance, created_at
-                )
-                VALUES (?, ?, ?, ?)
-            """, (
-                bank_account.bank_id,
-                bank_account.player_id,
-                bank_account.balance,
-                bank_account.created_at
-            ))
+    async def insert(self, bank_account: BankAccount) -> int:
+        return await super().insert(
+            "INSERT INTO bank_accounts (bank_id, player_id, balance, created_at) VALUES (?, ?, ?, ?)",
+            bank_account.bank_id,
+            bank_account.player_id,
+            bank_account.balance,
+            bank_account.created_at
+        )
 
-            self.commit()
-            return (c.rowcount > 0, c.lastrowid)
+    async def update(self, bank_account: BankAccount) -> bool:
+        affected = await super().update(
+            "UPDATE bank_accounts SET bank_id = ?, player_id = ?, balance = ?, created_at = ? WHERE account_id = ?",
+            bank_account.bank_id,
+            bank_account.player_id,
+            bank_account.balance,
+            bank_account.created_at,
+            bank_account.account_id
+        )
+        return affected > 0
 
-    def update(self, bank_account: BankAccount) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
-                UPDATE bank_accounts
-                SET bank_id = ?, player_id = ?, balance = ?, created_at = ?
-                WHERE account_id = ?
-            """, (
-                bank_account.bank_id,
-                bank_account.player_id,
-                bank_account.balance,
-                bank_account.created_at,
-                bank_account.account_id
-            ))
-
-            self.commit()
-            return c.rowcount > 0
-
-    def delete(self, bank_account: BankAccount) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "DELETE FROM bank_accounts WHERE account_id = ?",
-                (bank_account.account_id,)
-            )
-
-            self.commit()
-            return c.rowcount > 0
+    async def delete(self, bank_account: BankAccount) -> bool:
+        affected = await super().delete(
+            "DELETE FROM bank_accounts WHERE account_id = ?",
+            bank_account.account_id
+        )
+        return affected > 0
     
-    def delete_all(self, player_id: int) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute("DELETE FROM bank_accounts WHERE player_id = ?", (player_id,))
-            self.commit()
-            return c.rowcount > 0
-
-    def exists(self, account_id: int) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "SELECT 1 FROM bank_accounts WHERE account_id = ?",
-                (account_id,)
-            )
-            return c.fetchone() is not None
+    async def delete_all(self, player_id: int) -> bool:
+        # Delete_all and clear_all do the same in this repository since there are no environment variables to restrict by.
+        affected = await super().delete(
+            "DELETE FROM bank_accounts WHERE player_id = ?",
+            player_id
+        )
+        return affected > 0

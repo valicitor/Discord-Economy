@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from config import BOT_NAME, BOT_VERSION, DISCORD_BOT_TOKEN, TEST_SERVER_ID, DO_GLOBAL_SYNC
+from config import BOT_NAME, BOT_VERSION, DISCORD_BOT_TOKEN, TEST_SERVER_ID, DO_GLOBAL_SYNC, FORCE_SYNC
 import asyncio
 
 # ----------------------------
@@ -30,7 +30,7 @@ class CommandSyncManager:
 
         print(f"Found {len(remote_commands)} commands registered.")
 
-        if self.commands_are_different(remote_commands, local_commands):
+        if FORCE_SYNC or self.commands_are_different(remote_commands, local_commands):
             print("Commands changed. Syncing...")
             self.tree.copy_global_to(guild=test_guild)
             synced = await self.tree.sync(guild=test_guild)
@@ -55,7 +55,7 @@ class CommandSyncManager:
 
         print(f"Found {len(remote_commands)} global commands registered.")
 
-        if self.commands_are_different(remote_commands, local_commands):
+        if FORCE_SYNC or self.commands_are_different(remote_commands, local_commands):
             print("Global commands changed. Syncing...")
             synced = await self.tree.sync()
             print(f"✅ Synced {len(synced)} global commands")

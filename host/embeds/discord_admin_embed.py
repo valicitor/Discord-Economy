@@ -11,8 +11,8 @@ from application import (
 class DiscordAdminEmbed:
 
     @staticmethod
-    def set_currency_symbol_embed(interaction: Interaction, response: SetCurrencySymbolCommandResponse):
-        currency = get_default_currenncy(response.server_config)
+    async def set_currency_symbol_embed(interaction: Interaction, response: SetCurrencySymbolCommandResponse):
+        currency = await get_default_currenncy(response.server_config)
                 
         embed = discord.Embed(
             title=f"💱 Currency Symbol Updated",
@@ -22,8 +22,8 @@ class DiscordAdminEmbed:
         return embed
 
     @staticmethod
-    def add_balance_embed(interaction: Interaction, target: discord.User, response: AddBalanceCommandResponse):
-        currency = get_default_currenncy(response.server_config)
+    async def add_balance_embed(interaction: Interaction, target: discord.User, response: AddBalanceCommandResponse):
+        currency = await get_default_currenncy(response.server_config)
 
         embed = discord.Embed(
             title=f"💳 Bank Account Summary",
@@ -33,8 +33,8 @@ class DiscordAdminEmbed:
         return embed
 
     @staticmethod
-    def set_balance_embed(interaction: Interaction, target: discord.User, response: SetBalanceCommandResponse):
-        currency = get_default_currenncy(response.server_config)
+    async def set_balance_embed(interaction: Interaction, target: discord.User, response: SetBalanceCommandResponse):
+        currency = await get_default_currenncy(response.server_config)
         
         embed = discord.Embed(
             title=f"💳 Bank Account Summary",
@@ -44,8 +44,8 @@ class DiscordAdminEmbed:
         return embed
     
     # @staticmethod
-    # def create_item_embed(interaction: Interaction, response: CreateItemCommandResponse):
-    #     currency = get_default_currenncy(response.server_config)
+    # async def create_item_embed(interaction: Interaction, response: CreateItemCommandResponse):
+    #     currency = await get_default_currenncy(response.server_config)
                 
     #     embed = discord.Embed(
     #         color=discord.Color.green()

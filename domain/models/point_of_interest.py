@@ -5,18 +5,14 @@ class PointOfInterest:
         self.poi_id: int|None = kwargs.get('poi_id')
         self.server_id: int|None = kwargs.get('server_id')
         self.name: str|None = kwargs.get('name')
-        self.type: str|None = kwargs.get('type')
-        self.x: float = kwargs.get('x', 0.0)
-        self.y: float = kwargs.get('y', 0.0)
-        self.owner_player_id: int|None = kwargs.get('owner_player_id')
+        self.icon: str|None = kwargs.get('icon')
+        self.size: float = kwargs.get('size', 0.0)
 
     def to_dict(self):
         return {
             'poi_id': self.poi_id,
             'server_id': self.server_id,
             'name': self.name,
-            'type': self.type,
-            'x': self.x,
-            'y': self.y,
-            'owner_player_id': self.owner_player_id
+            'icon': self.icon,
+            'size': self.size
         }

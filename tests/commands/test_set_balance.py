@@ -1,3 +1,4 @@
+import asyncio
 import sys
 import os
 
@@ -9,17 +10,24 @@ from application import SetBalanceCommand, SetBalanceCommandRequest
 from tests.helper.default_setup import DefaultSetup
 
 class TestSetBalanceCommand(unittest.TestCase):
-    def setUp(self):
-        self.default_setup = DefaultSetup()
-        self.default_setup.setUp()
+    @classmethod
+    def setUpClass(cls):
+        # Initialize shared resources for all tests
+        cls.default_setup = DefaultSetup()
+        asyncio.run(cls.default_setup.setUpClass())
 
-    def tearDown(self):
-        self.default_setup.tearDown()
+    @classmethod
+    def tearDownClass(cls):
+        # Cleanup shared resources after all tests. Technically not needed for in-memory, and close_all will shutdown all connections for all repositories, but good practice.
+        asyncio.run(cls.default_setup.tearDownClass())
+
+    def setUp(self):
+        asyncio.run(self.default_setup.setUp())
+        asyncio.run(self.default_setup.setupData())
 
     def test_set_balance_cash(self):
         # Arrange
         amount = 50
-        player = self.default_setup.player_profile1
 
         request = SetBalanceCommandRequest(
             guild=self.default_setup.discord_guild,
@@ -29,7 +37,7 @@ class TestSetBalanceCommand(unittest.TestCase):
         )
 
         # Act
-        response = SetBalanceCommand(request).execute()
+        response = asyncio.run(SetBalanceCommand(request).execute())
 
         # Assert
         self.assertEqual(response.player.balances[0].balance, amount)

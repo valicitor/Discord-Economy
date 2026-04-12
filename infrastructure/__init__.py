@@ -22,6 +22,7 @@ from .persistence.player_action_repository import PlayerActionRepository
 from .persistence.action_log_repository import ActionLogRepository
 
 from .persistence.point_of_interest_repository import PointOfInterestRepository
+from .persistence.location_repository import LocationRepository
 
 from .persistence.race_repository import RaceRepository
 from .persistence.race_stat_repository import RaceStatRepository
@@ -45,10 +46,24 @@ from .persistence.faction_member_repository import FactionMemberRepository
 from .persistence.keyword_repository import KeywordRepository
 
 # --- Seeders ---
-from .seed.point_of_interest_seeder import PointOfInterestSeeder
-from .seed.businesses_seeder import BusinessesSeeder, ActionsSeeder
-from .seed.races_seeder import RacesSeeder, RaceStatsSeeder
-from .seed.equipments_seeder import EquipmentsSeeder, EquipmentStatsSeeder
-from .seed.vehicles_seeder import VehiclesSeeder, VehicleStatsSeeder
-from .seed.units_seeder import UnitsSeeder, UnitStatsSeeder
-from .seed.keywords_seeder import KeywordsSeeder
+from .seeders.base_seeder import BaseSeeder, SeederResult
+
+from .seeders.businesses_seeder import BusinessesSeeder
+from .seeders.actions_seeder import ActionsSeeder
+
+from .seeders.point_of_interest_seeder import PointOfInterestSeeder
+from .seeders.locations_seeder import LocationsSeeder
+
+from .seeders.keywords_seeder import KeywordsSeeder
+
+from .seeders.equipments_seeder import EquipmentsSeeder
+from .seeders.equipment_stats_seeder import EquipmentStatsSeeder
+
+from .seeders.races_seeder import RacesSeeder
+from .seeders.races_stats_seeder import RaceStatsSeeder
+
+from .seeders.units_seeder import UnitsSeeder
+from .seeders.units_stats_seeder import UnitStatsSeeder
+
+from .seeders.vehicles_seeder import VehiclesSeeder
+from .seeders.vehicles_stats_seeder import VehicleStatsSeeder

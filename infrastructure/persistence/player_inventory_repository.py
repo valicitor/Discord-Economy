@@ -1,95 +1,110 @@
-from domain import PlayerInventory
-from domain import IRepository
+from domain import PlayerInventory, IRepository
 from infrastructure import BaseRepository
 from typing import List, Optional
 
+class PlayerInventoryRepository(BaseRepository, IRepository):
+    
+    # ---------- Schema Setup ----------
 
-class PlayerInventoryRepository(IRepository, BaseRepository):
-    def __init__(self, seeder=None, db_path: str = None):
-        super().__init__(seeder=seeder, db_path=db_path or "repository.db")
+    async def init_database(self):
+        """
+        initalizes the database schema for the action_logs table. Called automatically on first use. Override in child classes to create tables.
+        connection is managed by BaseRepository, so we can use super() to execute our schema setup queries.
+        """
+        conn = await super().acquire_connection()
 
-    def init_database(self):
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS player_inventory (
-                    inventory_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    player_id INTEGER NOT NULL,
-                    item_id INTEGER NOT NULL,
-                    quantity INTEGER NOT NULL DEFAULT 1,
-                    FOREIGN KEY(player_id) REFERENCES players(player_id),
-                    FOREIGN KEY(item_id) REFERENCES items(item_id)
-                )
-            """)
-            self.execute("PRAGMA journal_mode=WAL;")
-            self.commit()
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS player_inventory (
+                inventory_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                player_id INTEGER NOT NULL,
+                item_id INTEGER NOT NULL,
+                quantity INTEGER NOT NULL DEFAULT 1,
+                FOREIGN KEY(player_id) REFERENCES players(player_id),
+                FOREIGN KEY(item_id) REFERENCES items(item_id)
+            )
+        """)
+
+        await conn.commit()
+    
+    # ---------- Teardown ----------
+
+    async def drop_table(self):
+        """
+        Drops the player_inventory table. Use with caution! This will delete all data in the table and cannot be undone.
+        """
+        await super().execute(f"DROP TABLE IF EXISTS player_inventory")
+
+    async def clear_all(self) -> bool:
+        """
+        Clears all data from the player_inventory table. Use with caution! This will delete all data in the table and cannot be undone.
+        """
+        affected = await super().delete(
+            "DELETE FROM player_inventory"
+        )
+        await super().execute("DELETE FROM sqlite_sequence WHERE name = ?", "player_inventory")
+        return affected > 0
 
     # ---------- Queries ----------
 
-    def get_by_id(self, inventory_id: int) -> Optional[PlayerInventory]:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "SELECT * FROM player_inventory WHERE inventory_id = ?", (inventory_id,)
-            )
-            row = c.fetchone()
-            return PlayerInventory(data=dict(row)) if row else None
+    async def get_by_id(self, inventory_id: int) -> Optional[PlayerInventory]:
+        row = await super().fetchrow(
+            "SELECT * FROM player_inventory WHERE inventory_id = ?",
+            inventory_id
+        )
+        return PlayerInventory(data=dict(row)) if row else None
 
-    def get_all(self) -> List[PlayerInventory]:
-        with self._lock:
-            c = self.cursor()
-            c.execute("SELECT * FROM player_inventory")
-            return [PlayerInventory(data=dict(row)) for row in c.fetchall()]
+    async def get_all(self) -> List[PlayerInventory]:
+        rows = await super().fetch("SELECT * FROM player_inventory")
+        return [PlayerInventory(data=dict(row)) for row in rows]
+    
+    # ---------- Additional Queries ----------
+
+    async def get_by_player_id(self, player_id: int) -> List[PlayerInventory]:
+        rows = await super().fetch("SELECT * FROM player_inventory WHERE player_id = ?", player_id)
+        return [PlayerInventory(data=dict(row)) for row in rows]
+    
+    # ---------- Existence Checks ----------
+
+    async def exists(self, inventory_id: int) -> bool:
+        row = await super().fetchrow(
+            "SELECT 1 FROM player_inventory WHERE inventory_id = ?",
+            inventory_id
+        )
+        return row is not None
+    
+    # ---------- Additional Existence Checks ----------
 
     # ---------- Mutations ----------
 
-    def add(self, player_inventory: PlayerInventory) -> tuple[bool, int]:
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
-                INSERT INTO player_inventory (
-                    player_id, item_id, quantity
-                )
-                VALUES (?, ?, ?)
-            """, (
-                player_inventory.player_id,
-                player_inventory.item_id,
-                player_inventory.quantity
-            ))
+    async def insert(self, player_inventory: PlayerInventory) -> int:
+        return await super().insert(
+            "INSERT INTO player_inventory (player_id, item_id, quantity) VALUES (?, ?, ?)",
+            player_inventory.player_id,
+            player_inventory.item_id,
+            player_inventory.quantity
+        )
 
-            self.commit()
-            return (c.rowcount > 0, c.lastrowid)
+    async def update(self, player_inventory: PlayerInventory) -> bool:
+        affected = await super().update(
+            "UPDATE player_inventory SET player_id = ?, item_id = ?, quantity = ? WHERE inventory_id = ?",
+            player_inventory.player_id,
+            player_inventory.item_id,
+            player_inventory.quantity,
+            player_inventory.inventory_id
+        )
+        return affected > 0
 
-    def update(self, player_inventory: PlayerInventory) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute("""
-                UPDATE player_inventory
-                SET quantity = ?
-                WHERE inventory_id = ?
-            """, (
-                player_inventory.quantity,
-                player_inventory.inventory_id
-            ))
-
-            self.commit()
-            return c.rowcount > 0
-
-    def delete(self, player_inventory: PlayerInventory) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "DELETE FROM player_inventory WHERE inventory_id = ?",
-                (player_inventory.inventory_id,)
-            )
-
-            self.commit()
-            return c.rowcount > 0
-
-    def exists(self, inventory_id: int) -> bool:
-        with self._lock:
-            c = self.cursor()
-            c.execute(
-                "SELECT 1 FROM player_inventory WHERE inventory_id = ?", (inventory_id,)
-            )
-            return c.fetchone() is not None
+    async def delete(self, player_inventory: PlayerInventory) -> bool:
+        affected = await super().delete(
+            "DELETE FROM player_inventory WHERE inventory_id = ?",
+            player_inventory.inventory_id
+        )
+        return affected > 0
+    
+    async def delete_all(self, player_id: int) -> bool:
+        # Delete_all and clear_all do the same in this repository since there are no environment variables to restrict by.
+        affected = await super().delete(
+            "DELETE FROM player_inventory WHERE player_id = ?",
+            player_id
+        )
+        return affected > 0

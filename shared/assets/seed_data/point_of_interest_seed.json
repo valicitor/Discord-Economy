@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "points_of_interest": {
+    "data"  : [
+      { "name": "Capital World",    "icon": "★",  "size": 20 },
+      { "name": "Important World",  "icon": "●",   "size": 18 },
+      { "name": "Primary World",    "icon": "◆",  "size": 14 },
+      { "name": "Secondary World",  "icon": "■",   "size": 12 },
+      { "name": "No Marker",        "icon": "",    "size": 8  }
+    ]
+  },
+  "locations": {  
+    "data": [
+      { "name": "Tython",                   "type": "Important World",  "x": 3066,  "y": 3348,   "owner_player_id": null },
+
+      { "name": "Coruscant",                "type": "Capital World",    "x": 3060,  "y": 3122,   "owner_player_id": null },
+      { "name": "Alderaan",                 "type": "Capital World",    "x": 3424,  "y": 3146,   "owner_player_id": null },
+      { "name": "Balmorra",                 "type": "Important World",  "x": 3598,  "y": 3288,   "owner_player_id": null },
+
+      { "name": "Nal Hutta",                "type": "Capital World",   "x": 5014,   "y": 3700,   "owner_player_id": null },
+      { "name": "& Nar Shaddaa",            "type": "No Marker",       "x": 5014,   "y": 3740,   "owner_player_id": null },
+      { "name": "Ord Mantell",              "type": "Primary World",   "x": 3072,   "y": 2428,   "owner_player_id": null },
+
+      { "name": "Belsavis",                 "type": "Important World", "x": 3176,   "y": 5406,    "owner_player_id": null },
+      { "name": "Hoth",                     "type": "Primary World",   "x": 2798,   "y": 5518,    "owner_player_id": null },
+      { "name": "Dromund Kaas",             "type": "Capital World",   "x": 4828,   "y": 1784,   "owner_player_id": null },
+      { "name": "Felucia",                  "type": "Secondary World", "x": 4956,   "y": 2072,   "owner_player_id": null },
+      { "name": "Korriban",                 "type": "Important World", "x": 4778,   "y": 1832,   "owner_player_id": null },
+      { "name": "Mandalore",                "type": "Capital World",   "x": 4076,   "y": 2372,   "owner_player_id": null },
+      { "name": "Mustafar",                 "type": "Secondary World", "x": 3108,   "y": 5870,    "owner_player_id": null },
+      { "name": "Mygeeto",                  "type": "Primary World",   "x": 2920,   "y": 1754,   "owner_player_id": null },
+      { "name": "Quesh",                    "type": "Important World", "x": 5238,   "y": 3282,   "owner_player_id": null },
+      { "name": "Tatooine",                 "type": "Important World", "x": 4858,   "y": 5004,    "owner_player_id": null },
+      { "name": "Voss",                     "type": "Important World", "x": 5140,   "y": 2116,   "owner_player_id": null },
+      { "name": "Yavin",                    "type": "Important World", "x": 4336,   "y": 2018,   "owner_player_id": null },
+
+      { "name": "Ilum",                     "type": "Primary World",   "x": 1910,    "y": 2446,   "owner_player_id": null }
+    ]
+  }
+}

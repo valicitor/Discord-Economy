@@ -1,3 +1,4 @@
+import asyncio
 import sys
 import os
 
@@ -9,12 +10,20 @@ from application import GetBalanceQuery, GetBalanceQueryRequest
 from tests.helper.default_setup import DefaultSetup
 
 class TestGetBalanceQuery(unittest.TestCase):
-    def setUp(self):
-        self.default_setup = DefaultSetup()
-        self.default_setup.setUp()
+    @classmethod
+    def setUpClass(cls):
+        # Initialize shared resources for all tests
+        cls.default_setup = DefaultSetup()
+        asyncio.run(cls.default_setup.setUpClass())
 
-    def tearDown(self):
-        self.default_setup.tearDown()
+    @classmethod
+    def tearDownClass(cls):
+        # Cleanup shared resources after all tests. Technically not needed for in-memory, and close_all will shutdown all connections for all repositories, but good practice.
+        asyncio.run(cls.default_setup.tearDownClass())
+
+    def setUp(self):
+        asyncio.run(self.default_setup.setUp())
+        asyncio.run(self.default_setup.setupData())
 
     def test_get_balance_valid(self):
         # Arrange
@@ -28,7 +37,7 @@ class TestGetBalanceQuery(unittest.TestCase):
         )
 
         # Act
-        response = GetBalanceQuery(request).execute()
+        response = asyncio.run(GetBalanceQuery(request).execute())
 
         # Assert
         self.assertEqual(response.server_config.server.guild_id, 12345)
