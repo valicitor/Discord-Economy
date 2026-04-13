@@ -2,7 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from infrastructure import ServerRepository, RaceRepository
+from infrastructure import ServerRepository, RaceRepository, EquipmentRepository
 
 from application import DiscordGuild, DiscordUser
 from application import (
@@ -207,6 +207,27 @@ class BalanceCog(commands.Cog):
             await interaction.response.send_message(embed=embed)
         except Exception as e:
             await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
+        
+    @user_equipment_stat_block.autocomplete("equipment_name")
+    async def equipment_autocomplete(self, interaction: discord.Interaction, current: str):
+        server_repo = await ServerRepository().get_instance()
+        equipment_repo = await EquipmentRepository().get_instance()
+        
+        server_id = (await server_repo.get_by_guild_id(interaction.guild_id)).server_id
+        equipment = await equipment_repo.search_by_name(current, server_id)
+
+        if not current:
+            matches = [e.name for e in equipment][:25]
+        else:
+            matches = [e.name for e in equipment if current.lower() in e.name.lower()][:25]
+
+        return [
+            app_commands.Choice(
+                name=match,
+                value=match
+            )
+            for match in matches
+        ]
 
 
     # --- /stat-block race ---
@@ -241,7 +262,7 @@ class BalanceCog(commands.Cog):
         race_repo = await RaceRepository().get_instance()
         
         server_id = (await server_repo.get_by_guild_id(interaction.guild_id)).server_id
-        races = await race_repo.get_all(server_id)
+        races = await race_repo.search_by_name(current, server_id)
 
         if not current:
             matches = [r.name for r in races][:25]

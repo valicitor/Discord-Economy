@@ -70,6 +70,14 @@ class EquipmentRepository(BaseRepository, IRepository):
         )
         return Equipment(data=dict(row)) if row else None
     
+    async def search_by_name(self, name_query: str, server_id: int) -> List[Equipment]:
+        rows = await super().fetch(
+            "SELECT * FROM equipment WHERE name LIKE ? AND server_id = ?",
+            f"%{name_query}%",
+            server_id
+        )
+        return [Equipment(data=dict(row)) for row in rows]
+    
     # ---------- Existence Checks ----------
 
     async def exists(self, equipment_id: int) -> bool:
