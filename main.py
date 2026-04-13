@@ -198,13 +198,17 @@ async def main():
     except KeyboardInterrupt:
         # Ctrl+C pressed
         print("KeyboardInterrupt received. Shutting down...")
+        await client.close()
+        await BaseRepository.close_all()
     except asyncio.CancelledError:
         # Suppress cancellation traceback on shutdown
         pass
     except Exception as e:
         print(f"❌ Unexpected error: {e}")
     finally:
-        await BaseRepository.close_all()  # Ensure database connections are closed
+        if not client.is_closed():
+            await client.close()
+            await BaseRepository.close_all()
         print("Bot has shut down gracefully.")
 
 # ----------------------------

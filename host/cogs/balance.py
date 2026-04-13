@@ -213,13 +213,12 @@ class BalanceCog(commands.Cog):
         server_repo = await ServerRepository().get_instance()
         equipment_repo = await EquipmentRepository().get_instance()
         
-        server_id = (await server_repo.get_by_guild_id(interaction.guild_id)).server_id
-        equipment = await equipment_repo.search_by_name(current, server_id)
+        server = await server_repo.get_by_guild_id(interaction.guild_id)
+        if server is None:
+             return []
+        equipment = await equipment_repo.search_by_name(current, server.server_id, 25)
 
-        if not current:
-            matches = [e.name for e in equipment][:25]
-        else:
-            matches = [e.name for e in equipment if current.lower() in e.name.lower()][:25]
+        matches = sorted((e.name for e in equipment), key=str.lower)[:25]
 
         return [
             app_commands.Choice(
@@ -261,13 +260,12 @@ class BalanceCog(commands.Cog):
         server_repo = await ServerRepository().get_instance()
         race_repo = await RaceRepository().get_instance()
         
-        server_id = (await server_repo.get_by_guild_id(interaction.guild_id)).server_id
-        races = await race_repo.search_by_name(current, server_id)
+        server = await server_repo.get_by_guild_id(interaction.guild_id)
+        if server is None:
+            return []
+        races = await race_repo.search_by_name(current, server.server_id, 25)
 
-        if not current:
-            matches = [r.name for r in races][:25]
-        else:
-            matches = [r.name for r in races if current.lower() in r.name.lower()][:25]
+        matches = sorted((e.name for e in races), key=str.lower)[:25]
 
         return [
             app_commands.Choice(
