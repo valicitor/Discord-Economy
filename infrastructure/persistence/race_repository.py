@@ -68,6 +68,15 @@ class RaceRepository(BaseRepository, IRepository):
         )
         return Race(data=dict(row)) if row else None
     
+    async def search_by_name(self, name_query: str, server_id: int, limit: int) -> List[Race]:
+        rows = await super().fetch(
+            "SELECT * FROM races WHERE name LIKE ? AND server_id = ? LIMIT ?",
+            f"%{name_query}%",
+            server_id,
+            limit
+        )
+        return [Race(data=dict(row)) for row in rows]
+    
     # ---------- Existence Checks ----------
 
     async def exists(self, race_id: int) -> bool:

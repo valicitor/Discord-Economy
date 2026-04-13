@@ -10,8 +10,6 @@ from .dtos.player_profile import (
     PlayerActionsCollection
 )
 
-from .handlers.galaxy_map_generator_handler import LightweightGalaxyMapGenerator, create_default_claimability_map
-
 from .queries.get_balance_query import GetBalanceQuery, GetBalanceQueryRequest, GetBalanceQueryResponse
 from .queries.get_leaderboard import GetLeaderboardQuery, GetLeaderboardQueryRequest, GetLeaderboardQueryResponse
 from .queries.get_equipment_query import GetEquipmentQuery, GetEquipmentQueryRequest, GetEquipmentQueryResponse
@@ -23,7 +21,5 @@ from .commands.pay_command import PayCommand, PayCommandRequest, PayCommandRespo
 from .commands.withdraw_command import WithdrawCommand, WithdrawCommandRequest, WithdrawCommandResponse
 from .commands.deposit_command import DepositCommand, DepositCommandRequest, DepositCommandResponse
 from .commands.set_currency_symbol_command import SetCurrencySymbolCommand, SetCurrencySymbolCommandRequest, SetCurrencySymbolCommandResponse
-
-from .commands.generate_galaxy_map_command import GenerateGalaxyMapCommand, GenerateGalaxyMapCommandRequest, GenerateGalaxyMapCommandResponse
 
 from .helpers.get_default_currency import get_default_currenncy

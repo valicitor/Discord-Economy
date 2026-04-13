@@ -3,6 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 from config import BOT_NAME, BOT_VERSION, DISCORD_BOT_TOKEN, TEST_SERVER_ID, DO_GLOBAL_SYNC, FORCE_SYNC
 import asyncio
+from infrastructure import BaseRepository
 
 # ----------------------------
 # Command sync Class
@@ -198,12 +199,16 @@ async def main():
         # Ctrl+C pressed
         print("KeyboardInterrupt received. Shutting down...")
         await client.close()
+        await BaseRepository.close_all()
     except asyncio.CancelledError:
         # Suppress cancellation traceback on shutdown
         pass
     except Exception as e:
         print(f"❌ Unexpected error: {e}")
     finally:
+        if not client.is_closed():
+            await client.close()
+            await BaseRepository.close_all()
         print("Bot has shut down gracefully.")
 
 # ----------------------------
