@@ -47,11 +47,13 @@ from .models.keyword import Keyword
 # --- Exceptions ---
 from .exceptions.record_not_found_exception import RecordNotFoundException
 from .exceptions.create_failed_exception import CreateFailedException
+from .exceptions.insert_failed_exception import InsertFailedException
 from .exceptions.update_failed_exception import UpdateFailedException
 from .exceptions.delete_failed_exception import DeleteFailedException
 from .exceptions.duplicate_record_exception import DuplicateRecordException
 from .exceptions.invalid_data_exception import InvalidDataException
 from .exceptions.permission_denied_exception import PermissionDeniedException
+from .exceptions.on_cooldown_exception import OnCooldownException
 
 from .exceptions.insufficient_funds_exception import InsufficientFundsException
 

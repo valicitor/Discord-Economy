@@ -1,22 +1,20 @@
 import discord
 from discord import Interaction
 
-from application import get_default_currenncy
+from application import get_default_currency
 from application import (
     GetBalanceQueryResponse, 
     PayCommandResponse,
     WithdrawCommandResponse, 
     DepositCommandResponse,
-    GetLeaderboardQueryResponse,
-    GetEquipmentQueryResponse,
-    GetRaceQueryResponse
+    GetLeaderboardQueryResponse
 )
 
 class DiscordBalanceEmbed:
 
     @staticmethod
     async def get_balance_embed(interaction: Interaction, response: GetBalanceQueryResponse):
-        currency = await get_default_currenncy(response.server_config)
+        currency = await get_default_currency(response.server_config)
         hex_color = response.player.faction.color if response.player.faction and response.player.faction.color else None
 
         embed=discord.Embed(
@@ -33,7 +31,7 @@ class DiscordBalanceEmbed:
     
     @staticmethod
     async def withdraw_embed(interaction: Interaction, response: WithdrawCommandResponse):
-        currency = await get_default_currenncy(response.server_config)
+        currency = await get_default_currency(response.server_config)
         hex_color = response.player.faction.color if response.player.faction and response.player.faction.color else None
 
         embed=discord.Embed(
@@ -46,7 +44,7 @@ class DiscordBalanceEmbed:
 
     @staticmethod
     async def deposit_embed(interaction: Interaction, response: DepositCommandResponse):
-        currency = await get_default_currenncy(response.server_config)
+        currency = await get_default_currency(response.server_config)
         hex_color = response.player.faction.color if response.player.faction and response.player.faction.color else None
 
         embed=discord.Embed(
@@ -59,7 +57,7 @@ class DiscordBalanceEmbed:
 
     @staticmethod
     async def pay_balance_embed(interaction: discord.Interaction, target: discord.User, response: PayCommandResponse):
-        currency = await get_default_currenncy(response.server_config)
+        currency = await get_default_currency(response.server_config)
         hex_color = response.player.faction.color if response.player.faction and response.player.faction.color else None
       
         embed = discord.Embed(
@@ -71,7 +69,7 @@ class DiscordBalanceEmbed:
     
     @staticmethod
     async def get_leaderboard_embed(interaction: discord.Interaction, response: GetLeaderboardQueryResponse):
-        currency = await get_default_currenncy(response.server_config)
+        currency = await get_default_currency(response.server_config)
 
         description=f"View the leaderboard here:\n"
         for player_profile in response.players:
@@ -87,76 +85,3 @@ class DiscordBalanceEmbed:
         embed.set_footer(text=f"Page {response.page}/{response.max_pages}")
 
         return embed
-    
-    @staticmethod
-    async def get_equipment_stat_block_embed(interaction: discord.Interaction, response: GetEquipmentQueryResponse):
-        embed = discord.Embed(
-            title=f"{response.equipment.name}", 
-            description=response.equipment.description, 
-            color=discord.Color.blue()
-        )
-
-        header_row = []
-        seperator_row = []
-        stat_rows = []
-        for stat in response.stats:
-            char_length = len(str(stat.stat_key))
-            header_row.append(f"{stat.stat_key:^{char_length}}")
-            stat_rows.append(f"{stat.stat_value:^{char_length}}")
-            seperator_row.append("-" * char_length)
-            
-        # Combine everything into a code block
-        stat_block = "```\n" + " | ".join(header_row) + "\n" + "-+-".join(seperator_row) + "\n" + " | ".join(stat_rows) + "\n```"
-
-        embed.add_field(name="", value=stat_block, inline=False)
-
-        for keyword in response.keywords:
-            embed.add_field(name=keyword.name, value=keyword.description, inline=False)
-
-        return embed
-    
-    @staticmethod
-    async def get_race_stat_block_embed(interaction: discord.Interaction, response: GetRaceQueryResponse):
-        embed = discord.Embed(
-            title=f"{response.race.name}", 
-            description=response.race.description, 
-            color=discord.Color.blue()
-        )
-
-        categories = {
-            "Stats": ["WS", "BS", "T", "W"],
-            "Unarmed": ["Attacks", "S", "AP", "D", "Range"],
-            "Unarmored": ["Sv"]
-        }
-        for category, keys in categories.items():
-            header_row = []
-            seperator_row = []
-            stat_rows = []
-            for stat in response.stats:
-                if stat.stat_key in keys:
-                    char_length = len(str(stat.stat_key)) +1
-                    header_row.append(f"{stat.stat_key:^{char_length}}")
-                    stat_rows.append(f"{stat.stat_value:^{char_length}}")
-                    seperator_row.append("-" * char_length)
-                
-            # Combine everything into a code block
-            stat_block = "```\n" + " | ".join(header_row) + "\n" + "-+-".join(seperator_row) + "\n" + " | ".join(stat_rows) + "\n```"
-
-            embed.add_field(name=category, value=stat_block, inline=False)
-
-        for keyword in response.keywords:
-            embed.add_field(name=keyword.name, value=keyword.description, inline=False)
-
-        return embed
-
-    # @staticmethod
-    # async def work_embed(interaction: discord.Interaction, response: WorkCommandResponse):
-    #     currency = await get_default_currenncy(response.server_config)
-
-    #     embed=discord.Embed(
-    #         description=f"💼 You worked and earned {currency}{response.amount}!",
-    #         color=discord.Color.green()
-    #     )
-        
-    #     embed.set_author(name=f"{response.user.username}", icon_url=f"{response.user.avatar}")
-    #     return embed

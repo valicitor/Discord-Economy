@@ -18,10 +18,12 @@ class PlayerActionRepository(BaseRepository, IRepository):
             CREATE TABLE IF NOT EXISTS player_actions (
                 player_action_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 player_id INTEGER NOT NULL,
+                action_id INTEGER NOT NULL,
                 type TEXT NOT NULL,
-                last_used_at DATETIME,
+                cooldown_seconds INTEGER DEFAULT 86400,
+                last_used_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY(player_id) REFERENCES players(player_id),
-                UNIQUE(player_id, type)
+                FOREIGN KEY(action_id) REFERENCES actions(action_id)
             )
         """)
 
@@ -60,6 +62,14 @@ class PlayerActionRepository(BaseRepository, IRepository):
     
     # ---------- Additional Queries ----------
 
+    async def get_last_action_by_type(self, action_type: str, player_id: int) -> Optional[PlayerAction]:
+        row = await super().fetchrow(
+            "SELECT * FROM player_actions WHERE player_id = ? AND type = ? ORDER BY last_used_at DESC LIMIT 1", 
+            player_id, 
+            action_type
+        )
+        return PlayerAction(data=dict(row)) if row else None
+
     async def get_by_type(self, action_type: str, player_id: int) -> Optional[PlayerAction]:
         row = await super().fetchrow(
             "SELECT * FROM player_actions WHERE player_id = ? AND type = ?", 
@@ -87,18 +97,20 @@ class PlayerActionRepository(BaseRepository, IRepository):
 
     async def insert(self, player_action: PlayerAction) -> int:
         return await super().insert(
-            "INSERT INTO player_actions (player_id, type, last_used_at) VALUES (?, ?, ?)",
+            "INSERT INTO player_actions (player_id, action_id, type, cooldown_seconds) VALUES (?, ?, ?, ?)",
             player_action.player_id,
+            player_action.action_id,
             player_action.type,
-            player_action.last_used_at
+            player_action.cooldown_seconds
         )
     
     async def update(self, player_action: PlayerAction) -> bool:
         affected = await super().update(
-            "UPDATE player_actions SET player_id = ?, type = ?, last_used_at = ? WHERE player_action_id = ?",
+            "UPDATE player_actions SET player_id = ?, action_id = ?, type = ?, cooldown_seconds = ? WHERE player_action_id = ?",
             player_action.player_id,
+            player_action.action_id,
             player_action.type,
-            player_action.last_used_at,
+            player_action.cooldown_seconds,
             player_action.player_action_id
         )
         return affected > 0

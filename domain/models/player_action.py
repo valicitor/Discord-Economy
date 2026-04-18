@@ -5,13 +5,17 @@ class PlayerAction:
 
         self.player_action_id: int|None = kwargs.get('player_action_id')
         self.player_id: int|None = kwargs.get('player_id')
+        self.action_id: int|None = kwargs.get('action_id')
         self.type: str|None = kwargs.get('type')
+        self.cooldown_seconds: int = kwargs.get('cooldown_seconds', 86400)
         self.last_used_at: str|None = kwargs.get('last_used_at')
 
     def to_dict(self):
         return {
             'player_action_id': self.player_action_id,
             'player_id': self.player_id,
+            'action_id': self.action_id,
             'type': self.type,
+            'cooldown_seconds': self.cooldown_seconds,
             'last_used_at': self.last_used_at
         }

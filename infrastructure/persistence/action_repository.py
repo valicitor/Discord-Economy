@@ -64,6 +64,13 @@ class ActionRepository(BaseRepository, IRepository):
         return [Action(data=dict(row)) for row in rows]
     
     # ---------- Additional Queries ----------
+
+    async def get_all_by_business_id(self, business_id: int) -> List[Action]:
+        rows = await super().fetch(
+            "SELECT * FROM actions WHERE business_id = ?",
+            business_id
+        )
+        return [Action(data=dict(row)) for row in rows]
     
     # ---------- Existence Checks ----------
 
