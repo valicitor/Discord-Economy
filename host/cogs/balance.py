@@ -185,7 +185,7 @@ class BalanceCog(commands.Cog):
     # --- /stat-block equipment ---
     @stat_block_group.command(name="equipment", description="Show the stats of a specific equipment.")
     @app_commands.guild_only()
-    async def user_equipment_stat_block(self, interaction: discord.Interaction, equipment_name: str):
+    async def user_equipment_stat_block(self, interaction: discord.Interaction, name: str):
         try:
             guild = DiscordGuild(
                 guild_id=interaction.guild_id, 
@@ -194,7 +194,7 @@ class BalanceCog(commands.Cog):
 
             request=GetEquipmentQueryRequest(
                 guild=guild, 
-                name=equipment_name
+                name=name
             )
 
             response = await GetEquipmentQuery(request).execute()
@@ -208,7 +208,7 @@ class BalanceCog(commands.Cog):
         except Exception as e:
             await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
         
-    @user_equipment_stat_block.autocomplete("equipment_name")
+    @user_equipment_stat_block.autocomplete("name")
     async def equipment_autocomplete(self, interaction: discord.Interaction, current: str):
         server_repo = await ServerRepository().get_instance()
         equipment_repo = await EquipmentRepository().get_instance()
@@ -232,7 +232,7 @@ class BalanceCog(commands.Cog):
     # --- /stat-block race ---
     @stat_block_group.command(name="race", description="Show the stats of a specific race.")
     @app_commands.guild_only()
-    async def user_race_stat_block(self, interaction: discord.Interaction, race_name: str):
+    async def user_race_stat_block(self, interaction: discord.Interaction, name: str):
         try:
             guild = DiscordGuild(
                 guild_id=interaction.guild_id, 
@@ -241,7 +241,7 @@ class BalanceCog(commands.Cog):
 
             request=GetRaceQueryRequest(
                 guild=guild, 
-                name=race_name
+                name=name
             )
 
             response = await GetRaceQuery(request).execute()
@@ -255,7 +255,7 @@ class BalanceCog(commands.Cog):
         except Exception as e:
             await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
     
-    @user_race_stat_block.autocomplete("race_name")
+    @user_race_stat_block.autocomplete("name")
     async def race_autocomplete(self, interaction: discord.Interaction, current: str):
         server_repo = await ServerRepository().get_instance()
         race_repo = await RaceRepository().get_instance()
