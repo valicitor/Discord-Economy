@@ -4,7 +4,7 @@ from infrastructure import (
     CurrencyRepository,
 )
 
-async def get_default_currenncy(server_config: ServerConfig) -> str:
+async def get_default_currency(server_config: ServerConfig) -> str:
     _, default_currency = server_config.server_settings.get_by_key("default_currency_id")
     if default_currency is None:
         raise RecordNotFoundException(f"Default currency setting not found for server ID {server_config.server.server_id}.")

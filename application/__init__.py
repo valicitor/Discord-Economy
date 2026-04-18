@@ -24,10 +24,13 @@ from .balance.commands.pay_command import PayCommand, PayCommandRequest, PayComm
 from .balance.commands.withdraw_command import WithdrawCommand, WithdrawCommandRequest, WithdrawCommandResponse
 from .balance.commands.deposit_command import DepositCommand, DepositCommandRequest, DepositCommandResponse
 
+# Work
+from .work.commands.work_command import WorkCommand, WorkCommandRequest, WorkCommandResponse
+
 # Unclassified
-from .queries.get_equipment_query import GetEquipmentQuery, GetEquipmentQueryRequest, GetEquipmentQueryResponse
-from .queries.get_race_query import GetRaceQuery, GetRaceQueryRequest, GetRaceQueryResponse
+from .units.queries.get_equipment_query import GetEquipmentQuery, GetEquipmentQueryRequest, GetEquipmentQueryResponse
+from .units.queries.get_race_query import GetRaceQuery, GetRaceQueryRequest, GetRaceQueryResponse
 
 
 # External Helpers
-from .helpers.get_default_currency import get_default_currenncy
+from .helpers.get_default_currency import get_default_currency

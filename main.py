@@ -93,25 +93,27 @@ class MyClient(commands.Bot):
         "dev"  : [
             "host.cogs.admin",
             "host.cogs.balance",
-        ],
-        "merchant": [
-            "host.cogs.balance",
-            "host.cogs.shop",
-            "host.cogs.inventory",
-        ],
-        "commander": [
+            "host.cogs.work",
             "host.cogs.units",
-            "host.cogs.equipment",
-            "host.cogs.travel",
-            "host.cogs.poi",
         ],
-        "government": [
-            "host.cogs.admin",
-        ],
-        "workforce": [
-            "host.cogs.actions",
-            "host.cogs.robbery",
-        ]
+        # "merchant": [
+        #     "host.cogs.balance",
+        #     "host.cogs.shop",
+        #     "host.cogs.inventory",
+        # ],
+        # "commander": [
+        #     "host.cogs.units",
+        #     "host.cogs.equipment",
+        #     "host.cogs.travel",
+        #     "host.cogs.poi",
+        # ],
+        # "government": [
+        #     "host.cogs.admin",
+        # ],
+        # "workforce": [
+        #     "host.cogs.actions",
+        #     "host.cogs.robbery",
+        # ]
     }
     
     def __init__(self):

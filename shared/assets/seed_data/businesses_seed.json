@@ -2,12 +2,22 @@
     "version": "1.0",
     "businesses": {
         "data": [
-            { "name": "Default Business",       "description": "A default business",     "type": "Warehouse",   "location": "Coruscant", "range": null, "metadata": {} }
+            { "name": "Mos Eisley Cantina",     "description": "A bustling cantina on Tatooine", "type": "Entertainment", "location": "Tatooine", "range": null, "metadata": {} },
+            { "name": "Kuat Drive Yards",       "description": "A starship manufacturing facility", "type": "Manufacturing", "location": "Kuat", "range": null, "metadata": {} },
+            { "name": "Cloud City Mining",      "description": "A tibanna gas mining operation", "type": "Mining", "location": "Bespin", "range": null, "metadata": {} },
+            { "name": "Jedi Temple Archives",   "description": "A repository of Jedi knowledge", "type": "Education", "location": "Coruscant", "range": null, "metadata": {} },
+            { "name": "Death Star Construction", "description": "A secretive imperial project", "type": "Construction", "location": "Endor", "range": null, "metadata": {} },
+            { "name": "Hoth Rebel Base",        "description": "A hidden rebel outpost", "type": "Military", "location": "Hoth", "range": null, "metadata": {} }
         ]
     },
     "actions": {
         "data": [
-            { "business_name": "Default Business", "name": "Default Action",  "type": "Work",      "cooldown_seconds": 86400, "base_reward": 100, "risk_rate": 0.1, "fine_amount": 50, "success_rate": 0.9, "success_message": "You completed the default action!", "failure_message": "You failed the default action." }
+            { "business_name": "Mos Eisley Cantina", "name": "Bartend", "type": "Work", "cooldown_seconds": 120, "base_reward": 150, "risk_rate": 0.2, "fine_amount": 75, "success_rate": 0.85, "success_message": "You served drinks to rowdy patrons!", "failure_message": "You spilled a drink on a bounty hunter." },
+            { "business_name": "Kuat Drive Yards", "name": "Assemble Starship", "type": "Work", "cooldown_seconds": 160, "base_reward": 500, "risk_rate": 0.3, "fine_amount": 200, "success_rate": 0.8, "success_message": "You successfully assembled a starship component!", "failure_message": "You damaged a critical part during assembly." },
+            { "business_name": "Cloud City Mining", "name": "Extract Tibanna Gas", "type": "Work", "cooldown_seconds": 180, "base_reward": 300, "risk_rate": 0.25, "fine_amount": 100, "success_rate": 0.75, "success_message": "You safely extracted tibanna gas!", "failure_message": "A gas leak caused a minor explosion." },
+            { "business_name": "Jedi Temple Archives", "name": "Restore Holocron", "type": "Work", "cooldown_seconds": 320, "base_reward": 400, "risk_rate": 0.15, "fine_amount": 50, "success_rate": 0.9, "success_message": "You restored an ancient Jedi holocron!", "failure_message": "You accidentally corrupted the holocron data." },
+            { "business_name": "Death Star Construction", "name": "Install Superlaser", "type": "Work", "cooldown_seconds": 480, "base_reward": 1000, "risk_rate": 0.4, "fine_amount": 500, "success_rate": 0.7, "success_message": "You made progress installing the superlaser!", "failure_message": "You caused a critical delay in the project." },
+            { "business_name": "Hoth Rebel Base", "name": "Fortify Defenses", "type": "Work", "cooldown_seconds": 600, "base_reward": 450, "risk_rate": 0.2, "fine_amount": 150, "success_rate": 0.85, "success_message": "You reinforced the base's defenses!", "failure_message": "You accidentally weakened the base's defenses." }
         ]
     }
 }

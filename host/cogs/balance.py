@@ -2,17 +2,13 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from infrastructure import ServerRepository, RaceRepository, EquipmentRepository
-
 from application import DiscordGuild, DiscordUser
 from application import (
     GetBalanceQuery, GetBalanceQueryRequest,
     PayCommand, PayCommandRequest,
     WithdrawCommand, WithdrawCommandRequest,
     DepositCommand, DepositCommandRequest,
-    GetLeaderboardQuery, GetLeaderboardQueryRequest,
-    GetEquipmentQuery, GetEquipmentQueryRequest,
-    GetRaceQuery, GetRaceQueryRequest
+    GetLeaderboardQuery, GetLeaderboardQueryRequest
 )
 from host.embeds.discord_balance_embed import DiscordBalanceEmbed
 import typing
@@ -176,126 +172,6 @@ class BalanceCog(commands.Cog):
             await interaction.response.send_message(embed=embed)
         except Exception as e:
             await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
-    
-    stat_block_group = app_commands.Group(
-        name="stat-block",
-        description="Stat Block commands"
-    )
-
-    # --- /stat-block equipment ---
-    @stat_block_group.command(name="equipment", description="Show the stats of a specific equipment.")
-    @app_commands.guild_only()
-    async def user_equipment_stat_block(self, interaction: discord.Interaction, name: str):
-        try:
-            guild = DiscordGuild(
-                guild_id=interaction.guild_id, 
-                name=interaction.guild.name
-            )
-
-            request=GetEquipmentQueryRequest(
-                guild=guild, 
-                name=name
-            )
-
-            response = await GetEquipmentQuery(request).execute()
-
-            if not response.equipment:
-                await interaction.response.send_message("No equipment found.", ephemeral=True)
-                return
-
-            embed = await DiscordBalanceEmbed.get_equipment_stat_block_embed(interaction, response)
-            await interaction.response.send_message(embed=embed)
-        except Exception as e:
-            await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
-        
-    @user_equipment_stat_block.autocomplete("name")
-    async def equipment_autocomplete(self, interaction: discord.Interaction, current: str):
-        server_repo = await ServerRepository().get_instance()
-        equipment_repo = await EquipmentRepository().get_instance()
-        
-        server = await server_repo.get_by_guild_id(interaction.guild_id)
-        if server is None:
-             return []
-        equipment = await equipment_repo.search_by_name(current, server.server_id, 25)
-
-        matches = sorted((e.name for e in equipment), key=str.lower)[:25]
-
-        return [
-            app_commands.Choice(
-                name=match,
-                value=match
-            )
-            for match in matches
-        ]
-
-
-    # --- /stat-block race ---
-    @stat_block_group.command(name="race", description="Show the stats of a specific race.")
-    @app_commands.guild_only()
-    async def user_race_stat_block(self, interaction: discord.Interaction, name: str):
-        try:
-            guild = DiscordGuild(
-                guild_id=interaction.guild_id, 
-                name=interaction.guild.name
-            )
-
-            request=GetRaceQueryRequest(
-                guild=guild, 
-                name=name
-            )
-
-            response = await GetRaceQuery(request).execute()
-
-            if not response.race:
-                await interaction.response.send_message("No race found.", ephemeral=True)
-                return
-
-            embed = await DiscordBalanceEmbed.get_race_stat_block_embed(interaction, response)
-            await interaction.response.send_message(embed=embed)
-        except Exception as e:
-            await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
-    
-    @user_race_stat_block.autocomplete("name")
-    async def race_autocomplete(self, interaction: discord.Interaction, current: str):
-        server_repo = await ServerRepository().get_instance()
-        race_repo = await RaceRepository().get_instance()
-        
-        server = await server_repo.get_by_guild_id(interaction.guild_id)
-        if server is None:
-            return []
-        races = await race_repo.search_by_name(current, server.server_id, 25)
-
-        matches = sorted((e.name for e in races), key=str.lower)[:25]
-
-        return [
-            app_commands.Choice(
-                name=match,
-                value=match
-            )
-            for match in matches
-        ]
-
-    # --- /work ---
-    # @app_commands.command(name="work", description="Work to earn money.")
-    # @app_commands.guild_only()
-    # async def user_work(self, interaction: discord.Interaction):
-    #     try:
-    #         request=WorkCommandRequest(
-    #             guild_id=interaction.guild_id, 
-    #             user=User(
-    #                 guild_id=interaction.guild_id, 
-    #                 user_id=interaction.user.id, 
-    #                 username=interaction.user.name,
-    #                 avatar=str(interaction.user.display_avatar)
-    #             )
-    #         )
-
-    #         response = await WorkCommand(request).execute()
-
-    #         embed = await DiscordBalanceEmbed.work_embed(interaction, response)
-    #         await interaction.response.send_message(embed=embed)
-    #     except Exception as e:
-    #         await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(BalanceCog(bot))
