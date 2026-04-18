@@ -4,77 +4,60 @@ This project is a Discord bot built using Python, designed to support a persiste
 
 ## Design Goals
 
-To create a bot that can allows a rich economy to exist within roleplay, with players able to track their money, grow, invest, take loans, etc. This money can then be used to buy solider and gear, pay maintenance costs of standing armies, and use that military power to wage war.
+To create a bot that allows for a rich economy to exist within roleplay, with players able to track their money, grow, invest, take loans, etc. This money can then be used to buy soldiers and gear, pay maintenance costs of standing armies, and use that military power to wage war.
 
-As Players expand, maintenence costs will become too high, business intrests will affect war efforts, and a natural balance should be achieved, and the need for money and growth should drive player actions. 
+As players expand, maintenance costs will become too high, business interests will affect war efforts, and a natural balance should be achieved. The need for money and growth should drive player actions.
 
-Also by allowing trading, investing, and other deep economic actions players that horde money have war potential without needing a standing army, and therefore we allow weighted political RP
+By allowing trading, investing, and other deep economic actions, players who hoard money can have war potential without needing a standing army. This enables weighted political roleplay.
 
 ### Custom Economy Bot TODO:
-#### Core Features:
-- [x] Basic currency tracking: Implement a system to track player balances.
-- [ ] Basic gambling games: Add simple games like dice rolls or card games for players to gamble currency.
-- [x] Basic collect income/bank: Allow players to collect periodic income and deposit/withdraw from a bank.
-- [ ] Basic inventory: Track player-owned items.
-- [ ] Basic shop store/trading: Enable players to buy/sell items and trade with each other.
 
-#### Advanced Features:
-- [ ] Businesses to replace Basic collect: Introduce player-owned businesses that generate income.
-- [ ] Player-owned business store fronts: Allow players to set up shops to sell items to others.
-- [ ] Inventory categories: Separate inventory into categories like Soldiers, Gear, Vehicles, etc.
-- [ ] Maintenance costs: Add upkeep costs for inventory items to limit hoarding.
-- [ ] Business locations and planet locations: Tie businesses to specific locations, affecting their performance.
-- [ ] Bank interest rates: Introduce interest rates for deposited currency.
-- [ ] Business stock market/investing: Allow players to invest in businesses and trade stocks.
-- [ ] Loans: Enable players to take loans with interest.
+#### Completed Features:
+- Balance: Basic currency tracking
+- Bank: Bank player balance
+- Businesses: Defined businesses with actions to perform for that business
 
-### Core Features Breakdown:
+#### Phase 1 Features:
+- [ ] Work: Player action that is performed against a defined business for pay/currency
 
-#### Basic Currency Tracking:
-- **Commands**:
-  - `AddBalanceCommand`: Add currency to a player's balance.
-  - `SetBalanceCommand`: Set a player's balance to a specific amount.
-  - `PayCommand`: Send money to another player
-- **Queries**:
-  - `GetUserQuery`: Retrieve a player
-  - `GetTopBalancesQuery`: Retrieve a leaderboard of players with the highest balances.
+#### Phase 2 Features:
+- [ ] Inventory: Track player inventory and items
+- [ ] Races: Defined races with stats
+- [ ] Equipment: Defined equipment with stats
+- [ ] Units: Defined units that combine race and equipment
+- [ ] Shop: Buy/Sell units and equipment
 
-#### Basic Gambling Games:
-- **Commands**:
-  - `PlaceBetCommand`: Place a bet for a gambling game.
-  - `ResolveBetCommand`: Resolve the outcome of a bet and update balances.
-- **Queries**:
-  - `GetBetHistoryQuery`: Retrieve a player's gambling history.
+#### Phase 3 Features:
+- [ ] Locations: Players, Banks, Businesses, and Shops should have locations and prevent interaction with each other if not within range
+- [ ] Businesses: Stocks that go up/down in price based on market points
+- [ ] Shop: Players can buy stocks
+- [ ] Bank: Players that own stocks are paid dividends
+- [ ] Work: Player actions cause business market points to go up/down based on success/fail of actions
+- [ ] Bank: Interest rates, loans
+- [ ] Units: Maintenance costs taken out of player bank
 
-#### Basic Collect Income/Bank:
-- **Commands**:
-  - `CollectIncomeCommand`: Allow players to collect periodic income.
-  - `DepositBankCommand`: Deposit currency into a player's bank account.
-  - `WithdrawBankCommand`: Withdraw currency from a player's bank account.
-- **Queries**:
-  - `GetBankBalanceQuery`: Retrieve a player's current bank balance.
-  - `GetIncomeCooldownQuery`: Check if a player is eligible to collect income.
+#### Phase 4 Features:
+- [ ] Factions: Players can create/join factions
+- [ ] Vehicles: Defined vehicles that require crew and override unit stats
+- [ ] Locations: Locations should have exhaustible/discoverable resource nodes
+- [ ] Currency: Factions and Locations can use different currencies
+- [ ] Exchange: Players can exchange one currency for another based on exchange rate
+- [ ] Business: Collective market points at locations/factions affect exchange rates of currencies
+- [ ] Resources: Businesses produce resources when player actions are completed
+- [ ] Business: Businesses require resources in stock for business actions to be available
+- [ ] Transport: Resources produced at businesses at different locations should need transporting
 
-#### Basic Inventory:
-- **Commands**:
-  - `AddItemCommand`: Add an item to a player's inventory.
-  - `RemoveItemCommand`: Remove an item from a player's inventory.
-- **Queries**:
-  - `GetInventoryQuery`: Retrieve a player's inventory.
-  - `GetItemDetailsQuery`: Retrieve details about a specific item.
+## Getting Started
 
-#### Basic Shop Store/Trading:
-- **Commands**:
-  - `BuyItemCommand`: Allow players to purchase items from a shop.
-  - `SellItemCommand`: Allow players to sell items to a shop.
-  - `TradeItemCommand`: Facilitate item trading between players.
-- **Queries**:
-  - `GetShopItemsQuery`: Retrieve a list of items available in the shop.
-  - `GetTradeHistoryQuery`: Retrieve a player's trading history.
+To set up the bot, follow these steps:
+1. Clone the repository.
+2. Install the required dependencies using `pip install -r requirements.txt`.
+3. Configure the bot by editing the `config.py` file.
+4. Run the bot using `python main.py`.
 
 # Git Commands:
 
-Check status of git:
+Check the status of the repository:
 - `git status`
 
 Move to the main branch:

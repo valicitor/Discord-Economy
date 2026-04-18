@@ -94,20 +94,21 @@ class MyClient(commands.Bot):
             "host.cogs.admin",
             "host.cogs.balance",
         ],
-        "economy": [
+        "merchant": [
             "host.cogs.balance",
             "host.cogs.shop",
             "host.cogs.inventory",
         ],
-        "combat": [
+        "commander": [
             "host.cogs.units",
             "host.cogs.equipment",
-        ],
-        "world": [
-            "host.cogs.poi",
             "host.cogs.travel",
+            "host.cogs.poi",
         ],
-        "actions": [
+        "government": [
+            "host.cogs.admin",
+        ],
+        "workforce": [
             "host.cogs.actions",
             "host.cogs.robbery",
         ]
