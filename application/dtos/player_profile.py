@@ -1,6 +1,7 @@
 from domain import (
     Player, 
     PlayerBalance,
+    PlayerInventory,
     PlayerAction,
     BankAccount
 )
@@ -16,6 +17,13 @@ class PlayerBalancesCollection(BaseCollection):
 
     def total_balance(self) -> int:
         return sum(balance.balance for balance in self._items)
+    
+class PlayerInventoryCollection(BaseCollection):
+    def __init__(self, items: list[PlayerInventory]):
+        super().__init__(items)
+
+    def get_by_item_id(self, item_id: int) -> tuple[int, PlayerInventory|None]:
+        return next(((idx, obj) for idx, obj in enumerate(self._items) if obj.item_id == item_id), (None, None))
 
 class PlayerBankAccountsCollection(BaseCollection):
     def __init__(self, items: list[BankAccount]):
@@ -50,4 +58,5 @@ class PlayerProfile:
     faction: PlayerFaction|None
     balances: PlayerBalancesCollection
     bank_accounts: PlayerBankAccountsCollection
+    inventory: PlayerInventoryCollection
     actions: PlayerActionsCollection

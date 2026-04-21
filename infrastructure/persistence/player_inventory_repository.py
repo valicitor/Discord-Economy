@@ -17,10 +17,11 @@ class PlayerInventoryRepository(BaseRepository, IRepository):
             CREATE TABLE IF NOT EXISTS player_inventory (
                 inventory_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 player_id INTEGER NOT NULL,
-                item_id INTEGER NOT NULL,
+                catalogue_id INTEGER NOT NULL,
+                status TEXT DEFAULT 'active',
                 quantity INTEGER NOT NULL DEFAULT 1,
                 FOREIGN KEY(player_id) REFERENCES players(player_id),
-                FOREIGN KEY(item_id) REFERENCES items(item_id)
+                FOREIGN KEY(catalogue_id) REFERENCES catalogue(catalogue_id)
             )
         """)
 
@@ -63,6 +64,14 @@ class PlayerInventoryRepository(BaseRepository, IRepository):
         rows = await super().fetch("SELECT * FROM player_inventory WHERE player_id = ?", player_id)
         return [PlayerInventory(data=dict(row)) for row in rows]
     
+    async def get_by_player_catalogue_id(self, player_id: int, catalogue_id: int) -> Optional[PlayerInventory]:
+        row = await super().fetchrow(
+            "SELECT * FROM player_inventory WHERE player_id = ? AND catalogue_id = ?",
+            player_id,
+            catalogue_id
+        )
+        return PlayerInventory(data=dict(row)) if row else None
+    
     # ---------- Existence Checks ----------
 
     async def exists(self, inventory_id: int) -> bool:
@@ -74,22 +83,32 @@ class PlayerInventoryRepository(BaseRepository, IRepository):
     
     # ---------- Additional Existence Checks ----------
 
+    async def exists_by_player_catalogue_id(self, player_id: int, catalogue_id: int) -> bool:
+        row = await super().fetchrow(
+            "SELECT 1 FROM player_inventory WHERE player_id = ? AND catalogue_id = ?",
+            player_id,
+            catalogue_id
+        )
+        return row is not None
+
     # ---------- Mutations ----------
 
     async def insert(self, player_inventory: PlayerInventory) -> int:
         return await super().insert(
-            "INSERT INTO player_inventory (player_id, item_id, quantity) VALUES (?, ?, ?)",
+            "INSERT INTO player_inventory (player_id, catalogue_id, quantity, status) VALUES (?, ?, ?, ?)",
             player_inventory.player_id,
-            player_inventory.item_id,
-            player_inventory.quantity
+            player_inventory.catalogue_id,
+            player_inventory.quantity,
+            player_inventory.status
         )
 
     async def update(self, player_inventory: PlayerInventory) -> bool:
         affected = await super().update(
-            "UPDATE player_inventory SET player_id = ?, item_id = ?, quantity = ? WHERE inventory_id = ?",
+            "UPDATE player_inventory SET player_id = ?, catalogue_id = ?, quantity = ?, status = ? WHERE inventory_id = ?",
             player_inventory.player_id,
-            player_inventory.item_id,
+            player_inventory.catalogue_id,
             player_inventory.quantity,
+            player_inventory.status,
             player_inventory.inventory_id
         )
         return affected > 0

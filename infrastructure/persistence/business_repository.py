@@ -1,3 +1,5 @@
+import json
+
 from domain import Business, IRepository
 from infrastructure import BaseRepository
 from typing import List, Optional
@@ -95,7 +97,7 @@ class BusinessRepository(BaseRepository, IRepository):
             business.type,
             business.location,
             business.range,
-            str(business.metadata)
+            json.dumps(business.metadata)
         )
     
     async def update(self, business: Business) -> bool:
@@ -108,7 +110,7 @@ class BusinessRepository(BaseRepository, IRepository):
             business.type,
             business.location,
             business.range,
-            str(business.metadata),
+            json.dumps(business.metadata),
             business.business_id
         )
         return affected > 0

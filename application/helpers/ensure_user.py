@@ -20,22 +20,17 @@ from infrastructure import (
     BankAccountRepository,
     FactionRepository,
     FactionMemberRepository,
-    PlayerActionRepository
+    PlayerActionRepository,
+    PlayerInventoryRepository
 )
 from infrastructure import (
     PointOfInterestSeeder,
     LocationsSeeder,
-    RacesSeeder,
-    RaceStatsSeeder,
-    EquipmentsSeeder,
-    EquipmentStatsSeeder,
-    UnitsSeeder,
-    UnitStatsSeeder,
-    VehiclesSeeder,
-    VehicleStatsSeeder,
     BusinessesSeeder,
     ActionsSeeder,
-    KeywordsSeeder
+    CatalogueSeeder,
+    KeywordsSeeder,
+    ShopItemsSeeder
 )
 from application import (
     DiscordGuild, 
@@ -46,6 +41,7 @@ from application import (
     PlayerFaction, 
     PlayerBalancesCollection, 
     PlayerBankAccountsCollection,
+    PlayerInventoryCollection,
     PlayerActionsCollection
 )
 
@@ -125,50 +121,20 @@ async def ensure_guild(discord_guild: DiscordGuild) -> ServerConfig:
             if not result.status == "completed":
                 raise SeederErrorException(f"Failed to seed locations for guild ID {discord_guild.guild_id}.")
 
-            equipment_seeder = EquipmentsSeeder()
-            result = await equipment_seeder.seed(server_id=server_id)
+            catalogue_seeder = CatalogueSeeder()
+            result = await catalogue_seeder.seed(server_id=server_id)
             if not result.status == "completed":
-                raise SeederErrorException(f"Failed to seed equipments for guild ID {discord_guild.guild_id}.")
-            
-            equipment_stat_seeder = EquipmentStatsSeeder()
-            result = await equipment_stat_seeder.seed(server_id=server_id)
-            if not result.status == "completed":
-                raise SeederErrorException(f"Failed to seed equipment stats for guild ID {discord_guild.guild_id}.")
-
-            race_seeder = RacesSeeder()
-            result = await race_seeder.seed(server_id=server_id)
-            if not result.status == "completed":
-                raise SeederErrorException(f"Failed to seed races for guild ID {discord_guild.guild_id}.")
-            
-            race_stat_seeder = RaceStatsSeeder()
-            result = await race_stat_seeder.seed(server_id=server_id)
-            if not result.status == "completed":
-                raise SeederErrorException(f"Failed to seed race stats for guild ID {discord_guild.guild_id}.")
-
-            unit_seeder = UnitsSeeder()
-            result = await unit_seeder.seed(server_id=server_id)
-            if not result.status == "completed":
-                raise SeederErrorException(f"Failed to seed units for guild ID {discord_guild.guild_id}.")
-            
-            unit_stat_seeder = UnitStatsSeeder()
-            result = await unit_stat_seeder.seed(server_id=server_id)
-            if not result.status == "completed":
-                raise SeederErrorException(f"Failed to seed unit stats for guild ID {discord_guild.guild_id}.")
-            
-            vehicle_seeder = VehiclesSeeder()
-            result = await vehicle_seeder.seed(server_id=server_id)
-            if not result.status == "completed":
-                raise SeederErrorException(f"Failed to seed vehicles for guild ID {discord_guild.guild_id}.")
-            
-            vehicle_stat_seeder = VehicleStatsSeeder()
-            result = await vehicle_stat_seeder.seed(server_id=server_id)
-            if not result.status == "completed":
-                raise SeederErrorException(f"Failed to seed vehicle stats for guild ID {discord_guild.guild_id}.")
+                raise SeederErrorException(f"Failed to seed catalogue items for guild ID {discord_guild.guild_id}.")
             
             keyword_seeder = KeywordsSeeder()
             result = await keyword_seeder.seed(server_id=server_id)
             if not result.status == "completed":
                 raise SeederErrorException(f"Failed to seed keywords for guild ID {discord_guild.guild_id}.")
+
+            items_seeder = ShopItemsSeeder()
+            result = await items_seeder.seed(server_id=server_id)
+            if not result.status == "completed":
+                raise SeederErrorException(f"Failed to seed shop items for guild ID {discord_guild.guild_id}.")
             
         except Exception as e:
             raise SeederErrorException(f"Failed to to seed server data for guild ID {discord_guild.guild_id}: {str(e)}")
@@ -192,33 +158,35 @@ async def ensure_user(server_config: ServerConfig, discord_user: DiscordUser) ->
     bank_account_repo = await BankAccountRepository().get_instance()
     faction_member_repo = await FactionMemberRepository().get_instance()
 
-    if not await player_repo.exists_by_discord_id(discord_user.user_id, server_config.server.guild_id):
-        try:
-            new_player = Player(discord_id=discord_user.user_id, discord_guild_id=server_config.server.guild_id, server_id=server_config.server.server_id, username=discord_user.name, avatar=discord_user.display_avatar)
-            player_id = await player_repo.insert(new_player)
-            if not player_id:
-                raise CreateFailedException(f"Failed to create player for user ID {discord_user.user_id} in guild ID {server_config.server.guild_id}.")
+    async with player_repo.transaction():
+        create_new_player = not await player_repo.exists_by_discord_id(discord_user.user_id, server_config.server.guild_id)
+        if create_new_player:
+            try:
+                new_player = Player(discord_id=discord_user.user_id, discord_guild_id=server_config.server.guild_id, server_id=server_config.server.server_id, username=discord_user.name, avatar=discord_user.display_avatar)
+                player_id = await player_repo.insert(new_player)
+                if not player_id:
+                    raise CreateFailedException(f"Failed to create player for user ID {discord_user.user_id} in guild ID {server_config.server.guild_id}.")
 
-            _, default_currency_id = server_config.server_settings.get_by_key("default_currency_id")
-            new_balance = PlayerBalance(player_id=player_id, currency_id=default_currency_id.value, amount=0)
-            business_id = await player_balance_repo.insert(new_balance)
-            if not business_id:
-                raise CreateFailedException(f"Failed to create balance for player ID {player_id}.")
+                _, default_currency_id = server_config.server_settings.get_by_key("default_currency_id")
+                new_balance = PlayerBalance(player_id=player_id, currency_id=default_currency_id.value, amount=0)
+                business_id = await player_balance_repo.insert(new_balance)
+                if not business_id:
+                    raise CreateFailedException(f"Failed to create balance for player ID {player_id}.")
+                
+                _, default_bank_id = server_config.server_settings.get_by_key("default_bank_id")
+                new_bank_account = BankAccount(bank_id=default_bank_id.value, player_id=player_id, balance=0)
+                bank_account_id = await bank_account_repo.insert(new_bank_account)
+                if not bank_account_id:
+                    raise CreateFailedException(f"Failed to create bank account for player ID {player_id}.")
             
-            _, default_bank_id = server_config.server_settings.get_by_key("default_bank_id")
-            new_bank_account = BankAccount(bank_id=default_bank_id.value, player_id=player_id, balance=0)
-            bank_account_id = await bank_account_repo.insert(new_bank_account)
-            if not bank_account_id:
-                raise CreateFailedException(f"Failed to create bank account for player ID {player_id}.")
-        
-            _, default_faction_id = server_config.server_settings.get_by_key("default_faction_id")
-            new_faction_member = FactionMember(faction_id=default_faction_id.value, player_id=player_id)
-            faction_member_id = await faction_member_repo.insert(new_faction_member)
-            if not faction_member_id:
-                raise CreateFailedException(f"Failed to create faction membership for player ID {player_id}.")
-            
-        except Exception as e:
-            raise CreateFailedException(f"Failed to ensure user with ID {discord_user.user_id} in guild ID {server_config.server.guild_id}: {str(e)}")
+                _, default_faction_id = server_config.server_settings.get_by_key("default_faction_id")
+                new_faction_member = FactionMember(faction_id=default_faction_id.value, player_id=player_id)
+                faction_member_id = await faction_member_repo.insert(new_faction_member)
+                if not faction_member_id:
+                    raise CreateFailedException(f"Failed to create faction membership for player ID {player_id}.")
+                
+            except Exception as e:
+                raise CreateFailedException(f"Failed to ensure user with ID {discord_user.user_id} in guild ID {server_config.server.guild_id}: {str(e)}")
 
     player = await player_repo.get_by_discord_id(discord_user.user_id)
     if player is None:
@@ -239,6 +207,7 @@ async def get_player_profile(player: Player) -> PlayerProfile:
     balances = await player_balance_repo.get_all(player_id=player.player_id)
     bank_accounts = await bank_account_repo.get_all(player_id=player.player_id)
     actions = await player_action_repo.get_all_by_player_id(player_id=player.player_id)
+    inventory = []
 
     return PlayerProfile(
         player, 
@@ -250,6 +219,7 @@ async def get_player_profile(player: Player) -> PlayerProfile:
         ) if faction else None, 
         PlayerBalancesCollection(balances), 
         PlayerBankAccountsCollection(bank_accounts),
+        PlayerInventoryCollection(inventory),
         PlayerActionsCollection(actions)
     )
 

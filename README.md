@@ -12,19 +12,19 @@ By allowing trading, investing, and other deep economic actions, players who hoa
 
 ### Custom Economy Bot TODO:
 
-#### Completed Features:
+#### Phase 1 Completed Features:
 - Balance: Basic currency tracking
 - Bank: Bank player balance
 - Businesses: Defined businesses with actions to perform for that business
+- Work: Player action that is performed against a defined business for pay/currency
 
-#### Phase 1 Features:
-- [ ] Work: Player action that is performed against a defined business for pay/currency
+#### Phase 2 Completed Features:
+- Races: Defined races with stats
+- Equipment: Defined equipment with stats
+- Units: Defined units that combine race and equipment
 
 #### Phase 2 Features:
 - [ ] Inventory: Track player inventory and items
-- [ ] Races: Defined races with stats
-- [ ] Equipment: Defined equipment with stats
-- [ ] Units: Defined units that combine race and equipment
 - [ ] Shop: Buy/Sell units and equipment
 
 #### Phase 3 Features:
