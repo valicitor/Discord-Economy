@@ -1,3 +1,5 @@
+import json
+
 from domain import InventoryInstance, IRepository
 from infrastructure import BaseRepository
 from typing import List, Optional
@@ -77,7 +79,7 @@ class InventoryInstanceRepository(BaseRepository, IRepository):
             "INSERT INTO inventory_instances (player_id, item_id, metadata) VALUES (?, ?, ?)",
             inventory_instance.player_id,
             inventory_instance.item_id,
-            str(inventory_instance.metadata)
+            json.dumps(inventory_instance.metadata)
         )
 
     async def update(self, inventory_instance: InventoryInstance) -> bool:
@@ -85,7 +87,7 @@ class InventoryInstanceRepository(BaseRepository, IRepository):
             "UPDATE inventory_instances SET player_id = ?, item_id = ?, metadata = ? WHERE instance_id = ?",
             inventory_instance.player_id,
             inventory_instance.item_id,
-            str(inventory_instance.metadata),
+            json.dumps(inventory_instance.metadata),
             inventory_instance.instance_id
         )
         return affected > 0

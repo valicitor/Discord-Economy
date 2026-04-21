@@ -212,7 +212,7 @@ class PlayerRepository(BaseRepository, IRepository):
 
         return mapping[sort_by]
 
-    async def get_leaderboard(self, server_id: int, page: int, sort_by: str = "Total") -> List[Player]:
+    async def get_leaderboard(self, server_id: int, page: int, sort_by: str = "Total", limit: int = 10) -> List[Player]:
         query = f"""
             SELECT 
                 p.*,
@@ -232,8 +232,8 @@ class PlayerRepository(BaseRepository, IRepository):
         params = [server_id]
 
         if page is not None:
-            offset = (page - 1) * 10
-            query += " LIMIT 10 OFFSET ?"
+            offset = (page - 1) * limit
+            query += f" LIMIT {limit} OFFSET ?"
             params.append(offset)
 
         rows = await super().fetch(

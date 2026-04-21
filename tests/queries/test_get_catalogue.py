@@ -6,9 +6,10 @@ from config import BASE_DIR
 sys.path.insert(0, os.path.abspath(BASE_DIR))
 
 import unittest
+from application import GetCatalogueQuery, GetCatalogueQueryRequest
 from tests.helper.default_setup import DefaultSetup
 
-class TestEquipmentsSeeder(unittest.TestCase):
+class TestGetCatalogueQuery(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Initialize shared resources for all tests
@@ -24,14 +25,20 @@ class TestEquipmentsSeeder(unittest.TestCase):
         asyncio.run(self.default_setup.setUp())
         asyncio.run(self.default_setup.setupData())
 
-    def test_seed_equipments_and_equipment_stats_if_empty(self):
+    def test_get_catalogue_item_valid(self):
+        # Arrange
+        request = GetCatalogueQueryRequest(
+            guild=self.default_setup.discord_guild,
+            name="Droideka Shield Generator"  # Assuming this catalogue item exists in the seeded data
+        )
+
         # Act
+        response = asyncio.run(GetCatalogueQuery(request).execute())
 
         # Assert
-        equipments = asyncio.run(self.default_setup.equipment_repository.get_all(self.default_setup.server_config.server.server_id))
-        equipment_stats = asyncio.run(self.default_setup.equipment_stat_repository.get_all(None))
-        self.assertGreater(len(equipments), 0)  # Assuming the seed file has at least 1 equipment
-        self.assertGreater(len(equipment_stats), 0)  # Assuming the seed file has at least 1 equipment stat
+        self.assertEqual(response.server_config.server.guild_id, 12345)
+        self.assertIsNotNone(response.catalogue_item)
+
 
 if __name__ == "__main__":
     unittest.main()

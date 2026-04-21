@@ -1,3 +1,5 @@
+import json
+
 from domain import Keyword, IRepository
 from infrastructure import BaseRepository
 from typing import List, Optional
@@ -87,7 +89,7 @@ class KeywordRepository(BaseRepository, IRepository):
             keyword.server_id,
             keyword.name,
             keyword.description,
-            str(keyword.metadata)
+            json.dumps(keyword.metadata)
         )
 
     async def update(self, keyword: Keyword) -> bool:
@@ -96,7 +98,7 @@ class KeywordRepository(BaseRepository, IRepository):
             keyword.server_id,
             keyword.name,
             keyword.description,
-            str(keyword.metadata),
+            json.dumps(keyword.metadata),
             keyword.keyword_id
         )
         return affected > 0

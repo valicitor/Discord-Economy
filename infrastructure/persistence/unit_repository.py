@@ -1,3 +1,5 @@
+import json
+
 from domain import Unit, IRepository
 from infrastructure import BaseRepository
 from typing import List, Optional
@@ -88,7 +90,7 @@ class UnitRepository(BaseRepository, IRepository):
             unit.server_id,
             unit.name,
             unit.description,
-            str(unit.metadata)
+            json.dumps(unit.metadata)
         )
     
     async def update(self, unit: Unit) -> bool:
@@ -97,7 +99,7 @@ class UnitRepository(BaseRepository, IRepository):
             unit.server_id,
             unit.name,
             unit.description,
-            str(unit.metadata),
+            json.dumps(unit.metadata),
             unit.unit_id
         )
         return affected > 0

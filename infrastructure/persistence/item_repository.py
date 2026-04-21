@@ -17,16 +17,17 @@ class ItemRepository(BaseRepository, IRepository):
             CREATE TABLE IF NOT EXISTS items (
                 item_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 server_id INTEGER NOT NULL,
+                catalogue_id INTEGER NOT NULL,
                 name TEXT NOT NULL,
-                category TEXT NOT NULL,
-                icon TEXT NOT NULL,
+                icon TEXT DEFAULT '',
                 price INTEGER NOT NULL,
                 description TEXT DEFAULT '',
-                stock INTEGER NOT NULL DEFAULT -1,
+                stock INTEGER,
                 inventory BOOLEAN NOT NULL DEFAULT 1,
                 usable BOOLEAN NOT NULL DEFAULT 1,
                 sellable BOOLEAN NOT NULL DEFAULT 1,
-                FOREIGN KEY(server_id) REFERENCES servers(server_id)
+                FOREIGN KEY(server_id) REFERENCES servers(server_id),
+                FOREIGN KEY(catalogue_id) REFERENCES catalogue(catalogue_id)
             )
         """)
 
@@ -59,8 +60,15 @@ class ItemRepository(BaseRepository, IRepository):
         )
         return Item(data=dict(row)) if row else None
 
-    async def get_all(self) -> List[Item]:
-        rows = await super().fetch("SELECT * FROM items")
+    async def get_by_name(self, name: str) -> Optional[Item]:
+        row = await super().fetchrow(
+            "SELECT * FROM items WHERE name = ?",
+            name
+        )
+        return Item(data=dict(row)) if row else None
+
+    async def get_all(self, server_id: int) -> List[Item]:
+        rows = await super().fetch("SELECT * FROM items WHERE server_id = ?", server_id)
         return [Item(data=dict(row)) for row in rows]
     
     # ---------- Additional Queries ----------
@@ -87,10 +95,10 @@ class ItemRepository(BaseRepository, IRepository):
 
     async def insert(self, item: Item) -> int:
         return await super().insert(
-            "INSERT INTO items (server_id, name, category, icon, price, description, stock, inventory, usable, sellable) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO items (server_id, name, catalogue_id, icon, price, description, stock, inventory, usable, sellable) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             item.server_id,
             item.name,
-            item.category,
+            item.catalogue_id,
             item.icon,
             item.price,
             item.description,
@@ -102,10 +110,10 @@ class ItemRepository(BaseRepository, IRepository):
 
     async def update(self, item: Item) -> bool:
         affected = await super().update(
-            "UPDATE items SET server_id = ?, name = ?, category = ?, icon = ?, price = ?, description = ?, stock = ?, inventory = ?, usable = ?, sellable = ? WHERE item_id = ?",
+            "UPDATE items SET server_id = ?, name = ?, catalogue_id = ?, icon = ?, price = ?, description = ?, stock = ?, inventory = ?, usable = ?, sellable = ? WHERE item_id = ?",
             item.server_id,
             item.name,
-            item.category,
+            item.catalogue_id,
             item.icon,
             item.price,
             item.description,
@@ -131,3 +139,40 @@ class ItemRepository(BaseRepository, IRepository):
             server_id
         )
         return affected > 0
+    
+    # ---------- Additional Mutations ----------
+
+    def _get_sort_column(self, sort_by: str) -> str:
+        mapping = {
+            "Cost": "ORDER BY price DESC",
+            "Name": "ORDER BY name DESC",
+            "Stock": "ORDER BY stock DESC"
+        }
+
+        if sort_by not in mapping:
+            raise ValueError(f"Invalid sort_by value: {sort_by}")
+
+        return mapping[sort_by]
+
+    async def get_shop_items(self, server_id: int, page: int, sort_by: str = "Cost", limit: int = 10) -> List[Item]:
+        query = f"""
+            SELECT 
+                *
+            FROM items
+            WHERE server_id = ?
+            GROUP BY item_id
+        """
+        query += self._get_sort_column(sort_by)
+
+        params = [server_id]
+
+        if page is not None:
+            offset = (page - 1) * limit
+            query += f" LIMIT {limit} OFFSET ?"
+            params.append(offset)
+
+        rows = await super().fetch(
+            query, 
+            *params
+        )
+        return [Item(data=dict(row)) for row in rows]

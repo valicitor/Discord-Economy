@@ -30,7 +30,8 @@ class TestGetLeaderboardQuery(unittest.TestCase):
         request = GetLeaderboardQueryRequest(
             guild=self.default_setup.discord_guild,
             page=1,
-            sort_by="Cash"
+            sort_by="Cash",
+            limit=10
         )
 
         # Act
@@ -47,7 +48,8 @@ class TestGetLeaderboardQuery(unittest.TestCase):
         request = GetLeaderboardQueryRequest(
             guild=self.default_setup.discord_guild,
             page=1,
-            sort_by="Bank"
+            sort_by="Bank",
+            limit=10
         )
 
         # Act
@@ -64,7 +66,8 @@ class TestGetLeaderboardQuery(unittest.TestCase):
         request = GetLeaderboardQueryRequest(
             guild=self.default_setup.discord_guild,
             page=1,
-            sort_by="Total"
+            sort_by="Total",
+            limit=10
         )
 
         # Act

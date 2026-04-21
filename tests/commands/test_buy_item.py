@@ -6,10 +6,10 @@ from config import BASE_DIR
 sys.path.insert(0, os.path.abspath(BASE_DIR))
 
 import unittest
-from application import GetEquipmentQuery, GetEquipmentQueryRequest
+from application import BuyItemCommand, BuyItemCommandRequest
 from tests.helper.default_setup import DefaultSetup
 
-class GetEquipmentQueryQuery(unittest.TestCase):
+class TestBuyItemCommand(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Initialize shared resources for all tests
@@ -25,21 +25,39 @@ class GetEquipmentQueryQuery(unittest.TestCase):
         asyncio.run(self.default_setup.setUp())
         asyncio.run(self.default_setup.setupData())
 
-    def test_get_equipment_valid(self):
+    def test_buy_unit_item(self):
         # Arrange
-        request = GetEquipmentQueryRequest(
+        player = self.default_setup.player_profile1
+
+        request = BuyItemCommandRequest(
             guild=self.default_setup.discord_guild,
-            name="Droideka Shield Generator"  # Assuming this equipment exists in the seeded data
+            user=self.default_setup.discord_user1,
+            item_id=1,
+            item_name=None
         )
 
         # Act
-        response = asyncio.run(GetEquipmentQuery(request).execute())
+        response = asyncio.run(BuyItemCommand(request).execute())
 
         # Assert
-        self.assertEqual(response.server_config.server.guild_id, 12345)
-        self.assertIsNotNone(response.equipment)
-        self.assertIsInstance(response.stats, list)
+        self.assertEqual(response.shop_item.item_id, 1)
+    
+    def test_buy_weapon_item(self):
+        # Arrange
+        player = self.default_setup.player_profile1
 
+        request = BuyItemCommandRequest(
+            guild=self.default_setup.discord_guild,
+            user=self.default_setup.discord_user1,
+            item_id=3,
+            item_name=None
+        )
+
+        # Act
+        response = asyncio.run(BuyItemCommand(request).execute())
+
+        # Assert
+        self.assertEqual(response.shop_item.item_id, 3)
 
 if __name__ == "__main__":
     unittest.main()

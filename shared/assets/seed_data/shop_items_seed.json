@@ -1,0 +1,10 @@
+{
+    "version": "1.0",
+    "items": {
+        "data": [
+            { "name": "Clone Trooper", "catalogue_id": 1, "icon": "<:dragon_coin:1432690013614899220>", "price": 1000, "description": "A standard clone trooper unit, trained for combat and loyalty to the Republic.", "stock": null, "inventory": true, "usable": true, "sellable": true },
+            { "name": "B1 Battle Droid", "catalogue_id": 4, "icon": "<:dragon_coin:1432690013614899220>", "price": 800, "description": "A basic battle droid unit, mass-produced for the Separatist forces.", "stock": null, "inventory": true, "usable": true, "sellable": true },
+            { "name": "DC-15A Blaster Rifle",   "catalogue_id": 15,   "icon": "<:dragon_coin:1432690013614899220>",   "price": 500,  "description": "",    "stock": null,   "inventory": true,   "usable": false,  "sellable": true }
+        ]
+    }
+}

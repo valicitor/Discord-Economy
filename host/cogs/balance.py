@@ -159,7 +159,8 @@ class BalanceCog(commands.Cog):
             request=GetLeaderboardQueryRequest(
                 guild=guild, 
                 page=page, 
-                sort_by=sort
+                sort_by=sort,
+                limit=10
             )
 
             response = await GetLeaderboardQuery(request).execute()

@@ -94,7 +94,7 @@ class MyClient(commands.Bot):
             "host.cogs.admin",
             "host.cogs.balance",
             "host.cogs.work",
-            "host.cogs.units",
+            "host.cogs.shop",
         ],
         # "merchant": [
         #     "host.cogs.balance",

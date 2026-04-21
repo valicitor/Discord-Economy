@@ -15,17 +15,12 @@ from infrastructure import (
     PlayerActionRepository,
     PointOfInterestRepository,
     LocationRepository,
-    RaceRepository,
-    RaceStatRepository,
-    EquipmentRepository,
-    EquipmentStatRepository,
-    UnitRepository,
-    UnitStatRepository,
-    VehicleRepository,
-    VehicleStatRepository,
+    CatalogueRepository,
     BusinessRepository,
     ActionRepository,
-    KeywordRepository
+    KeywordRepository,
+    ItemRepository,
+    PlayerInventoryRepository
 )
 from application import DiscordGuild, DiscordUser
 from application.helpers.ensure_user import ensure_guild_and_users
@@ -45,21 +40,16 @@ class DefaultSetup:
         cls.bank_account_repository = await BankAccountRepository().get_instance(db_path=":memory:")
         cls.faction_member_repository = await FactionMemberRepository().get_instance(db_path=":memory:")
         cls.player_action_repository = await PlayerActionRepository().get_instance(db_path=":memory:")
+        cls.player_inventory_repository = await PlayerInventoryRepository().get_instance(db_path=":memory:")
 
         cls.business_repository = await BusinessRepository().get_instance(db_path=":memory:")
         cls.action_repository = await ActionRepository().get_instance(db_path=":memory:")
         cls.POI_repository = await PointOfInterestRepository().get_instance(db_path=":memory:")
         cls.location_repository = await LocationRepository().get_instance(db_path=":memory:")
-        cls.equipment_repository = await EquipmentRepository().get_instance(db_path=":memory:")
-        cls.equipment_stat_repository = await EquipmentStatRepository().get_instance(db_path=":memory:")
-        cls.race_repository = await RaceRepository().get_instance(db_path=":memory:")
-        cls.race_stat_repository = await RaceStatRepository().get_instance(db_path=":memory:")
-        cls.unit_repository = await UnitRepository().get_instance(db_path=":memory:")
-        cls.unit_stat_repository = await UnitStatRepository().get_instance(db_path=":memory:")
-        cls.vehicle_repository = await VehicleRepository().get_instance(db_path=":memory:")
-        cls.vehicle_stat_repository = await VehicleStatRepository().get_instance(db_path=":memory:")
 
+        cls.catalogue_repository = await CatalogueRepository().get_instance(db_path=":memory:")
         cls.keyword_repository = await KeywordRepository().get_instance(db_path=":memory:")
+        cls.items_repository = await ItemRepository().get_instance(db_path=":memory:")
 
     @classmethod
     async def tearDownClass(cls):
@@ -79,16 +69,12 @@ class DefaultSetup:
         await cls.action_repository.close_all()
         await cls.POI_repository.close_all()
         await cls.location_repository.close_all()
-        await cls.equipment_repository.close_all()
-        await cls.equipment_stat_repository.close_all()
-        await cls.race_repository.close_all()
-        await cls.race_stat_repository.close_all()
-        await cls.unit_repository.close_all()
-        await cls.unit_stat_repository.close_all()
-        await cls.vehicle_repository.close_all()
-        await cls.vehicle_stat_repository.close_all()
 
+        await cls.catalogue_repository.close_all()
         await cls.keyword_repository.close_all()
+        await cls.items_repository.close_all()
+
+        await cls.player_inventory_repository.close_all()
 
     async def setUp(self):
         await self.server_repository.clear_all()
@@ -107,16 +93,12 @@ class DefaultSetup:
         await self.action_repository.clear_all()
         await self.POI_repository.clear_all()
         await self.location_repository.clear_all()
-        await self.equipment_repository.clear_all()
-        await self.equipment_stat_repository.clear_all()
-        await self.race_repository.clear_all()
-        await self.race_stat_repository.clear_all()
-        await self.unit_repository.clear_all()
-        await self.unit_stat_repository.clear_all()
-        await self.vehicle_repository.clear_all()
-        await self.vehicle_stat_repository.clear_all()
 
+        await self.catalogue_repository.clear_all()
         await self.keyword_repository.clear_all()
+        await self.items_repository.clear_all()
+        
+        await self.player_inventory_repository.clear_all()
 
     async def setupData(self):
         self.discord_guild = DiscordGuild(guild_id=12345, name="TestGuild")
