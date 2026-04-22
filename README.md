@@ -22,9 +22,9 @@ By allowing trading, investing, and other deep economic actions, players who hoa
 - Races: Defined races with stats
 - Equipment: Defined equipment with stats
 - Units: Defined units that combine race and equipment
+- Inventory: Track player inventory and items
 
 #### Phase 2 Features:
-- [ ] Inventory: Track player inventory and items
 - [ ] Shop: Buy/Sell units and equipment
 
 #### Phase 3 Features:

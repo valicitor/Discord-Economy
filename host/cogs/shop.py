@@ -46,7 +46,7 @@ class ShopCog(commands.Cog):
         except Exception as e:
             await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
 
-    # --- /stat-block equipment ---
+    # --- /catalogue ---
     @app_commands.command(name="catalogue", description="Show the stats of a specific catalogue item.")
     @app_commands.guild_only()
     async def user_catalogue_block(self, interaction: discord.Interaction, name: str):

@@ -2,6 +2,7 @@ import discord
 import discord.ui as ui
 from discord import Interaction
 
+from domain import Catalogue, Keyword
 from application import DiscordGuild, DiscordUser, get_default_currency
 from application import (
     BuyItemCommand,
@@ -9,6 +10,7 @@ from application import (
     GetShopQueryResponse,
     GetCatalogueQueryResponse
 )
+import json
 
 class DiscordShopEmbed:
 
@@ -43,34 +45,33 @@ class DiscordShopEmbed:
                     label=f"{item.price}", 
                     emoji=f"{currency}", 
                     disabled=((item.stock == 0) or (item.price > self.response.player.balances.total_balance())), 
-                    style=discord.ButtonStyle.green
+                    style=discord.ButtonStyle.success if not ((item.stock == 0) or (item.price > self.response.player.balances.total_balance())) else discord.ButtonStyle.secondary
                 )
 
                 async def callback(interaction: discord.Interaction, item=item):
-                    # call your purchase logic here
-                    guild = DiscordGuild(
-                        guild_id=interaction.guild_id, 
-                        name=interaction.guild.name
-                    )
-                    user = DiscordUser(
-                        user_id=interaction.user.id,
-                        name=interaction.user.name,
-                        display_avatar=str(interaction.user.display_avatar)
-                    )
-                
-                    request=BuyItemCommandRequest(
-                        guild=guild,
-                        user=user,
-                        item_id=item.item_id,
-                        item_name=None
-                    )
+                    try:
+                        guild = DiscordGuild(
+                            guild_id=interaction.guild_id, 
+                            name=interaction.guild.name
+                        )
+                        user = DiscordUser(
+                            user_id=interaction.user.id,
+                            name=interaction.user.name,
+                            display_avatar=str(interaction.user.display_avatar)
+                        )
+                    
+                        request=BuyItemCommandRequest(
+                            guild=guild,
+                            user=user,
+                            item_id=item.item_id,
+                            item_name=None
+                        )
 
-                    response = await BuyItemCommand(request).execute()
+                        response = await BuyItemCommand(request).execute()
 
-                    await interaction.response.send_message(
-                        f"You bought {response.shop_item.name}", 
-                        ephemeral=True
-                    )
+                        await interaction.response.send_message(f"You bought {response.shop_item.name}", ephemeral=True)
+                    except Exception as e:
+                        await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
 
 
                 button.callback = callback
@@ -114,30 +115,101 @@ class DiscordShopEmbed:
             return view
 
         async def _build(self):
-            keywords_components = []
+            keywords_subtitle_components = []
+            keywords_explanation_components = []
+            related_items_components = []
             if self.response.keywords:
-                keywords = "] [".join([k.name for k in self.response.keywords]) if self.response.keywords else ""
+                
+                keywords = "*] [*".join([k.name for k in self.response.keywords]) if self.response.keywords else ""
 
                 text_display = discord.ui.TextDisplay(
-                    content=f"-# **Keywords:** [{keywords}]"
+                    content=f"-# [*{keywords}*]"
                 )
 
-                keywords_components.append(text_display)
+                keywords_explanation_components.append(discord.ui.Separator())
+                for keyword in self.response.keywords:
+                    keywords_explanation_components.append(discord.ui.TextDisplay(content=f"-# **{keyword.name}:** {keyword.description}"))
+
+                keywords_subtitle_components.append(text_display)
+            
+            if self.response.related_items:
+                related_items_components.append(discord.ui.Separator())
+                related_items_components.append(discord.ui.TextDisplay(content=f"## Related Items"))
+                for item in self.response.related_items:
+                    related_items_components.append(discord.ui.TextDisplay(content=f"### {item.type} - {item.name}"))
+                    related_items_components.append(discord.ui.TextDisplay(content=f"-# {item.description}"))
 
             self.add_item(
                 discord.ui.Container(
                     discord.ui.TextDisplay(content="## Catalogue"),
                     discord.ui.Separator(),
-                    discord.ui.TextDisplay(content=f"### {self.response.catalogue_item.type} - {self.response.catalogue_item.name}"),
-                    *keywords_components,
+                    discord.ui.TextDisplay(content=f"# {self.response.catalogue_item.type} - {self.response.catalogue_item.name}"),
                     discord.ui.TextDisplay(content=f"{self.response.catalogue_item.description}"),
+                    *keywords_subtitle_components,
                     discord.ui.Separator(),
-                    discord.ui.TextDisplay(content=f"### Stat Block"),
-                    discord.ui.TextDisplay(content=f"*WIP*"),
+                    *self._get_stat_block(self.response.catalogue_item, self.response.related_items),
+                    *related_items_components,
+                    *keywords_explanation_components,
                     accent_color=discord.Color.light_grey(),
                     spoiler=False
                 )
             )
+        
+        def _get_stat_block(self, item: Catalogue, related_items: list[Catalogue]):
+            stats = {}
+            metadata = json.loads(item.metadata)
+            item_stats = metadata.get("stats", {})
+            if item_stats and isinstance(item_stats, dict):
+                stats.update(item_stats)
+            else:
+                # Order related_items by type so that Race base stats are overridden by Weapon and Armor stats
+                priority = {"Race": 0, "Weapon": 1, "Armor": 2}
+                related_items = sorted(related_items, key=lambda x: priority.get(x.type, 99))
+                for related_item in related_items:
+                    related_metadata = json.loads(related_item.metadata)
+                    related_item_stats = related_metadata.get("stats", {})
+                    if isinstance(related_item_stats, dict):
+                        stats.update(related_item_stats)
+
+
+            has_weapon = any(item.type == "Weapon" for item in related_items + [item])
+            has_armor = any(item.type == "Armor" for item in related_items + [item])
+
+            weapon_label = "Weapon" if has_weapon else "Unarmed"
+            armor_label = "Armor" if has_armor else "Unarmored"
+            categories = {
+                "Stats": ["WS", "BS", "T", "W"],
+                weapon_label: ["Attacks", "S", "AP", "D", "Range"],
+                armor_label: ["Sv"]
+            }
+            stat_blocks = {}
+            for category, keys in categories.items():
+                header_row = []
+                separator_row = []
+                stat_row = []
+                for key in keys:
+                    if key in stats:
+                        value = stats[key]
+                        width = max(len(key), len(str(value)))
+
+                        header_row.append(f"{key:^{width}}")
+                        stat_row.append(f"{value:^{width}}")
+                        separator_row.append("━" * width)
+
+                if not header_row:
+                    continue
+
+                stat_blocks[category] = (
+                    "```\n"
+                    "┃ " + " ┃ ".join(header_row) + " ┃\n"
+                    "┣━" + "━╋━".join(separator_row) + "━┫\n"
+                    "┃ " + " ┃ ".join(stat_row) + " ┃\n```"
+                )
+
+            result = []
+            for category, block in stat_blocks.items():
+                result.append(discord.ui.TextDisplay(content=f"### {category}\n{block}"))
+            return result
 
     @staticmethod
     async def get_catalogue_block_embed(interaction: discord.Interaction, response: GetCatalogueQueryResponse):
