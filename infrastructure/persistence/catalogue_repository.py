@@ -100,6 +100,14 @@ class CatalogueRepository(BaseRepository, IRepository):
     
     # ---------- Additional Existence Checks ----------
 
+    async def exists_by_name(self, name: str, server_id: int) -> bool:
+        row = await super().fetchrow(
+            "SELECT 1 FROM catalogue WHERE name = ? AND server_id = ?",
+            name,
+            server_id
+        )
+        return row is not None
+
     # ---------- Mutations ----------
 
     async def insert(self, catalogue: Catalogue) -> int:
