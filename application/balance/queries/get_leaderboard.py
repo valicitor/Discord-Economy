@@ -4,7 +4,7 @@ import math
 from infrastructure import PlayerRepository
 
 from application import DiscordGuild, ServerConfig, PlayerProfile
-from application.helpers.ensure_user import ensure_guild, get_player_profile
+from application.helpers.helpers import Helpers
 
 @dataclass
 class GetLeaderboardQueryRequest:
@@ -32,7 +32,7 @@ class GetLeaderboardQuery:
     async def execute(self) -> GetLeaderboardQueryResponse:
         self.player_repository = await PlayerRepository().get_instance()
 
-        server_config = await ensure_guild(self.request.guild)
+        server_config = await Helpers.ensure_guild(self.request.guild)
 
         count = await self.player_repository.get_count(server_config.server.server_id)
         if count == 0:
@@ -45,6 +45,6 @@ class GetLeaderboardQuery:
 
         player_profiles = []
         for idx, player in enumerate(players):
-            player_profiles.append(await get_player_profile(player))
+            player_profiles.append(await Helpers.get_player_profile(discord_guild_id=player.discord_guild_id, discord_user_id=player.discord_id))
 
         return GetLeaderboardQueryResponse(success=True, server_config=server_config, players=player_profiles, page=self.request.page, max_pages=max_pages, limit=self.request.limit, sort_by=self.request.sort_by)

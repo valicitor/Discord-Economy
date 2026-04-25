@@ -1,13 +1,9 @@
 from attr import dataclass
 
-from infrastructure import  PlayerBalanceRepository, BankAccountRepository, ServerSettingRepository
-from application.helpers.ensure_user import ensure_guild_and_user
-
 from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
-
 from domain import InsufficientFundsException, UpdateFailedException
-
-from application.helpers.ensure_user import ensure_guild_and_user
+from infrastructure import  PlayerBalanceRepository, BankAccountRepository
+from application.helpers.helpers import Helpers
 
 @dataclass
 class DepositCommandRequest:
@@ -36,7 +32,7 @@ class DepositCommand:
         if self.request.amount is None or self.request.amount <= 0:
             raise ValueError("Deposit amount must be greater than zero.")
 
-        server_config, player_profile = await ensure_guild_and_user(self.request.guild, self.request.user)
+        server_config, player_profile = await Helpers.ensure_guild_and_user(self.request.guild, self.request.user)
 
         async with self.player_balance_repository.transaction():
             _, default_currency = server_config.server_settings.get_by_key("default_currency_id")

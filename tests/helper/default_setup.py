@@ -23,7 +23,7 @@ from infrastructure import (
     PlayerInventoryRepository
 )
 from application import DiscordGuild, DiscordUser
-from application.helpers.ensure_user import ensure_guild_and_users
+from application.helpers.helpers import Helpers
 
 class DefaultSetup:
 
@@ -106,7 +106,7 @@ class DefaultSetup:
         self.discord_user2 = DiscordUser(user_id=67901, name="TestUser2", display_avatar="avatar_url")
         self.discord_user3 = DiscordUser(user_id=67902, name="TestUser3", display_avatar="avatar_url")
 
-        self.server_config, [self.player_profile1, self.player_profile2, self.player_profile3] = await ensure_guild_and_users(self.discord_guild, [self.discord_user1, self.discord_user2, self.discord_user3])
+        self.server_config, [self.player_profile1, self.player_profile2, self.player_profile3] = await Helpers.ensure_guild_and_users(self.discord_guild, [self.discord_user1, self.discord_user2, self.discord_user3])
 
         self.player_profile1.balances[0].balance = 1500
         await self.player_balance_repository.update(self.player_profile1.balances[0])

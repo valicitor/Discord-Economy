@@ -1,10 +1,8 @@
 from attr import dataclass
 
-from infrastructure import  PlayerBalanceRepository, ServerSettingRepository
-from application.helpers.ensure_user import ensure_guild_and_users
-
+from infrastructure import  PlayerBalanceRepository
 from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
-
+from application.helpers.helpers import Helpers
 from domain import UpdateFailedException, InsufficientFundsException
 
 @dataclass
@@ -32,7 +30,7 @@ class PayCommand:
     async def execute(self) -> PayCommandResponse:
         self.player_balance_repository = await PlayerBalanceRepository().get_instance()
     
-        server_config, [player_profile, target_player_profile] = await ensure_guild_and_users(self.request.guild, [self.request.user, self.request.target])
+        server_config, [player_profile, target_player_profile] = await Helpers.ensure_guild_and_users(self.request.guild, [self.request.user, self.request.target])
 
         async with self.player_balance_repository.transaction():
             _, default_currency = server_config.server_settings.get_by_key("default_currency_id")

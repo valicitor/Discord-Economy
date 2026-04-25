@@ -27,7 +27,13 @@ By allowing trading, investing, and other deep economic actions, players who hoa
 #### Phase 2 Features:
 - [ ] Shop: Buy/Sell units and equipment
 
-#### Phase 3 Features:
+### Phase 3 Features:
+- [ ] Player: Players should need to create an account/character before interacting with the economy
+- [ ] Admin: Seeding data should be optional, create a /admin seed_data or /setup command
+- [ ] Custom Units: Units should have equipment unassignable/assignable to them
+- [ ] Player: Players should be able to see thier own profile, create a /profile command
+
+#### Phase 4 Features:
 - [ ] Locations: Players, Banks, Businesses, and Shops should have locations and prevent interaction with each other if not within range
 - [ ] Businesses: Stocks that go up/down in price based on market points
 - [ ] Shop: Players can buy stocks
@@ -35,8 +41,9 @@ By allowing trading, investing, and other deep economic actions, players who hoa
 - [ ] Work: Player actions cause business market points to go up/down based on success/fail of actions
 - [ ] Bank: Interest rates, loans
 - [ ] Units: Maintenance costs taken out of player bank
+- [ ] Unit Garrison: Units should be able to be assigned to a location
 
-#### Phase 4 Features:
+#### Phase 5 Features:
 - [ ] Factions: Players can create/join factions
 - [ ] Vehicles: Defined vehicles that require crew and override unit stats
 - [ ] Locations: Locations should have exhaustible/discoverable resource nodes

@@ -1,17 +1,16 @@
 import discord
 from discord import Interaction
 
-from application import get_default_currency
 from application import (
     WorkCommandResponse
 )
-from application.helpers.get_cooldown import get_countdown
+from application.helpers.helpers import Helpers
 
 class DiscordWorkEmbed:
 
     @staticmethod
     async def work_embed(interaction: discord.Interaction, response: WorkCommandResponse):
-        currency = await get_default_currency(response.server_config)
+        currency = await response.server_config.get_default_currency()
         color = discord.Color.green() if response.action_success else discord.Color.red()
 
         business_name = response.business.name if response.business and response.business.name else "Unknown Business"
@@ -25,6 +24,6 @@ class DiscordWorkEmbed:
         )
         
         embed.set_author(name=f"{response.player.player.username}", icon_url=f"{response.player.player.avatar}")
-        embed.set_footer(text=f"Cooldown: {get_countdown(response.action.cooldown_seconds)}")
+        embed.set_footer(text=f"Cooldown: {Helpers.format_countdown(response.action.cooldown_seconds)}")
 
         return embed

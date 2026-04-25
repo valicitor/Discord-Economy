@@ -1,7 +1,6 @@
 import discord
 from discord import Interaction
 
-from application import get_default_currency
 from application import (
     AddBalanceCommandResponse, 
     SetBalanceCommandResponse, 
@@ -12,7 +11,7 @@ class DiscordAdminEmbed:
 
     @staticmethod
     async def set_currency_symbol_embed(interaction: Interaction, response: SetCurrencySymbolCommandResponse):
-        currency = await get_default_currency(response.server_config)
+        currency = await response.server_config.get_default_currency()
                 
         embed = discord.Embed(
             title=f"💱 Currency Symbol Updated",
@@ -23,7 +22,7 @@ class DiscordAdminEmbed:
 
     @staticmethod
     async def add_balance_embed(interaction: Interaction, target: discord.User, response: AddBalanceCommandResponse):
-        currency = await get_default_currency(response.server_config)
+        currency = await response.server_config.get_default_currency()
 
         embed = discord.Embed(
             title=f"💳 Bank Account Summary",
@@ -34,7 +33,7 @@ class DiscordAdminEmbed:
 
     @staticmethod
     async def set_balance_embed(interaction: Interaction, target: discord.User, response: SetBalanceCommandResponse):
-        currency = await get_default_currency(response.server_config)
+        currency = await response.server_config.get_default_currency()
         
         embed = discord.Embed(
             title=f"💳 Bank Account Summary",

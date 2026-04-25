@@ -1,7 +1,6 @@
 import discord
 from discord import Interaction
 
-from application import get_default_currency
 from application import (
     GetBalanceQueryResponse, 
     PayCommandResponse,
@@ -14,7 +13,7 @@ class DiscordBalanceEmbed:
 
     @staticmethod
     async def get_balance_embed(interaction: Interaction, response: GetBalanceQueryResponse):
-        currency = await get_default_currency(response.server_config)
+        currency = await response.server_config.get_default_currency()
         hex_color = response.player.faction.color if response.player.faction and response.player.faction.color else None
 
         embed=discord.Embed(
@@ -31,7 +30,7 @@ class DiscordBalanceEmbed:
     
     @staticmethod
     async def withdraw_embed(interaction: Interaction, response: WithdrawCommandResponse):
-        currency = await get_default_currency(response.server_config)
+        currency = await response.server_config.get_default_currency()
         hex_color = response.player.faction.color if response.player.faction and response.player.faction.color else None
 
         embed=discord.Embed(
@@ -44,7 +43,7 @@ class DiscordBalanceEmbed:
 
     @staticmethod
     async def deposit_embed(interaction: Interaction, response: DepositCommandResponse):
-        currency = await get_default_currency(response.server_config)
+        currency = await response.server_config.get_default_currency()
         hex_color = response.player.faction.color if response.player.faction and response.player.faction.color else None
 
         embed=discord.Embed(
@@ -57,7 +56,7 @@ class DiscordBalanceEmbed:
 
     @staticmethod
     async def pay_balance_embed(interaction: discord.Interaction, target: discord.User, response: PayCommandResponse):
-        currency = await get_default_currency(response.server_config)
+        currency = await response.server_config.get_default_currency()
         hex_color = response.player.faction.color if response.player.faction and response.player.faction.color else None
       
         embed = discord.Embed(
@@ -69,7 +68,7 @@ class DiscordBalanceEmbed:
     
     @staticmethod
     async def get_leaderboard_embed(interaction: discord.Interaction, response: GetLeaderboardQueryResponse):
-        currency = await get_default_currency(response.server_config)
+        currency = await response.server_config.get_default_currency()
 
         description=f"View the leaderboard here:\n"
         for player_profile in response.players:

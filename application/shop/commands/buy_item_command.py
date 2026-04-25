@@ -3,10 +3,8 @@ import json
 from attr import dataclass
 
 from infrastructure import ItemRepository, PlayerBalanceRepository, PlayerInventoryRepository, CatalogueRepository
-from application.helpers.ensure_user import ensure_guild_and_user
-
 from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
-
+from application.helpers.helpers import Helpers
 from domain import Item, PlayerInventory, Catalogue, InvalidDataException, RecordNotFoundException, InsufficientFundsException, UpdateFailedException
 
 @dataclass
@@ -39,7 +37,7 @@ class BuyItemCommand:
         if self.request.item_id is None and self.request.item_name is None:
             raise InvalidDataException("Either item_id or item_name must be provided.")
 
-        server_config, player_profile = await ensure_guild_and_user(self.request.guild, self.request.user)
+        server_config, player_profile = await Helpers.ensure_guild_and_user(self.request.guild, self.request.user)
         
         shop_item = None
         success = False

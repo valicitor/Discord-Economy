@@ -1,9 +1,7 @@
 import discord
-import discord.ui as ui
-from discord import Interaction
 
-from domain import Catalogue, Keyword
-from application import DiscordGuild, DiscordUser, get_default_currency
+from domain import Catalogue
+from application import DiscordGuild, DiscordUser
 from application import (
     BuyItemCommand,
     BuyItemCommandRequest,
@@ -26,7 +24,7 @@ class DiscordShopEmbed:
             return view
 
         async def _build(self):
-            currency = await get_default_currency(self.response.server_config)
+            currency = await self.response.server_config.get_default_currency()
 
             shop_item_components = []
             for item in self.response.shop_items:
@@ -39,13 +37,14 @@ class DiscordShopEmbed:
                 components.append(discord.ui.TextDisplay(content=f"**{item_icon}{item_name}**"))
                 if item.description:
                     components.append(discord.ui.TextDisplay(content=f"-# {item.description}"))
-
+                
+                disabled = (item.stock == 0) or (item.price > self.response.player.balances.total_balance())
                 button = discord.ui.Button(
                     custom_id=f"{item.item_id}", 
                     label=f"{item.price}", 
                     emoji=f"{currency}", 
-                    disabled=((item.stock == 0) or (item.price > self.response.player.balances.total_balance())), 
-                    style=discord.ButtonStyle.success if not ((item.stock == 0) or (item.price > self.response.player.balances.total_balance())) else discord.ButtonStyle.secondary
+                    disabled=disabled, 
+                    style=discord.ButtonStyle.success if not disabled else discord.ButtonStyle.secondary
                 )
 
                 async def callback(interaction: discord.Interaction, item=item):

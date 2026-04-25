@@ -3,12 +3,12 @@ import re
 from attr import dataclass
 
 from domain import UpdateFailedException
-from infrastructure import CurrencyRepository, ServerSettingRepository
+from infrastructure import CurrencyRepository
 from application import DiscordGuild, ServerConfig
 
 from domain import Currency
 
-from application.helpers.ensure_user import ensure_guild
+from application.helpers.helpers import Helpers
 
 @dataclass
 class SetCurrencySymbolCommandRequest:
@@ -30,7 +30,7 @@ class SetCurrencySymbolCommand:
     async def execute(self) -> SetCurrencySymbolCommandResponse:
         self.currency_repository = await CurrencyRepository().get_instance()
 
-        server_config = await ensure_guild(self.request.guild)
+        server_config = await Helpers.ensure_guild(self.request.guild)
 
         _, default_currency = server_config.server_settings.get_by_key("default_currency_id")
         currency = await self.currency_repository.get_by_id(int(default_currency.value))

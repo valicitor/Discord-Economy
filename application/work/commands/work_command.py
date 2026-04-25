@@ -4,8 +4,7 @@ import random
 from attr import dataclass
 
 from infrastructure import PlayerBalanceRepository, PlayerActionRepository, BusinessRepository, ActionRepository
-from application.helpers.ensure_user import ensure_guild_and_user
-from application.helpers.get_cooldown import get_countdown
+from application.helpers.helpers import Helpers
 
 from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
 
@@ -40,7 +39,7 @@ class WorkCommand:
         self.business_repository = await BusinessRepository().get_instance()
         self.action_repository = await ActionRepository().get_instance()
 
-        server_config, player_profile = await ensure_guild_and_user(self.request.guild, self.request.user)
+        server_config, player_profile = await Helpers.ensure_guild_and_user(self.request.guild, self.request.user)
 
         async with self.player_action_repository.transaction():
             last_action = await self.player_action_repository.get_last_action_by_type("Work", player_profile.player.player_id)
@@ -52,7 +51,7 @@ class WorkCommand:
                 now_utc = datetime.now(timezone.utc).replace(microsecond=0)
                 if (last_used_at is not None) and ((last_used_at.timestamp() + cooldown_seconds) > now_utc.timestamp()):
                     time_remaining_seconds = int((last_used_at.timestamp() + cooldown_seconds) - now_utc.timestamp())
-                    raise OnCooldownException(f"You are on cooldown. Please wait {get_countdown(time_remaining_seconds)} before working again.")
+                    raise OnCooldownException(f"You are on cooldown. Please wait {Helpers.format_countdown(time_remaining_seconds)} before working again.")
 
             businesses = await self.business_repository.get_all(server_id=server_config.server.server_id)
             if not businesses:
