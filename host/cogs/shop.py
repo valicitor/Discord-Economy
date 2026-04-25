@@ -79,17 +79,18 @@ class ShopCog(commands.Cog):
         
         server = await server_repo.get_by_guild_id(interaction.guild_id)
         if server is None:
-             return []
-        catalogue_items = await catalogue_repo.search_by_name(current, server.server_id, 25)
+            return []
 
-        matches = sorted((e.name for e in catalogue_items), key=str.lower)[:25]
+        catalogue_items = await catalogue_repo.search_by_name(
+            current, server.server_id, ['active'], 25
+        )
 
         return [
             app_commands.Choice(
-                name=match,
-                value=match
+                name=f"{e.type}: {e.name}",
+                value=e.name
             )
-            for match in matches
+            for e in catalogue_items
         ]
 
 async def setup(bot: commands.Bot):

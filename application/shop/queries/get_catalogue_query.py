@@ -1,14 +1,13 @@
 import json
 
 from attr import dataclass
-import ast
 
 from domain import Catalogue, Keyword
 from domain import RecordNotFoundException, InvalidDataException
 from infrastructure import CatalogueRepository, KeywordRepository
 
 from application import DiscordGuild, ServerConfig
-from application.helpers.ensure_user import ensure_guild
+from application.helpers.helpers import Helpers
 
 @dataclass
 class GetCatalogueQueryRequest:
@@ -33,7 +32,7 @@ class GetCatalogueQuery:
         self.catalogue_repository = await CatalogueRepository().get_instance()
         self.keyword_repository = await KeywordRepository().get_instance()
 
-        server_config = await ensure_guild(self.request.guild)
+        server_config = await Helpers.ensure_guild(self.request.guild)
 
         catalogue_item = await self.catalogue_repository.get_by_name(self.request.name, server_config.server.server_id)
         related_items = []

@@ -80,13 +80,29 @@ class CatalogueRepository(BaseRepository, IRepository):
         )
         return Catalogue(data=dict(row)) if row else None
     
-    async def search_by_name(self, name_query: str, server_id: int, limit: int) -> List[Catalogue]:
-        rows = await super().fetch(
-            "SELECT * FROM catalogue WHERE name LIKE ? AND server_id = ? LIMIT ?",
-            f"%{name_query}%",
-            server_id,
-            limit
-        )
+    async def search_by_name(
+        self,
+        name_query: str,
+        server_id: int,
+        status: list[str],
+        limit: int
+    ) -> List[Catalogue]:
+
+        placeholders = ",".join("?" for _ in status)
+
+        query = f"""
+            SELECT *
+            FROM catalogue
+            WHERE name LIKE ?
+            AND server_id = ?
+            AND status IN ({placeholders})
+            LIMIT ?
+        """
+
+        params = [f"%{name_query}%", server_id, *status, limit]
+
+        rows = await super().fetch(query, *params)
+
         return [Catalogue(data=dict(row)) for row in rows]
 
     # ---------- Existence Checks ----------

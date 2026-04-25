@@ -1,10 +1,8 @@
 from attr import dataclass
 
 from infrastructure import  PlayerBalanceRepository, BankAccountRepository
-from application.helpers.ensure_user import ensure_guild_and_user
-
 from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
-
+from application.helpers.helpers import Helpers
 from domain import UpdateFailedException
 
 @dataclass
@@ -33,7 +31,7 @@ class SetBalanceCommand:
         self.player_balance_repository = await PlayerBalanceRepository().get_instance()
         self.bank_account_repository = await BankAccountRepository().get_instance()
 
-        server_config, player_profile = await ensure_guild_and_user(self.request.guild, self.request.user)
+        server_config, player_profile = await Helpers.ensure_guild_and_user(self.request.guild, self.request.user)
 
         async with self.player_balance_repository.transaction():
             if self.request.account_type == "Cash":

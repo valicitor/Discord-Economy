@@ -3,10 +3,8 @@ import math
 from attr import dataclass
 
 from infrastructure import ItemRepository
-from application.helpers.ensure_user import ensure_guild_and_user
-
 from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
-
+from application.helpers.helpers import Helpers
 from domain import Item
 
 @dataclass
@@ -38,7 +36,7 @@ class GetShopQuery:
     async def execute(self) -> GetShopQueryResponse:
         self.item_repository = await ItemRepository().get_instance()
 
-        server_config, player = await ensure_guild_and_user(self.request.guild, self.request.user)
+        server_config, player = await Helpers.ensure_guild_and_user(self.request.guild, self.request.user)
 
         count = await self.item_repository.get_count(server_config.server.server_id)
         if count == 0:

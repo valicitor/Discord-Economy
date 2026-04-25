@@ -1,7 +1,7 @@
 from attr import dataclass
 
 from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
-from application.helpers.ensure_user import ensure_guild_and_user
+from application.helpers.helpers import Helpers
 
 @dataclass
 class GetBalanceQueryRequest:
@@ -21,6 +21,6 @@ class GetBalanceQuery:
         return
 
     async def execute(self) -> GetBalanceQueryResponse:
-        server_config, player = await ensure_guild_and_user(self.request.guild, self.request.user)
+        server_config, player = await Helpers.ensure_guild_and_user(self.request.guild, self.request.user)
 
         return GetBalanceQueryResponse(success=True, server_config=server_config, player=player)
