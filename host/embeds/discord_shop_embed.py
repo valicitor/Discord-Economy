@@ -24,7 +24,7 @@ class DiscordShopEmbed:
             return view
 
         async def _build(self):
-            currency = await self.response.server_config.get_default_currency()
+            currency = await self.response.server_config.get_default_currency_symbol()
 
             shop_item_components = []
             for item in self.response.shop_items:

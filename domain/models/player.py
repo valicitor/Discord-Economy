@@ -9,6 +9,11 @@ class Player:
         self.rank: int|None = kwargs.get('rank', None)
         self.username: str|None = kwargs.get('username')
         self.avatar: str|None = kwargs.get('avatar')
+        self.name: str|None = kwargs.get('name')
+        self.race: str|None = kwargs.get('race')
+        self.backstory: str|None = kwargs.get('backstory')
+        self.x: str|None = kwargs.get('x')
+        self.y: str|None = kwargs.get('y')
         self.created_at: str|None = kwargs.get('created_at')
 
     def to_dict(self):
@@ -20,5 +25,10 @@ class Player:
             'rank': self.rank,
             'username': self.username,
             'avatar': self.avatar,
+            'name': self.name,
+            'race': self.race,
+            'backstory': self.backstory,
+            'x': self.x,
+            'y': self.y,
             'created_at': self.created_at
         }

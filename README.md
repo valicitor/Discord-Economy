@@ -23,15 +23,18 @@ By allowing trading, investing, and other deep economic actions, players who hoa
 - Equipment: Defined equipment with stats
 - Units: Defined units that combine race and equipment
 - Inventory: Track player inventory and items
+- Shop: Buy units and equipment
+
+#### Phase 3 Completed Features:
+- Player: Players should need to create an account/character before interacting with the economy
+- Player: Players should be able to see thier own profile, create a /profile command
+- Admin: Seeding data should be optional, create a /admin seed_data or /setup command
 
 #### Phase 2 Features:
-- [ ] Shop: Buy/Sell units and equipment
+- [ ] Shop: Sell units and equipment
 
 ### Phase 3 Features:
-- [ ] Player: Players should need to create an account/character before interacting with the economy
-- [ ] Admin: Seeding data should be optional, create a /admin seed_data or /setup command
 - [ ] Custom Units: Units should have equipment unassignable/assignable to them
-- [ ] Player: Players should be able to see thier own profile, create a /profile command
 
 #### Phase 4 Features:
 - [ ] Locations: Players, Banks, Businesses, and Shops should have locations and prevent interaction with each other if not within range

@@ -31,7 +31,8 @@ class SetBalanceCommand:
         self.player_balance_repository = await PlayerBalanceRepository().get_instance()
         self.bank_account_repository = await BankAccountRepository().get_instance()
 
-        server_config, player_profile = await Helpers.ensure_guild_and_user(self.request.guild, self.request.user)
+        server_config = await Helpers.get_server_config(self.request.guild.guild_id)
+        player_profile = await Helpers.get_player_profile(self.request.guild.guild_id, self.request.user.user_id)
 
         async with self.player_balance_repository.transaction():
             if self.request.account_type == "Cash":

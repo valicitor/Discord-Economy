@@ -105,6 +105,10 @@ class CatalogueRepository(BaseRepository, IRepository):
 
         return [Catalogue(data=dict(row)) for row in rows]
 
+    async def get_all_by_type(self, stype: str, server_id: int) -> List[Catalogue]:
+        rows = await super().fetch("SELECT * FROM catalogue WHERE type = ? AND server_id = ?", stype, server_id)
+        return [Catalogue(data=dict(row)) for row in rows]
+
     # ---------- Existence Checks ----------
 
     async def exists(self, catalogue_id: int) -> bool:

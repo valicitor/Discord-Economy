@@ -36,11 +36,12 @@ class GetShopQuery:
     async def execute(self) -> GetShopQueryResponse:
         self.item_repository = await ItemRepository().get_instance()
 
-        server_config, player = await Helpers.ensure_guild_and_user(self.request.guild, self.request.user)
+        server_config = await Helpers.get_server_config(self.request.guild.guild_id)
+        player_profile = await Helpers.get_player_profile(self.request.guild.guild_id, self.request.user.user_id)
 
         count = await self.item_repository.get_count(server_config.server.server_id)
         if count == 0:
-            return GetShopQueryResponse(success=True, server_config=server_config, player=player, shop_items=[], page=1, max_pages=1, sort_by=self.request.sort_by, limit=self.request.limit)
+            return GetShopQueryResponse(success=True, server_config=server_config, player=player_profile, shop_items=[], page=1, max_pages=1, sort_by=self.request.sort_by, limit=self.request.limit)
 
         max_pages = math.ceil(count / self.request.limit)
         if(self.request.page > max_pages):
@@ -48,4 +49,4 @@ class GetShopQuery:
         
         shop_items = await self.item_repository.get_shop_items(server_config.server.server_id, self.request.page, self.request.sort_by)
 
-        return GetShopQueryResponse(success=True, server_config=server_config, player=player, shop_items=shop_items, page=self.request.page, max_pages=max_pages, sort_by=self.request.sort_by, limit=self.request.limit)
+        return GetShopQueryResponse(success=True, server_config=server_config, player=player_profile, shop_items=shop_items, page=self.request.page, max_pages=max_pages, sort_by=self.request.sort_by, limit=self.request.limit)

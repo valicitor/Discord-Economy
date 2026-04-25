@@ -32,7 +32,8 @@ class WithdrawCommand:
         if self.request.amount is None or self.request.amount <= 0:
             raise ValueError("Withdrawal amount must be greater than zero.")
 
-        server_config, player_profile = await Helpers.ensure_guild_and_user(self.request.guild, self.request.user)
+        server_config = await Helpers.get_server_config(self.request.guild.guild_id)
+        player_profile = await Helpers.get_player_profile(self.request.guild.guild_id, self.request.user.user_id)
 
         async with self.player_balance_repository.transaction():
             _, default_currency = server_config.server_settings.get_by_key("default_currency_id")

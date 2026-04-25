@@ -21,6 +21,11 @@ class PlayerRepository(BaseRepository, IRepository):
                 discord_guild_id INTEGER NOT NULL,
                 username TEXT NOT NULL,
                 avatar TEXT NOT NULL,
+                name TEXT NOT NULL,
+                race TEXT NOT NULL,
+                backstory TEXT NOT NULL,
+                x REAL NOT NULL,
+                y REAL NOT NULL,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY(server_id) REFERENCES servers(server_id)
             )
@@ -145,29 +150,39 @@ class PlayerRepository(BaseRepository, IRepository):
         return await super().insert(
             """
                 INSERT INTO players (
-                    discord_id, discord_guild_id, server_id, username, avatar
+                    discord_id, discord_guild_id, server_id, username, avatar, name, race, backstory, x, y
                 )
-                VALUES (?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(discord_id) DO NOTHING
             """,
             player.discord_id,
             player.discord_guild_id,
             player.server_id,
             player.username,
-            player.avatar
+            player.avatar,
+            player.name,
+            player.race,
+            player.x,
+            player.y,
+            player.backstory
         )
 
     async def update(self, player: Player) -> bool:
         affected = await super().update(
             """
                 UPDATE players
-                SET username = ?, avatar = ?, discord_guild_id = ?, server_id = ?
+                SET username = ?, avatar = ?, discord_guild_id = ?, server_id = ?, name = ?, race = ?, backstory = ?, x =?, y = ?
                 WHERE discord_id = ?
             """, 
             player.username,
             player.avatar,
             player.discord_guild_id,
             player.server_id,
+            player.name,
+            player.race,
+            player.backstory,
+            player.x,
+            player.y,
             player.discord_id
         )
         return affected > 0

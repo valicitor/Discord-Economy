@@ -32,7 +32,7 @@ class GetCatalogueQuery:
         self.catalogue_repository = await CatalogueRepository().get_instance()
         self.keyword_repository = await KeywordRepository().get_instance()
 
-        server_config = await Helpers.ensure_guild(self.request.guild)
+        server_config = await Helpers.get_server_config(self.request.guild.guild_id)
 
         catalogue_item = await self.catalogue_repository.get_by_name(self.request.name, server_config.server.server_id)
         related_items = []

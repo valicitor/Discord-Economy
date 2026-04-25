@@ -37,7 +37,8 @@ class BuyItemCommand:
         if self.request.item_id is None and self.request.item_name is None:
             raise InvalidDataException("Either item_id or item_name must be provided.")
 
-        server_config, player_profile = await Helpers.ensure_guild_and_user(self.request.guild, self.request.user)
+        server_config = await Helpers.get_server_config(self.request.guild.guild_id)
+        player_profile = await Helpers.get_player_profile(self.request.guild.guild_id, self.request.user.user_id)
         
         shop_item = None
         success = False

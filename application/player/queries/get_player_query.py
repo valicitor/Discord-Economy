@@ -12,7 +12,7 @@ class GetPlayerQueryRequest:
 @dataclass
 class GetPlayerQueryResponse:
     success: bool
-    player_profile: PlayerProfile
+    player: PlayerProfile
 
 class GetPlayerQuery:
 
@@ -43,17 +43,19 @@ class GetPlayerQuery:
         actions = await player_action_repo.get_all_by_player_id(player_id=player.player_id)
         inventory = []
 
-        player_profile = PlayerProfile(
-            player, 
-            PlayerFaction(
-                faction.faction_id, 
-                faction.name, 
-                faction.description, 
-                faction.color
-            ) if faction else None, 
-            PlayerBalancesCollection(balances), 
-            PlayerBankAccountsCollection(bank_accounts),
-            PlayerInventoryCollection(inventory),
-            PlayerActionsCollection(actions)
+        return GetPlayerQueryResponse(
+            success=True, 
+            player=PlayerProfile(
+                player, 
+                PlayerFaction(
+                    faction.faction_id, 
+                    faction.name, 
+                    faction.description, 
+                    faction.color
+                ) if faction else None, 
+                PlayerBalancesCollection(balances), 
+                PlayerBankAccountsCollection(bank_accounts),
+                PlayerInventoryCollection(inventory),
+                PlayerActionsCollection(actions)
+            )
         )
-        return GetPlayerQueryResponse(success=True, player_profile=player_profile)
