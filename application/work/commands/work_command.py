@@ -39,7 +39,8 @@ class WorkCommand:
         self.business_repository = await BusinessRepository().get_instance()
         self.action_repository = await ActionRepository().get_instance()
 
-        server_config, player_profile = await Helpers.ensure_guild_and_user(self.request.guild, self.request.user)
+        server_config = await Helpers.get_server_config(self.request.guild.guild_id)
+        player_profile = await Helpers.get_player_profile(self.request.guild.guild_id, self.request.user.user_id)
 
         async with self.player_action_repository.transaction():
             last_action = await self.player_action_repository.get_last_action_by_type("Work", player_profile.player.player_id)

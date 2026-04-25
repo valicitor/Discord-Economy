@@ -16,9 +16,9 @@ class Helpers:
         minutes = (remaining_seconds % 3600) // 60
         seconds = remaining_seconds % 60
 
-        formatted_hours = f"{hours}h" if hours > 0 else ""
-        formatted_minutes = f"{minutes}m" if minutes > 0 else ""
-        formatted_seconds = f"{seconds}s" if seconds > 0 else ""
+        formatted_hours = f"{hours}h " if hours > 0 else ""
+        formatted_minutes = f"{minutes}m " if minutes > 0 else ""
+        formatted_seconds = f"{seconds}s"
         countdown = f"{formatted_hours}{formatted_minutes}{formatted_seconds}"
 
         return countdown
@@ -27,7 +27,7 @@ class Helpers:
     async def get_player_profile(discord_guild_id: int, discord_user_id: int) -> PlayerProfile:
         request = GetPlayerQueryRequest(discord_guild_id=discord_guild_id, discord_user_id=discord_user_id)
         response = await GetPlayerQuery(request).execute()
-        return response.player_profile
+        return response.player
     
     @staticmethod
     async def get_server_config(discord_guild_id: int) -> ServerConfig:
@@ -38,7 +38,7 @@ class Helpers:
     
     @staticmethod
     async def ensure_user(server_config: ServerConfig, discord_user: DiscordUser) -> PlayerProfile:
-        request = SetupPlayerCommandRequest(server_config=server_config, discord_user=discord_user)
+        request = SetupPlayerCommandRequest(server_config=server_config, discord_user=discord_user, name="Default", race="Human", backstory="None", x=0, y=0)
         await SetupPlayerCommand(request).execute()
 
         return await Helpers.get_player_profile(discord_guild_id=server_config.server.guild_id, discord_user_id=discord_user.user_id)

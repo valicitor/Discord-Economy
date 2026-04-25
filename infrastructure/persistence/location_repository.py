@@ -65,7 +65,19 @@ class LocationRepository(BaseRepository, IRepository):
         return [Location(data=dict(row)) for row in rows]
     
     # ---------- Additional Queries ----------
-    
+
+    async def get_by_name(self, name: str, server_id: int) -> Optional[Location]:
+        row = await super().fetchrow(
+            """
+            SELECT l.* FROM locations l
+            LEFT JOIN points_of_interest p ON l.poi_id = p.poi_id
+            WHERE l.name = ? AND p.server_id = ?
+            """,
+            name, 
+            server_id
+        )
+        return Location(data=dict(row)) if row else None
+
     # ---------- Existence Checks ----------
 
     async def exists(self, location_id: int) -> bool:
@@ -76,6 +88,18 @@ class LocationRepository(BaseRepository, IRepository):
         return row is not None
     
     # ---------- Additional Existence Checks ----------
+
+    async def exists_by_name(self, name: str, server_id: int) -> bool:
+        row = await super().fetchrow(
+            """
+            SELECT 1 FROM locations l
+            LEFT JOIN points_of_interest p ON l.poi_id = p.poi_id
+            WHERE l.name = ? AND p.server_id = ?
+            """,
+            name,
+            server_id
+        )
+        return row is not None
 
     # ---------- Mutations ----------
 

@@ -4,9 +4,11 @@ from discord.ext import commands
 
 from application import DiscordGuild, DiscordUser
 from application import (
+    SetupServerCommand, SetupServerCommandRequest,
+    GetServerQuery, GetServerQueryRequest,
     SetCurrencySymbolCommand, SetCurrencySymbolCommandRequest,
     SetBalanceCommand, SetBalanceCommandRequest,
-    AddBalanceCommand, AddBalanceCommandRequest,
+    AddBalanceCommand, AddBalanceCommandRequest
 )
 from host.embeds.discord_admin_embed import DiscordAdminEmbed
 import typing
@@ -20,6 +22,46 @@ class AdminCog(commands.Cog):
         name="admin",
         description="Admin commands"
     )
+
+    # --- /setup ---
+    @admin_group.command(name="setup", description="Set the server for the guild.")
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def admin_setup_server(self, interaction: discord.Interaction, seed_data: typing.Optional[typing.Literal['True', 'False']] = "False"):
+        try:
+            guild = DiscordGuild(
+                guild_id=interaction.guild_id, 
+                name=interaction.guild.name
+            )
+
+            request = SetupServerCommandRequest(
+                guild=guild, 
+                seed_data=(seed_data=="True")
+            )
+
+            response = await SetupServerCommand(request).execute()
+
+            embed = await DiscordAdminEmbed.setup_server_embed(interaction, response)
+            await interaction.response.send_message(embed=embed)
+        except Exception as e:
+            await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
+
+    # --- /server ---
+    @admin_group.command(name="server", description="Get the server for the guild.")
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def admin_get_server(self, interaction: discord.Interaction):
+        try:
+            request = GetServerQueryRequest(
+                discord_guild_id=interaction.guild_id
+            )
+
+            response = await GetServerQuery(request).execute()
+
+            embed = await DiscordAdminEmbed.get_server_embed(interaction, response)
+            await interaction.response.send_message(embed=embed)
+        except Exception as e:
+            await interaction.response.send_message(f"An error occurred: {str(e)}", ephemeral=True)
 
     # --- /set_currency_symbol ---
     @admin_group.command(name="set-currency-symbol", description="Set the currency symbol for the guild.")

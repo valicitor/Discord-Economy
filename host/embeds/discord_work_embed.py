@@ -10,7 +10,7 @@ class DiscordWorkEmbed:
 
     @staticmethod
     async def work_embed(interaction: discord.Interaction, response: WorkCommandResponse):
-        currency = await response.server_config.get_default_currency()
+        currency = await response.server_config.get_default_currency_symbol()
         color = discord.Color.green() if response.action_success else discord.Color.red()
 
         business_name = response.business.name if response.business and response.business.name else "Unknown Business"
@@ -19,11 +19,10 @@ class DiscordWorkEmbed:
         balance_message = f"You were paid {currency}{response.wage}!" if response.action_success else f"You were fined {currency}{response.fine}!"
 
         embed=discord.Embed(
-            description=f"**{business_name} - {action_name}**\n{business_message}\n{balance_message}",
+            description=f"### {response.player.player.name}\n**{business_name} - {action_name}**\n{business_message}\n{balance_message}",
             color=color
         )
         
-        embed.set_author(name=f"{response.player.player.username}", icon_url=f"{response.player.player.avatar}")
         embed.set_footer(text=f"Cooldown: {Helpers.format_countdown(response.action.cooldown_seconds)}")
 
         return embed

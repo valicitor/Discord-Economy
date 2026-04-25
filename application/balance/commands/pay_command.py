@@ -30,7 +30,9 @@ class PayCommand:
     async def execute(self) -> PayCommandResponse:
         self.player_balance_repository = await PlayerBalanceRepository().get_instance()
     
-        server_config, [player_profile, target_player_profile] = await Helpers.ensure_guild_and_users(self.request.guild, [self.request.user, self.request.target])
+        server_config = await Helpers.get_server_config(self.request.guild.guild_id)
+        player_profile = await Helpers.get_player_profile(self.request.guild.guild_id, self.request.user.user_id)
+        target_player_profile = await Helpers.get_player_profile(self.request.guild.guild_id, self.request.target.user_id)
 
         async with self.player_balance_repository.transaction():
             _, default_currency = server_config.server_settings.get_by_key("default_currency_id")

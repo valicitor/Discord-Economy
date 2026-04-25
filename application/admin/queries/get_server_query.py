@@ -29,13 +29,16 @@ class GetServerQuery:
         
         server = await server_repo.get_by_guild_id(self.request.discord_guild_id)
         if server is None:
-            raise RecordNotFoundException(f"Failed to ensure guild with ID {self.request.discord_guild_id}.")
+            raise RecordNotFoundException(f"Failed to fetch a server with guild ID {self.request.discord_guild_id}.")
         
         server_settings = await server_setting_repo.get_all_by_server_id(server.server_id)
-        
-        server_config = ServerConfig(
-            server, 
-            ServerSettingsCollection(server_settings)
-        )
+        if server_settings is None:
+            raise RecordNotFoundException(f"Failed to fetch a server settings for guild ID {self.request.discord_guild_id}.")
 
-        return GetServerQueryResponse(success=True, server_config=server_config)
+        return GetServerQueryResponse(
+            success=True, 
+                server_config=ServerConfig(
+                server, 
+                ServerSettingsCollection(server_settings)
+            )
+        )

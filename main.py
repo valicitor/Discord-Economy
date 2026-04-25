@@ -92,6 +92,7 @@ class MyClient(commands.Bot):
     COG_MAP = {
         "dev"  : [
             "host.cogs.admin",
+            "host.cogs.player",
             "host.cogs.balance",
             "host.cogs.work",
             "host.cogs.shop",

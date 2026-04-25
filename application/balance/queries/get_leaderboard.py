@@ -32,7 +32,7 @@ class GetLeaderboardQuery:
     async def execute(self) -> GetLeaderboardQueryResponse:
         self.player_repository = await PlayerRepository().get_instance()
 
-        server_config = await Helpers.ensure_guild(self.request.guild)
+        server_config = await Helpers.get_server_config(self.request.guild.guild_id)
 
         count = await self.player_repository.get_count(server_config.server.server_id)
         if count == 0:

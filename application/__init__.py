@@ -14,9 +14,9 @@ from .dtos.player_profile import (
 
 # Admin
 from .admin.commands.setup_server_command import SetupServerCommand, SetupServerCommandRequest, SetupServerCommandResponse
-from .admin.commands.setup_player_command import SetupPlayerCommand, SetupPlayerCommandRequest, SetupPlayerCommandResponse
+from .player.commands.setup_player_command import SetupPlayerCommand, SetupPlayerCommandRequest, SetupPlayerCommandResponse
 from .admin.queries.get_server_query import GetServerQuery, GetServerQueryRequest, GetServerQueryResponse
-from .admin.queries.get_player_query import GetPlayerQuery, GetPlayerQueryRequest, GetPlayerQueryResponse
+from .player.queries.get_player_query import GetPlayerQuery, GetPlayerQueryRequest, GetPlayerQueryResponse
 from .balance.queries.get_leaderboard import GetLeaderboardQuery, GetLeaderboardQueryRequest, GetLeaderboardQueryResponse
 from .admin.commands.set_currency_symbol_command import SetCurrencySymbolCommand, SetCurrencySymbolCommandRequest, SetCurrencySymbolCommandResponse
 # Balance
@@ -92,6 +92,5 @@ __all__ = [
     "BuyItemCommandResponse",
     "GetCatalogueQuery",
     "GetCatalogueQueryRequest",
-    "GetCatalogueQueryResponse",
-    "get_default_currency"
+    "GetCatalogueQueryResponse"
 ]

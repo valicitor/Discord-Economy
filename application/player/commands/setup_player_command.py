@@ -1,14 +1,19 @@
 from attr import dataclass
 
 from domain import Player, PlayerBalance, BankAccount, FactionMember
-from domain import CreateFailedException, RecordNotFoundException
-from infrastructure import PlayerRepository, PlayerBalanceRepository, PlayerActionRepository, BankAccountRepository, FactionRepository, FactionMemberRepository
-from application import DiscordUser, ServerConfig, PlayerProfile, PlayerBalancesCollection, PlayerBankAccountsCollection, PlayerInventoryCollection, PlayerActionsCollection, PlayerFaction
+from domain import CreateFailedException
+from infrastructure import PlayerRepository, PlayerBalanceRepository, BankAccountRepository, FactionMemberRepository
+from application import DiscordUser, ServerConfig
 
 @dataclass
 class SetupPlayerCommandRequest:
     server_config: ServerConfig
     discord_user: DiscordUser
+    name: str|None
+    race: str|None
+    backstory: str|None
+    x: str|None
+    y: str|None
 
 @dataclass
 class SetupPlayerCommandResponse:
@@ -32,7 +37,18 @@ class SetupPlayerCommand:
             create_new_player = not await player_repo.exists_by_discord_id(self.request.discord_user.user_id, self.request.server_config.server.guild_id)
             if create_new_player:
                 try:
-                    new_player = Player(discord_id=self.request.discord_user.user_id, discord_guild_id=self.request.server_config.server.guild_id, server_id=self.request.server_config.server.server_id, username=self.request.discord_user.name, avatar=self.request.discord_user.display_avatar)
+                    new_player = Player(
+                        discord_id=self.request.discord_user.user_id, 
+                        discord_guild_id=self.request.server_config.server.guild_id, 
+                        server_id=self.request.server_config.server.server_id, 
+                        username=self.request.discord_user.name, 
+                        avatar=self.request.discord_user.display_avatar,
+                        name=self.request.name,
+                        race=self.request.race,
+                        backstory=self.request.backstory,
+                        x=self.request.x,
+                        y=self.request.y
+                    )
                     player_id = await player_repo.insert(new_player)
                     if not player_id:
                         raise CreateFailedException(f"Failed to create player for user ID {self.request.discord_user.user_id} in guild ID {self.request.server_config.server.guild_id}.")
@@ -56,6 +72,6 @@ class SetupPlayerCommand:
                         raise CreateFailedException(f"Failed to create faction membership for player ID {player_id}.")
                     
                 except Exception as e:
-                    raise CreateFailedException(f"Failed to ensure user with ID {self.request.discord_user.user_id} in guild ID {self.request.server_config.server.guild_id}: {str(e)}")
+                    raise CreateFailedException(f"Failed to fetch user with ID {self.request.discord_user.user_id} in guild ID {self.request.server_config.server.guild_id}: {str(e)}")
 
         return SetupPlayerCommandResponse(success=create_new_player)

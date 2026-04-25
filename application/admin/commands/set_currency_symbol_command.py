@@ -6,7 +6,7 @@ from domain import UpdateFailedException
 from infrastructure import CurrencyRepository
 from application import DiscordGuild, ServerConfig
 
-from domain import Currency
+from domain import Currency, RecordNotFoundException
 
 from application.helpers.helpers import Helpers
 
@@ -30,8 +30,8 @@ class SetCurrencySymbolCommand:
     async def execute(self) -> SetCurrencySymbolCommandResponse:
         self.currency_repository = await CurrencyRepository().get_instance()
 
-        server_config = await Helpers.ensure_guild(self.request.guild)
-
+        server_config = await Helpers.get_server_config(self.request.guild.guild_id)
+        
         _, default_currency = server_config.server_settings.get_by_key("default_currency_id")
         currency = await self.currency_repository.get_by_id(int(default_currency.value))
 
