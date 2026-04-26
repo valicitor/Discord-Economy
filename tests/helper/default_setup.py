@@ -20,7 +20,8 @@ from infrastructure import (
     ActionRepository,
     KeywordRepository,
     ItemRepository,
-    PlayerInventoryRepository
+    PlayerInventoryRepository,
+    PlayerUnitRepository
 )
 from application import DiscordGuild, DiscordUser
 from application.helpers.helpers import Helpers
@@ -41,6 +42,7 @@ class DefaultSetup:
         cls.faction_member_repository = await FactionMemberRepository().get_instance(db_path=":memory:")
         cls.player_action_repository = await PlayerActionRepository().get_instance(db_path=":memory:")
         cls.player_inventory_repository = await PlayerInventoryRepository().get_instance(db_path=":memory:")
+        cls.player_unit_repository = await PlayerUnitRepository().get_instance(db_path=":memory:")
 
         cls.business_repository = await BusinessRepository().get_instance(db_path=":memory:")
         cls.action_repository = await ActionRepository().get_instance(db_path=":memory:")
@@ -64,6 +66,8 @@ class DefaultSetup:
         await cls.bank_account_repository.close_all()
         await cls.faction_member_repository.close_all()
         await cls.player_action_repository.close_all()
+        await cls.player_inventory_repository.close_all()
+        await cls.player_unit_repository.close_all()
 
         await cls.business_repository.close_all()
         await cls.action_repository.close_all()
@@ -73,8 +77,6 @@ class DefaultSetup:
         await cls.catalogue_repository.close_all()
         await cls.keyword_repository.close_all()
         await cls.items_repository.close_all()
-
-        await cls.player_inventory_repository.close_all()
 
     async def setUp(self):
         await self.server_repository.clear_all()
@@ -88,6 +90,8 @@ class DefaultSetup:
         await self.bank_account_repository.clear_all()
         await self.faction_member_repository.clear_all()
         await self.player_action_repository.clear_all()
+        await self.player_inventory_repository.clear_all()
+        await self.player_unit_repository.clear_all()
 
         await self.business_repository.clear_all()
         await self.action_repository.clear_all()
@@ -97,8 +101,6 @@ class DefaultSetup:
         await self.catalogue_repository.clear_all()
         await self.keyword_repository.clear_all()
         await self.items_repository.clear_all()
-        
-        await self.player_inventory_repository.clear_all()
 
     async def setupData(self):
         self.discord_guild = DiscordGuild(guild_id=12345, name="TestGuild")

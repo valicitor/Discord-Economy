@@ -2,10 +2,10 @@ import json
 
 from attr import dataclass
 
-from infrastructure import ItemRepository, PlayerBalanceRepository, PlayerInventoryRepository, CatalogueRepository
+from infrastructure import ItemRepository, PlayerBalanceRepository, PlayerInventoryRepository, CatalogueRepository, PlayerUnitRepository
 from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
 from application.helpers.helpers import Helpers
-from domain import Item, PlayerInventory, Catalogue, InvalidDataException, RecordNotFoundException, InsufficientFundsException, UpdateFailedException
+from domain import Item, PlayerInventory, PlayerUnit, Catalogue, InvalidDataException, RecordNotFoundException, InsufficientFundsException, UpdateFailedException
 
 @dataclass
 class BuyItemCommandRequest:
@@ -33,6 +33,7 @@ class BuyItemCommand:
         self.player_balance_repository = await PlayerBalanceRepository().get_instance()
         self.player_inventory_repository = await PlayerInventoryRepository().get_instance()
         self.catalogue_repository = await CatalogueRepository().get_instance()
+        self.player_unit_repository = await PlayerUnitRepository().get_instance()
 
         if self.request.item_id is None and self.request.item_name is None:
             raise InvalidDataException("Either item_id or item_name must be provided.")
@@ -43,7 +44,7 @@ class BuyItemCommand:
         shop_item = None
         success = False
         async with self.player_inventory_repository.transaction():
-            # Check if item exists
+            # Check if shop item exists
             if self.request.item_id is not None:
                 shop_item = await self.item_repository.get_by_id(self.request.item_id)
             else:
@@ -52,7 +53,7 @@ class BuyItemCommand:
             if shop_item is None:
                 raise RecordNotFoundException("Item does not exist.")
 
-            # Pay for item
+            # Pay for shop item
             _, default_currency = server_config.server_settings.get_by_key("default_currency_id")
             i, balance = player_profile.balances.get_by_currency_id(int(default_currency.value))
 
@@ -67,19 +68,17 @@ class BuyItemCommand:
             balance = await self.player_balance_repository.get_by_id(balance.balance_id)
             player_profile.balances[i] = balance
 
-
+            # Add shop item to Player inventory
             catalogue_item = await self.catalogue_repository.get_by_id(shop_item.catalogue_id)
             if not catalogue_item:
                 raise RecordNotFoundException(f"Catalogue item with id '{catalogue_item.catalogue_id}' not found in guild '{self.request.guild.guild_id}'")
         
             if not catalogue_item.type == "Unit":
-                success = await self._add_item_to_inventory(player_profile, catalogue_item)
+                success = await self._add_item_to_inventory(player_profile, catalogue_item, False)
             else:
                 items_to_add = []
-                #  { "name": "Clone Trooper",              "type": "Unit",       "description": "Republic soldier, genetically modified and trained",     "metadata": { "starting_gear": { "Species": "Human", "Primary": "DC-15A Blaster Rifle", "Armor": "Phase I Clone Armor" } } },
                 if isinstance(catalogue_item.metadata, str):
                     metadata = json.loads(catalogue_item.metadata)
-                    # "starting_gear": { "Species": "Droideka", "Primary": "DC-15A Blaster Rifle", "Armor": "Droideka Shield Generator" }
                     starting_gear = metadata.get("starting_gear", {})
                     if not isinstance(starting_gear, dict):
                         raise InvalidDataException("Catalogue item metadata is not valid.")
@@ -87,20 +86,24 @@ class BuyItemCommand:
                     items_to_add = list(starting_gear.values())
                 else:
                     raise InvalidDataException("Catalogue item metadata is not valid.")
-
+                
+                related_catalogue_items = []
                 for item_name in items_to_add:
-                    catalogue_item = await self.catalogue_repository.get_by_name(item_name, server_config.server.server_id)
-                    if not catalogue_item:
+                    related_catalogue_item = await self.catalogue_repository.get_by_name(item_name, server_config.server.server_id)
+                    if not related_catalogue_item:
                         raise RecordNotFoundException(f"Catalogue item with name '{item_name}' not found in guild '{self.request.guild.guild_id}'")#
                     
-                    success = await self._add_item_to_inventory(player_profile, catalogue_item)
+                    related_catalogue_items.append(related_catalogue_item)
+                    success = await self._add_item_to_inventory(player_profile, related_catalogue_item, True)
+                
+                success = await self._add_unit_to_player(player_profile, catalogue_item, related_catalogue_items)
 
         return BuyItemCommandResponse(success=success, server_config=server_config, player=player_profile, shop_item=shop_item)
 
-    async def _add_item_to_inventory(self, player_profile: PlayerProfile, catalogue_item: Catalogue) -> bool:
-        inventory_item_exists = await self.player_inventory_repository.exists_by_player_catalogue_id(player_id=player_profile.player.player_id, catalogue_id=catalogue_item.catalogue_id)
+    async def _add_item_to_inventory(self, player_profile: PlayerProfile, catalogue_item: Catalogue, is_unit: bool) -> bool:
+        inventory_item_exists = await self.player_inventory_repository.exists_by_player_catalogue_id(player_id=player_profile.player.player_id, catalogue_id=catalogue_item.catalogue_id, status='equipped' if is_unit else 'stored')
         if inventory_item_exists:
-            inventory_item = await self.player_inventory_repository.get_by_player_catalogue_id(player_profile.player.player_id, catalogue_item.catalogue_id)
+            inventory_item = await self.player_inventory_repository.get_by_player_catalogue_id(player_profile.player.player_id, catalogue_item.catalogue_id, status='equipped' if is_unit else 'stored')
             if inventory_item:
                 inventory_item.quantity += 1
                 success = await self.player_inventory_repository.update(inventory_item)
@@ -108,8 +111,52 @@ class BuyItemCommand:
             else:
                 raise UpdateFailedException("Failed to update player inventory. Please try again.")
         else:
-            inventory_instance = PlayerInventory(player_id=player_profile.player.player_id, catalogue_id=catalogue_item.catalogue_id, quantity=1)
-            success = await self.player_inventory_repository.insert(inventory_instance)
+            new_inventory_instance = PlayerInventory(player_id=player_profile.player.player_id, catalogue_id=catalogue_item.catalogue_id, status='equipped' if is_unit else 'stored', quantity=1)
+            success = await self.player_inventory_repository.insert(new_inventory_instance)
             if not success:
                 raise UpdateFailedException("Failed to update player inventory. Please try again.")
+            return success
+    
+    async def _add_unit_to_player(self, player_profile: PlayerProfile, unit_item: Catalogue, related_items: list[Catalogue]) -> bool:
+        unit_exists = await self.player_unit_repository.exists_by_name_player_id(unit_item.name, player_profile.player.player_id)
+        if unit_exists:
+            unit = await self.player_unit_repository.get_by_name(unit_item.name, player_profile.player.player_id)
+            if unit:
+                unit.quantity += 1
+                success = await self.player_unit_repository.update(unit)
+                return success
+            else:
+                raise UpdateFailedException("Failed to update player units. Please try again.")
+        else:
+            _, race = next(((idx, obj) for idx, obj in enumerate(related_items) if obj.type == "Race"), (None, None))
+            
+            race_metadata = None
+            if isinstance(race.metadata, str):
+                try:
+                    race_metadata = json.loads(race.metadata)
+                except json.JSONDecodeError:
+                    raise InvalidDataException("Catalogue item metadata is not valid JSON.")
+
+            if not isinstance(race_metadata, dict):
+                raise InvalidDataException("Catalogue item metadata is not valid.")
+            
+            available_slots = race_metadata.get("slots")
+
+            assigned_metadata = None
+            if isinstance(race.metadata, str):
+                try:
+                    assigned_metadata = json.loads(unit_item.metadata)
+                except json.JSONDecodeError:
+                    raise InvalidDataException("Catalogue item metadata is not valid JSON.")
+
+            if not isinstance(assigned_metadata, dict):
+                raise InvalidDataException("Catalogue item metadata is not valid.")
+            
+            assigned_metadata = assigned_metadata.get("starting_gear")
+
+            
+            new_unit = PlayerUnit(player_id=player_profile.player.player_id, name=unit_item.name, quantity=1, metadata={"slots": available_slots, "assigned": assigned_metadata})
+            success = await self.player_unit_repository.insert(new_unit)
+            if not success:
+                raise UpdateFailedException("Failed to update player units. Please try again.")
             return success

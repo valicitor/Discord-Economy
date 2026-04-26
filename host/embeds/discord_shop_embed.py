@@ -114,37 +114,65 @@ class DiscordShopEmbed:
             return view
 
         async def _build(self):
-            keywords_subtitle_components = []
+            slots_subtitle = None
             keywords_explanation_components = []
             related_items_components = []
             if self.response.keywords:
-                
-                keywords = "*] [*".join([k.name for k in self.response.keywords]) if self.response.keywords else ""
-
-                text_display = discord.ui.TextDisplay(
-                    content=f"-# [*{keywords}*]"
-                )
-
                 keywords_explanation_components.append(discord.ui.Separator())
                 for keyword in self.response.keywords:
                     keywords_explanation_components.append(discord.ui.TextDisplay(content=f"-# **{keyword.name}:** {keyword.description}"))
-
-                keywords_subtitle_components.append(text_display)
             
+            if not self.response.catalogue_item.type == "Race":
+                slots_subtitle = None
+            else:
+                race_metadata = None
+
+                if isinstance(self.response.catalogue_item.metadata, str):
+                    race_metadata = json.loads(self.response.catalogue_item.metadata)
+                elif isinstance(self.response.catalogue_item.metadata, dict):
+                    race_metadata = self.response.catalogue_item.metadata
+
+                if isinstance(race_metadata, dict):
+                    available_slots = race_metadata.get("slots", {})
+
+                    if isinstance(available_slots, dict):
+                        # Use keys explicitly
+                        slots = "*] [*".join(available_slots.keys()) if available_slots else ""
+                        slots_subtitle=f"\n-# [*{slots}*]"
+
+
             if self.response.related_items:
                 related_items_components.append(discord.ui.Separator())
                 related_items_components.append(discord.ui.TextDisplay(content=f"## Related Items"))
+                related_slots_subtitle = None
                 for item in self.response.related_items:
-                    related_items_components.append(discord.ui.TextDisplay(content=f"### {item.type} - {item.name}"))
-                    related_items_components.append(discord.ui.TextDisplay(content=f"-# {item.description}"))
+                    if not item.type == "Race":
+                        related_slots_subtitle = None
+                    else:
+                        race_metadata = None
+
+                        if isinstance(item.metadata, str):
+                            race_metadata = json.loads(item.metadata)
+                        elif isinstance(item.metadata, dict):
+                            race_metadata = item.metadata
+
+                        if isinstance(race_metadata, dict):
+                            available_slots = race_metadata.get("slots", {})
+
+                            if isinstance(available_slots, dict):
+                                # Use keys explicitly
+                                slots = "*] [*".join(available_slots.keys()) if available_slots else ""
+                                related_slots_subtitle=f"\n-# [*{slots}*]"
+
+                    related_items_components.append(discord.ui.TextDisplay(content=f"### {item.type} - {item.name}{related_slots_subtitle if related_slots_subtitle else ""}"))
+                    related_items_components.append(discord.ui.TextDisplay(content=f"{item.description}"))
 
             self.add_item(
                 discord.ui.Container(
                     discord.ui.TextDisplay(content="## Catalogue"),
                     discord.ui.Separator(),
-                    discord.ui.TextDisplay(content=f"# {self.response.catalogue_item.type} - {self.response.catalogue_item.name}"),
+                    discord.ui.TextDisplay(content=f"# {self.response.catalogue_item.type} - {self.response.catalogue_item.name}{slots_subtitle if slots_subtitle else ""}"),
                     discord.ui.TextDisplay(content=f"{self.response.catalogue_item.description}"),
-                    *keywords_subtitle_components,
                     discord.ui.Separator(),
                     *self._get_stat_block(self.response.catalogue_item, self.response.related_items),
                     *related_items_components,

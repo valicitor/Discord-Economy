@@ -22,6 +22,7 @@ class PlayerInventoryRepository(BaseRepository, IRepository):
                 quantity INTEGER NOT NULL DEFAULT 1,
                 FOREIGN KEY(player_id) REFERENCES players(player_id),
                 FOREIGN KEY(catalogue_id) REFERENCES catalogue(catalogue_id)
+                UNIQUE(player_id, catalogue_id, status)
             )
         """)
 
@@ -60,15 +61,16 @@ class PlayerInventoryRepository(BaseRepository, IRepository):
     
     # ---------- Additional Queries ----------
 
-    async def get_by_player_id(self, player_id: int) -> List[PlayerInventory]:
+    async def get_all_by_player_id(self, player_id: int) -> List[PlayerInventory]:
         rows = await super().fetch("SELECT * FROM player_inventory WHERE player_id = ?", player_id)
         return [PlayerInventory(data=dict(row)) for row in rows]
     
-    async def get_by_player_catalogue_id(self, player_id: int, catalogue_id: int) -> Optional[PlayerInventory]:
+    async def get_by_player_catalogue_id(self, player_id: int, catalogue_id: int, status: str) -> Optional[PlayerInventory]:
         row = await super().fetchrow(
-            "SELECT * FROM player_inventory WHERE player_id = ? AND catalogue_id = ?",
+            "SELECT * FROM player_inventory WHERE player_id = ? AND catalogue_id = ? AND status = ?",
             player_id,
-            catalogue_id
+            catalogue_id,
+            status
         )
         return PlayerInventory(data=dict(row)) if row else None
     
@@ -83,11 +85,12 @@ class PlayerInventoryRepository(BaseRepository, IRepository):
     
     # ---------- Additional Existence Checks ----------
 
-    async def exists_by_player_catalogue_id(self, player_id: int, catalogue_id: int) -> bool:
+    async def exists_by_player_catalogue_id(self, player_id: int, catalogue_id: int, status: str) -> bool:
         row = await super().fetchrow(
-            "SELECT 1 FROM player_inventory WHERE player_id = ? AND catalogue_id = ?",
+            "SELECT 1 FROM player_inventory WHERE player_id = ? AND catalogue_id = ? AND status = ?",
             player_id,
-            catalogue_id
+            catalogue_id,
+            status
         )
         return row is not None
 

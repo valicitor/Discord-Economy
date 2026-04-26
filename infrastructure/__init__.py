@@ -25,9 +25,7 @@ from .persistence.point_of_interest_repository import PointOfInterestRepository
 from .persistence.location_repository import LocationRepository
 
 from .persistence.catalogue_repository import CatalogueRepository
-from .persistence.unit_repository import UnitRepository
-from .persistence.unit_stat_repository import UnitStatRepository
-from .persistence.unit_equipment_repository import UnitEquipmentRepository
+from .persistence.player_unit_repository import PlayerUnitRepository
 from .persistence.unit_garrison_repository import UnitGarrisonRepository
 
 from .persistence.transaction_repository import TransactionRepository
@@ -72,8 +70,6 @@ __all__ = [
     "PointOfInterestRepository",
     "LocationRepository",
     "UnitRepository",
-    "UnitStatRepository",
-    "UnitEquipmentRepository",
     "UnitGarrisonRepository",
     "TransactionRepository",
     "FactionRepository",

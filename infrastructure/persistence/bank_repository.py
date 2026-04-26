@@ -17,13 +17,13 @@ class BankRepository(BaseRepository, IRepository):
             CREATE TABLE IF NOT EXISTS banks (
                 bank_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 server_id INTEGER NOT NULL,
-                poi_id INTEGER,
                 name TEXT NOT NULL,
                 interest_rate REAL NOT NULL,
                 max_accounts INTEGER,
+                x REAL NOT NULL,
+                y REAL NOT NULL,
                 range INTEGER,
                 FOREIGN KEY(server_id) REFERENCES servers(server_id),
-                FOREIGN KEY(poi_id) REFERENCES points_of_interest(poi_id),
                 UNIQUE(name, server_id)
             )
         """)
@@ -89,23 +89,25 @@ class BankRepository(BaseRepository, IRepository):
 
     async def insert(self, bank: Bank) -> int:
         return await super().insert(
-            "INSERT INTO banks (server_id, poi_id, name, interest_rate, max_accounts, range) VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO banks (server_id, name, interest_rate, max_accounts, x, y, range) VALUES (?, ?, ?, ?, ?, ?, ?)",
             bank.server_id,
-            bank.poi_id,
             bank.name,
             bank.interest_rate,
             bank.max_accounts,
+            bank.x,
+            bank.y,
             bank.range
         )
 
     async def update(self, bank: Bank) -> bool:
         affected = await super().update(
-            "UPDATE banks SET server_id = ?, poi_id = ?, name = ?, interest_rate = ?, max_accounts = ?, range = ? WHERE bank_id = ?",
+            "UPDATE banks SET server_id = ?, name = ?, interest_rate = ?, max_accounts = ?, x = ?, y = ?, range = ? WHERE bank_id = ?",
             bank.server_id,
-            bank.poi_id,
             bank.name,
             bank.interest_rate,
             bank.max_accounts,
+            bank.x,
+            bank.y,
             bank.range,
             bank.bank_id    
         )

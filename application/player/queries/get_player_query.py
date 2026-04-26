@@ -1,8 +1,25 @@
 from attr import dataclass
 
 from domain import RecordNotFoundException
-from infrastructure import PlayerRepository, PlayerBalanceRepository, PlayerActionRepository, BankAccountRepository, FactionRepository, FactionMemberRepository
-from application import PlayerProfile, PlayerBalancesCollection, PlayerBankAccountsCollection, PlayerInventoryCollection, PlayerActionsCollection, PlayerFaction
+from infrastructure import (
+    PlayerRepository, 
+    PlayerBalanceRepository, 
+    PlayerActionRepository, 
+    PlayerInventoryRepository,
+    PlayerUnitRepository,
+    BankAccountRepository, 
+    FactionRepository, 
+    FactionMemberRepository
+)
+from application import (
+    PlayerProfile, 
+    PlayerFaction,
+    PlayerBalancesCollection, 
+    PlayerBankAccountsCollection, 
+    PlayerInventoryCollection, 
+    PlayerUnitCollection, 
+    PlayerActionsCollection
+)
 
 @dataclass
 class GetPlayerQueryRequest:
@@ -27,6 +44,8 @@ class GetPlayerQuery:
         faction_member_repo = await FactionMemberRepository().get_instance()
         faction_repo = await FactionRepository().get_instance()
         player_action_repo = await PlayerActionRepository().get_instance()
+        player_inventory_repo = await PlayerInventoryRepository().get_instance()
+        player_units_repo = await PlayerUnitRepository().get_instance()
 
         player_exists = await player_repo.exists_by_discord_id(self.request.discord_user_id, self.request.discord_guild_id)
         if not player_exists:
@@ -41,21 +60,23 @@ class GetPlayerQuery:
         balances = await player_balance_repo.get_all(player_id=player.player_id)
         bank_accounts = await bank_account_repo.get_all(player_id=player.player_id)
         actions = await player_action_repo.get_all_by_player_id(player_id=player.player_id)
-        inventory = []
+        inventory = await player_inventory_repo.get_all_by_player_id(player_id=player.player_id)
+        units = await player_units_repo.get_all_by_player_id(player_id=player.player_id)
 
         return GetPlayerQueryResponse(
             success=True, 
             player=PlayerProfile(
-                player, 
-                PlayerFaction(
+                player=player, 
+                faction=PlayerFaction(
                     faction.faction_id, 
                     faction.name, 
                     faction.description, 
                     faction.color
                 ) if faction else None, 
-                PlayerBalancesCollection(balances), 
-                PlayerBankAccountsCollection(bank_accounts),
-                PlayerInventoryCollection(inventory),
-                PlayerActionsCollection(actions)
+                balances=PlayerBalancesCollection(balances), 
+                bank_accounts=PlayerBankAccountsCollection(bank_accounts),
+                inventory=PlayerInventoryCollection(inventory),
+                units=PlayerUnitCollection(units),
+                actions=PlayerActionsCollection(actions)
             )
         )

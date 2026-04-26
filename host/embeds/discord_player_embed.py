@@ -86,7 +86,7 @@ class DiscordPlayerEmbed:
                 race_items = await catalogue_repo.get_all_by_type("Race", server.server_id)
                 if race_items:
                     catalogue_race_items = [
-                        discord.SelectOption(label=e.name, value=e.name)
+                        discord.SelectOption(label=e.name, value=e.name, description=e.description)
                         for e in race_items
                     ]
 

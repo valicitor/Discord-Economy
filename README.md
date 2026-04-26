@@ -29,12 +29,15 @@ By allowing trading, investing, and other deep economic actions, players who hoa
 - Player: Players should need to create an account/character before interacting with the economy
 - Player: Players should be able to see thier own profile, create a /profile command
 - Admin: Seeding data should be optional, create a /admin seed_data or /setup command
+- Custom Units: Units should have equipment assignable to them
 
 #### Phase 2 Features:
 - [ ] Shop: Sell units and equipment
 
 ### Phase 3 Features:
-- [ ] Custom Units: Units should have equipment unassignable/assignable to them
+- [ ] Custom Units: Units should have equipment unassignable to them
+- [ ] Custom Units: Players should be able to create a new custom unit /create_custom_unit
+- [ ] Player: Players should be able to assign their own player character equipment
 
 #### Phase 4 Features:
 - [ ] Locations: Players, Banks, Businesses, and Shops should have locations and prevent interaction with each other if not within range
