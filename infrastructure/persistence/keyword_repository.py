@@ -89,7 +89,7 @@ class KeywordRepository(BaseRepository, IRepository):
             keyword.server_id,
             keyword.name,
             keyword.description,
-            json.dumps(keyword.metadata)
+            json.dumps(keyword.metadata) if isinstance(keyword.metadata, dict) else keyword.metadata
         )
 
     async def update(self, keyword: Keyword) -> bool:
@@ -98,7 +98,7 @@ class KeywordRepository(BaseRepository, IRepository):
             keyword.server_id,
             keyword.name,
             keyword.description,
-            json.dumps(keyword.metadata),
+            json.dumps(keyword.metadata) if isinstance(keyword.metadata, dict) else keyword.metadata,
             keyword.keyword_id
         )
         return affected > 0

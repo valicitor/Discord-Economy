@@ -1,109 +1,86 @@
-# Economy Bot
+## Economy Bot
+A modular Discord bot built in Python for running a persistent, strategy-driven economy and warfare system inside a Discord server.
 
-This project is a Discord bot built using Python, designed to support a persistent, multiplayer strategy roleplay within a Discord server. It leverages the Discord API to manage player interactions, automate game systems, and maintain states across sessions. The bot is structured to be modular and extensible, allowing for incremental expansion of gameplay systems and mechanics.
+Players earn money, invest, build armies, and influence large-scale conflicts through economic and military decisions.
 
-## Design Goals
+## Core Features
+* Persistent player economy (balance, bank, inventory)
+* Business system for earning income
+* Unit creation using races and equipment
+* Shop system for purchasing units and gear
+* Player profiles and progression tracking
 
-To create a bot that allows for a rich economy to exist within roleplay, with players able to track their money, grow, invest, take loans, etc. This money can then be used to buy soldiers and gear, pay maintenance costs of standing armies, and use that military power to wage war.
+## Gameplay Overview
+* Players earn money through `/work` and business interactions
+* Currency can be saved, invested, or spent on military units
+* Units require upkeep, forcing economic decisions
+* Wealth can be converted into political or military power
 
-As players expand, maintenance costs will become too high, business interests will affect war efforts, and a natural balance should be achieved. The need for money and growth should drive player actions.
+The system is designed so:
 
-By allowing trading, investing, and other deep economic actions, players who hoard money can have war potential without needing a standing army. This enables weighted political roleplay.
+* expansion increases maintenance pressure
+* economic strength can rival military strength
+* player interaction drives the balance
 
-### Custom Economy Bot TODO:
+## Example Commands
+```
+/balance        # View your current money
+/work           # Earn money from a business
+/shop           # View available units and equipment
+/profile        # View your character
+```
 
-#### Phase 1 Completed Features:
-- Balance: Basic currency tracking
-- Bank: Bank player balance
-- Businesses: Defined businesses with actions to perform for that business
-- Work: Player action that is performed against a defined business for pay/currency
+## Setup
 
-#### Phase 2 Completed Features:
-- Races: Defined races with stats
-- Equipment: Defined equipment with stats
-- Units: Defined units that combine race and equipment
-- Inventory: Track player inventory and items
-- Shop: Buy units and equipment
+### Requirements
+* Python 3.13+
+* Discord bot token
 
-#### Phase 3 Completed Features:
-- Player: Players should need to create an account/character before interacting with the economy
-- Player: Players should be able to see thier own profile, create a /profile command
-- Admin: Seeding data should be optional, create a /admin seed_data or /setup command
-- Custom Units: Units should have equipment assignable to them
+### Installation
+```bash
+git clone https://github.com/valicitor/Discord-Economy
+cd Discord-Economy
+pip install -r requirements.txt
+```
 
-#### Phase 2 Features:
-- [ ] Shop: Sell units and equipment
+### Configuration
+Edit `config.py` and add your bot token and settings.
 
-### Phase 3 Features:
-- [ ] Custom Units: Units should have equipment unassignable to them
-- [ ] Custom Units: Players should be able to create a new custom unit /create_custom_unit
-- [ ] Player: Players should be able to assign their own player character equipment
+### Run
+```bash
+python main.py
+```
 
-#### Phase 4 Features:
-- [ ] Locations: Players, Banks, Businesses, and Shops should have locations and prevent interaction with each other if not within range
-- [ ] Businesses: Stocks that go up/down in price based on market points
-- [ ] Shop: Players can buy stocks
-- [ ] Bank: Players that own stocks are paid dividends
-- [ ] Work: Player actions cause business market points to go up/down based on success/fail of actions
-- [ ] Bank: Interest rates, loans
-- [ ] Units: Maintenance costs taken out of player bank
-- [ ] Unit Garrison: Units should be able to be assigned to a location
+## Project Structure (recommended section once stable)
+```
+/commands
+/events
+/models
+/services
+```
 
-#### Phase 5 Features:
-- [ ] Factions: Players can create/join factions
-- [ ] Vehicles: Defined vehicles that require crew and override unit stats
-- [ ] Locations: Locations should have exhaustible/discoverable resource nodes
-- [ ] Currency: Factions and Locations can use different currencies
-- [ ] Exchange: Players can exchange one currency for another based on exchange rate
-- [ ] Business: Collective market points at locations/factions affect exchange rates of currencies
-- [ ] Resources: Businesses produce resources when player actions are completed
-- [ ] Business: Businesses require resources in stock for business actions to be available
-- [ ] Transport: Resources produced at businesses at different locations should need transporting
+## Roadmap
 
-## Getting Started
+### Completed
+* Currency system
+* Banking
+* Businesses
+* Work system
+* Units, races, equipment
+* Inventory and shop
+* Player profiles
 
-To set up the bot, follow these steps:
-1. Clone the repository.
-2. Install the required dependencies using `pip install -r requirements.txt`.
-3. Configure the bot by editing the `config.py` file.
-4. Run the bot using `python main.py`.
+### In Progress
+* Selling system
+* Custom units
 
-# Git Commands:
+### Planned
+* Locations and travel
+* Factions
+* Stock market and economy simulation
+* Loans and interest
+* Resource production and logistics
+* Multiple currencies and exchange rates
 
-Check the status of the repository:
-- `git status`
-
-Move to the main branch:
-- `git checkout main`
-
-Create and switch to a new branch:
-- `git checkout -b <branch-name>` (e.g., `git checkout -b feature/add-tests`)
-
-Merge a branch into main:
-- `git merge <branch-name>`
-
-Pull changes from the remote repository:
-- `git pull`
-
-Commit changes with a message:
-- `git commit -m "<Message>"`
-
-Push changes from local machine to the remote repo:
-- `git push`
-
-# Running Bot:
-
-Run the unit tests:
-`python -m unittest discover -s tests -p "*.py"`
-
-Run the main application to launch the bot:
-`python main.py`
-
-# Setting Up the Environment:
-1. Create a virtual environment:
-   `python -m venv venv`
-2. Activate the virtual environment:
-   - Windows: `venv\\Scripts\\Activate.ps1`
-   - Mac/Linux: `source venv/bin/activate`
-3. Install dependencies:
-   `pip install -r requirements.txt`
+## Notes
+This project is actively evolving. Systems are being built incrementally with a focus on modularity and long-term extensibility.

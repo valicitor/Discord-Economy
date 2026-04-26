@@ -14,6 +14,7 @@ from domain import PlayerAction, Business, Action, CreateFailedException, Update
 class WorkCommandRequest:
     guild: DiscordGuild
     user: DiscordUser
+    work_type: str
 
 @dataclass
 class WorkCommandResponse:
@@ -43,7 +44,7 @@ class WorkCommand:
         player_profile = await Helpers.get_player_profile(self.request.guild.guild_id, self.request.user.user_id)
 
         async with self.player_action_repository.transaction():
-            last_action = await self.player_action_repository.get_last_action_by_type("Work", player_profile.player.player_id)
+            last_action = await self.player_action_repository.get_last_action_by_type(self.request.work_type, player_profile.player.player_id)
             if last_action:
                 last_used_at = datetime.fromisoformat(last_action.last_used_at)
                 if last_used_at.tzinfo is None:  # Assume naive datetime is in UTC
@@ -54,13 +55,13 @@ class WorkCommand:
                     time_remaining_seconds = int((last_used_at.timestamp() + cooldown_seconds) - now_utc.timestamp())
                     raise OnCooldownException(f"You are on cooldown. Please wait {Helpers.format_countdown(time_remaining_seconds)} before working again.")
 
-            businesses = await self.business_repository.get_all(server_id=server_config.server.server_id)
+            businesses = await self.business_repository.get_all_within_range(x=player_profile.player.x, y=player_profile.player.y, server_id=server_config.server.server_id)
             if not businesses:
-                raise UpdateFailedException("No businesses found. Please try again later.")
+                return WorkCommandResponse(success=False, server_config=server_config, player=player_profile, action_success=False, business=None, action=None, wage=0, fine=0)
             
             rng_business = businesses[random.randint(0, len(businesses) - 1)]
 
-            actions = await self.action_repository.get_all_by_business_id(business_id=rng_business.business_id)
+            actions = await self.action_repository.get_all_by_business_id(action_type=self.request.work_type,business_id=rng_business.business_id)
             if not actions:
                 raise UpdateFailedException("No actions found for this business. Please try again later.")
             

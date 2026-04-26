@@ -33,7 +33,8 @@ class TestWorkCommand(unittest.TestCase):
 
         request = WorkCommandRequest(
             guild=self.default_setup.discord_guild,
-            user=self.default_setup.discord_user1
+            user=self.default_setup.discord_user1,
+            work_type="Work"
         )
 
         # Act

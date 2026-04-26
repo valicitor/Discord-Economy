@@ -101,7 +101,7 @@ class PlayerUnitRepository(BaseRepository, IRepository):
             unit.player_id,
             unit.name,
             unit.quantity,
-            json.dumps(unit.metadata)
+            json.dumps(unit.metadata) if isinstance(unit.metadata, dict) else unit.metadata
         )
 
     async def update(self, unit: PlayerUnit) -> bool:
@@ -110,7 +110,7 @@ class PlayerUnitRepository(BaseRepository, IRepository):
             unit.player_id,
             unit.name,
             unit.quantity,
-            json.dumps(unit.metadata),
+            json.dumps(unit.metadata) if isinstance(unit.metadata, dict) else unit.metadata,
             unit.unit_id
         )
         return affected > 0
