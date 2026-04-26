@@ -24,6 +24,17 @@ class Helpers:
         return countdown
     
     @staticmethod
+    def format_cash_amount(cash_amount: int) -> str:
+        if cash_amount >= 1_000_000_000:
+            return f"{cash_amount / 1_000_000_000:.0f}B"
+        elif cash_amount >= 1_000_000:
+            return f"{cash_amount / 1_000_000:.0f}M"
+        elif cash_amount >= 100_000:
+            return f"{cash_amount / 1_000:.0f}K"
+        else:
+            return f"{cash_amount:,}"
+    
+    @staticmethod
     async def get_player_profile(discord_guild_id: int, discord_user_id: int) -> PlayerProfile:
         request = GetPlayerQueryRequest(discord_guild_id=discord_guild_id, discord_user_id=discord_user_id)
         response = await GetPlayerQuery(request).execute()

@@ -79,7 +79,7 @@ class InventoryInstanceRepository(BaseRepository, IRepository):
             "INSERT INTO inventory_instances (player_id, item_id, metadata) VALUES (?, ?, ?)",
             inventory_instance.player_id,
             inventory_instance.item_id,
-            json.dumps(inventory_instance.metadata)
+            json.dumps(inventory_instance.metadata) if isinstance(inventory_instance.metadata, dict) else inventory_instance.metadata
         )
 
     async def update(self, inventory_instance: InventoryInstance) -> bool:
@@ -87,7 +87,7 @@ class InventoryInstanceRepository(BaseRepository, IRepository):
             "UPDATE inventory_instances SET player_id = ?, item_id = ?, metadata = ? WHERE instance_id = ?",
             inventory_instance.player_id,
             inventory_instance.item_id,
-            json.dumps(inventory_instance.metadata),
+            json.dumps(inventory_instance.metadata) if isinstance(inventory_instance.metadata, dict) else inventory_instance.metadata,
             inventory_instance.instance_id
         )
         return affected > 0

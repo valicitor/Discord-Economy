@@ -74,6 +74,19 @@ class BusinessRepository(BaseRepository, IRepository):
             server_id
         )
         return Business(data=dict(row)) if row else None
+        
+    async def get_all_within_range(self, x: int, y: int, server_id: int) -> List[Business]:
+        query = """
+        SELECT *
+        FROM businesses
+        WHERE server_id = ?
+        AND (
+                range IS NULL
+                OR ((x - ?) * (x - ?) + (y - ?) * (y - ?)) <= (range * range)
+            )
+        """
+        rows = await super().fetch(query, server_id, x, x, y, y)
+        return [Business(data=dict(row)) for row in rows]
     
     # ---------- Existence Checks ----------
 
@@ -99,7 +112,7 @@ class BusinessRepository(BaseRepository, IRepository):
             business.x,
             business.y,
             business.range,
-            json.dumps(business.metadata)
+            json.dumps(business.metadata) if isinstance(business.metadata, dict) else business.metadata
         )
     
     async def update(self, business: Business) -> bool:
@@ -113,7 +126,7 @@ class BusinessRepository(BaseRepository, IRepository):
             business.x,
             business.y,
             business.range,
-            json.dumps(business.metadata),
+            json.dumps(business.metadata) if isinstance(business.metadata, dict) else business.metadata,
             business.business_id
         )
         return affected > 0

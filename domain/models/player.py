@@ -12,8 +12,8 @@ class Player:
         self.name: str|None = kwargs.get('name')
         self.race: str|None = kwargs.get('race')
         self.backstory: str|None = kwargs.get('backstory')
-        self.x: str|None = kwargs.get('x')
-        self.y: str|None = kwargs.get('y')
+        self.x: int|None = kwargs.get('x')
+        self.y: int|None = kwargs.get('y')
         self.created_at: str|None = kwargs.get('created_at')
 
     def to_dict(self):

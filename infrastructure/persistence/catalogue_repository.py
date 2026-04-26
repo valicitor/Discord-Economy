@@ -138,7 +138,7 @@ class CatalogueRepository(BaseRepository, IRepository):
             catalogue.type,
             catalogue.description,
             catalogue.status,
-            json.dumps(catalogue.metadata)
+            json.dumps(catalogue.metadata) if isinstance(catalogue.metadata, dict) else catalogue.metadata
         )
     
     async def update(self, catalogue: Catalogue) -> bool:
@@ -149,7 +149,7 @@ class CatalogueRepository(BaseRepository, IRepository):
             catalogue.type,
             catalogue.description,
             catalogue.status,
-            json.dumps(catalogue.metadata),
+            json.dumps(catalogue.metadata) if isinstance(catalogue.metadata, dict) else catalogue.metadata,
             catalogue.catalogue_id
         )
         return affected > 0

@@ -1,6 +1,7 @@
 import discord
 from discord import Interaction
 
+from application.helpers.helpers import Helpers
 from application import (
     SetupServerCommandResponse,
     GetServerQueryResponse,
@@ -69,7 +70,7 @@ class DiscordAdminEmbed:
 
         embed = discord.Embed(
             title=f"💳 Bank Account Summary",
-            description=f"{interaction.user.mention}, added **{currency}{response.amount}** to {target.mention}'s {response.account_type} balance.",
+            description=f"{interaction.user.mention}, added **{currency}{Helpers.format_cash_amount(response.amount)}** to {response.player.player.name}'s {response.account_type} balance.",
             color=discord.Color.blue()
         )
         return embed
@@ -80,7 +81,7 @@ class DiscordAdminEmbed:
         
         embed = discord.Embed(
             title=f"💳 Bank Account Summary",
-            description=f"{interaction.user.mention}, set {target.mention}'s {response.account_type} balance to **{currency}{response.amount}**.",
+            description=f"{interaction.user.mention}, set {response.player.player.name}'s {response.account_type} balance to **{currency}{Helpers.format_cash_amount(response.amount)}**.",
             color=discord.Color.blue()
         )
         return embed

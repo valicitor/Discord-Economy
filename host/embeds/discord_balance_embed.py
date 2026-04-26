@@ -1,6 +1,7 @@
 import discord
 from discord import Interaction
 
+from application.helpers.helpers import Helpers
 from application import (
     GetBalanceQueryResponse, 
     PayCommandResponse,
@@ -22,9 +23,9 @@ class DiscordBalanceEmbed:
         )
 
         for balance in response.player.balances:
-            embed.add_field(name=f"Balance", value=f"{currency}{balance.balance}", inline=True)
+            embed.add_field(name=f"Balance", value=f"{currency}{Helpers.format_cash_amount(balance.balance)}", inline=True)
         for bank_account in response.player.bank_accounts:  
-            embed.add_field(name="Bank", value=f"{currency}{bank_account.balance}", inline=True)
+            embed.add_field(name="Bank", value=f"{currency}{Helpers.format_cash_amount(bank_account.balance)}", inline=True)
         return embed
     
     @staticmethod
@@ -33,7 +34,7 @@ class DiscordBalanceEmbed:
         hex_color = response.player.faction.color if response.player.faction and response.player.faction.color else None
 
         embed=discord.Embed(
-            description=f"✅ Withdrew {currency}{response.amount} from your bank!",
+            description=f"✅ Withdrew {currency}{Helpers.format_cash_amount(response.amount)} from your bank!",
             color=discord.Colour.from_str(hex_color) if hex_color else discord.Color.blue()
         )
         
@@ -45,7 +46,7 @@ class DiscordBalanceEmbed:
         hex_color = response.player.faction.color if response.player.faction and response.player.faction.color else None
 
         embed=discord.Embed(
-            description=f"✅ Deposited {currency}{response.amount} into your bank!",
+            description=f"✅ Deposited {currency}{Helpers.format_cash_amount(response.amount)} into your bank!",
             color=discord.Colour.from_str(hex_color) if hex_color else discord.Color.blue()
         )
         
@@ -58,7 +59,7 @@ class DiscordBalanceEmbed:
       
         embed = discord.Embed(
             title=f"💳 Bank Account",
-            description=f"{interaction.user.mention}, you have paid {target.mention} **{currency}{response.amount}**.",
+            description=f"{response.player.player.name}, you have paid {response.target_player.player.name} **{currency}{Helpers.format_cash_amount(response.amount)}**.",
             color=discord.Colour.from_str(hex_color) if hex_color else discord.Color.blue()
         )
         return embed
@@ -70,10 +71,10 @@ class DiscordBalanceEmbed:
         description=f"View the leaderboard here:\n"
         for player_profile in response.players:
             money = player_profile.balances.total_balance() if response.sort_by == "Cash" else player_profile.bank_accounts.total_bank_balance() if response.sort_by == "Bank" else player_profile.balances.total_balance() + player_profile.bank_accounts.total_bank_balance()
-            description+=f"\n**{player_profile.player.rank}.** {player_profile.player.name} • {currency}{money}"
+            description+=f"\n**{player_profile.player.rank}.** `{player_profile.player.name}` • {currency}{Helpers.format_cash_amount(money)}"
                 
         embed=discord.Embed(
-            title=f"### Leaderboard [{response.sort_by}]", 
+            title=f"Leaderboard [{response.sort_by}]", 
             description=description, 
             color=discord.Color.gold()
         )

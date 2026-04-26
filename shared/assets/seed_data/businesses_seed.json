@@ -2,22 +2,41 @@
     "version": "1.0",
     "businesses": {
         "data": [
-            { "name": "Mos Eisley Cantina",     "description": "A bustling cantina on Tatooine", "type": "Entertainment", "x": 3060,  "y": 3122, "range": null, "metadata": {} },
-            { "name": "Kuat Drive Yards",       "description": "A starship manufacturing facility", "type": "Manufacturing", "x": 3060,  "y": 3122, "range": null, "metadata": {} },
-            { "name": "Cloud City Mining",      "description": "A tibanna gas mining operation", "type": "Mining", "x": 3060,  "y": 3122, "range": null, "metadata": {} },
-            { "name": "Jedi Temple Archives",   "description": "A repository of Jedi knowledge", "type": "Education", "x": 3060,  "y": 3122, "range": null, "metadata": {} },
-            { "name": "Death Star Construction", "description": "A secretive imperial project", "type": "Construction", "x": 3060,  "y": 3122, "range": null, "metadata": {} },
-            { "name": "Hoth Rebel Base",        "description": "A hidden rebel outpost", "type": "Military", "x": 3060,  "y": 3122, "range": null, "metadata": {} }
+            { "name": "Mos Eisley Cantina",     "description": "A bustling cantina on Tatooine where smugglers and bounty hunters gather", "type": "Entertainment", "x": 4858, "y": 5004, "range": 1000, "metadata": { } },
+            { "name": "Kuat Drive Yards",       "description": "A massive starship manufacturing facility orbiting Kuat", "type": "Manufacturing", "x": 3598, "y": 3288, "range": 1500, "metadata": { } },
+            { "name": "Cloud City Mining",      "description": "A tibanna gas mining operation on Bespin", "type": "Mining", "x": 3424, "y": 3146, "range": 1200, "metadata": { } },
+            { "name": "Jedi Temple Archives",   "description": "A repository of Jedi knowledge on Coruscant", "type": "Education", "x": 3060, "y": 3122, "range": 800, "metadata": { } },
+            { "name": "Death Star Construction", "description": "A secretive imperial project in deep space", "type": "Construction", "x": 3176, "y": 5406, "range": null, "metadata": { } },
+            { "name": "Hoth Rebel Base",        "description": "A hidden rebel outpost in the frozen wastes", "type": "Military", "x": 2798, "y": 5518, "range": 900, "metadata": { } },
+            { "name": "Geonosian Foundry",      "description": "A droid manufacturing facility on Geonosis", "type": "Manufacturing", "x": 4956, "y": 2072, "range": 1100, "metadata": { } },
+            { "name": "Mandalorian Forge",      "description": "A beskar forging facility on Mandalore", "type": "Manufacturing", "x": 4076, "y": 2372, "range": 800, "metadata": { } }
         ]
     },
     "actions": {
         "data": [
-            { "business_name": "Mos Eisley Cantina", "name": "Bartend", "type": "Work", "cooldown_seconds": 120, "base_reward": 150, "risk_rate": 0.2, "fine_amount": 75, "success_rate": 0.85, "success_message": "You served drinks to rowdy patrons!", "failure_message": "You spilled a drink on a bounty hunter." },
-            { "business_name": "Kuat Drive Yards", "name": "Assemble Starship", "type": "Work", "cooldown_seconds": 160, "base_reward": 500, "risk_rate": 0.3, "fine_amount": 200, "success_rate": 0.8, "success_message": "You successfully assembled a starship component!", "failure_message": "You damaged a critical part during assembly." },
-            { "business_name": "Cloud City Mining", "name": "Extract Tibanna Gas", "type": "Work", "cooldown_seconds": 180, "base_reward": 300, "risk_rate": 0.25, "fine_amount": 100, "success_rate": 0.75, "success_message": "You safely extracted tibanna gas!", "failure_message": "A gas leak caused a minor explosion." },
-            { "business_name": "Jedi Temple Archives", "name": "Restore Holocron", "type": "Work", "cooldown_seconds": 320, "base_reward": 400, "risk_rate": 0.15, "fine_amount": 50, "success_rate": 0.9, "success_message": "You restored an ancient Jedi holocron!", "failure_message": "You accidentally corrupted the holocron data." },
-            { "business_name": "Death Star Construction", "name": "Install Superlaser", "type": "Work", "cooldown_seconds": 480, "base_reward": 1000, "risk_rate": 0.4, "fine_amount": 500, "success_rate": 0.7, "success_message": "You made progress installing the superlaser!", "failure_message": "You caused a critical delay in the project." },
-            { "business_name": "Hoth Rebel Base", "name": "Fortify Defenses", "type": "Work", "cooldown_seconds": 600, "base_reward": 450, "risk_rate": 0.2, "fine_amount": 150, "success_rate": 0.85, "success_message": "You reinforced the base's defenses!", "failure_message": "You accidentally weakened the base's defenses." }
+            { "business_name": "Mos Eisley Cantina", "name": "Bartend", "type": "Work", "cooldown_seconds": 6000, "base_reward": 150, "risk_rate": 0.15, "fine_amount": 50, "success_rate": 0.9, "success_message": "You served drinks to rowdy patrons and earned good tips!", "failure_message": "A bounty hunter started a fight - you lost money in the chaos." },
+            { "business_name": "Mos Eisley Cantina", "name": "Smuggle Spice", "type": "Crime", "cooldown_seconds": 30000, "base_reward": 800, "risk_rate": 0.4, "fine_amount": 400, "success_rate": 0.7, "success_message": "You successfully smuggled spice past the Imperial patrol!", "failure_message": "Imperial forces caught you - your cargo is confiscated." },
+            
+            { "business_name": "Kuat Drive Yards", "name": "Assemble Starship", "type": "Work", "cooldown_seconds": 18000, "base_reward": 500, "risk_rate": 0.2, "fine_amount": 150, "success_rate": 0.85, "success_message": "You successfully assembled a starship component - quality work!", "failure_message": "A critical part failed during assembly - damage costs deducted." },
+            { "business_name": "Kuat Drive Yards", "name": "Design Prototype", "type": "Work", "cooldown_seconds": 60000, "base_reward": 2000, "risk_rate": 0.3, "fine_amount": 500, "success_rate": 0.75, "success_message": "Your prototype design was approved for production!", "failure_message": "The prototype failed stress tests - materials wasted." },
+            
+            { "business_name": "Cloud City Mining", "name": "Extract Tibanna Gas", "type": "Work", "cooldown_seconds": 12000, "base_reward": 300, "risk_rate": 0.2, "fine_amount": 100, "success_rate": 0.85, "success_message": "You safely extracted valuable tibanna gas!", "failure_message": "A gas leak caused an explosion - medical bills deducted." },
+            { "business_name": "Cloud City Mining", "name": "Negotiate Contract", "type": "Work", "cooldown_seconds": 24000, "base_reward": 450, "risk_rate": 0.1, "fine_amount": 0, "success_rate": 0.8, "success_message": "You secured a lucrative contract for Cloud City!", "failure_message": "The negotiations fell through - wasted time." },
+            
+            { "business_name": "Jedi Temple Archives", "name": "Restore Holocron", "type": "Work", "cooldown_seconds": 24000, "base_reward": 400, "risk_rate": 0.1, "fine_amount": 50, "success_rate": 0.9, "success_message": "You restored an ancient Jedi holocron - the Archives are grateful!", "failure_message": "You accidentally corrupted the holocron data." },
+            { "business_name": "Jedi Temple Archives", "name": "Research Force Lore", "type": "Work", "cooldown_seconds": 48000, "base_reward": 600, "risk_rate": 0.05, "fine_amount": 0, "success_rate": 0.95, "success_message": "You discovered ancient Force techniques!", "failure_message": "The texts were encrypted beyond your ability to decipher." },
+            
+            { "business_name": "Death Star Construction", "name": "Install Superlaser", "type": "Work", "cooldown_seconds": 36000, "base_reward": 1000, "risk_rate": 0.35, "fine_amount": 600, "success_rate": 0.7, "success_message": "You made progress installing the superlaser array!", "failure_message": "You caused a critical delay - Imperial penalties applied." },
+            { "business_name": "Death Star Construction", "name": "Steal Schematics", "type": "Crime", "cooldown_seconds": 90000, "base_reward": 5000, "risk_rate": 0.6, "fine_amount": 2000, "success_rate": 0.5, "success_message": "You escaped with the Death Star schematics!", "failure_message": "You were captured and interrogated - all assets seized." },
+            
+            { "business_name": "Hoth Rebel Base", "name": "Fortify Defenses", "type": "Work", "cooldown_seconds": 30000, "base_reward": 450, "risk_rate": 0.15, "fine_amount": 100, "success_rate": 0.85, "success_message": "You reinforced the base's defenses against Imperial attack!", "failure_message": "An avalanche destroyed your work - materials lost." },
+            { "business_name": "Hoth Rebel Base", "name": "Scout Imperial Movements", "type": "Work", "cooldown_seconds": 42000, "base_reward": 600, "risk_rate": 0.25, "fine_amount": 200, "success_rate": 0.75, "success_message": "Your intelligence helped the Alliance prepare!", "failure_message": "Your scouting party was ambushed by snowtroopers." },
+            
+            { "business_name": "Geonosian Foundry", "name": "Assemble Droid", "type": "Work", "cooldown_seconds": 15000, "base_reward": 350, "risk_rate": 0.15, "fine_amount": 80, "success_rate": 0.85, "success_message": "A new B1 battle droid rolls off the assembly line!", "failure_message": "The droid's programming corrupted - scrap." },
+            { "business_name": "Geonosian Foundry", "name": "Design New Droid", "type": "Work", "cooldown_seconds": 54000, "base_reward": 1500, "risk_rate": 0.25, "fine_amount": 300, "success_rate": 0.7, "success_message": "Your new droid design enters mass production!", "failure_message": "The prototype malfunctioned catastrophically." },
+            
+            { "business_name": "Mandalorian Forge", "name": "Forge Beskar", "type": "Work", "cooldown_seconds": 20000, "base_reward": 600, "risk_rate": 0.1, "fine_amount": 200, "success_rate": 0.85, "success_message": "You successfully forged pure beskar armor!", "failure_message": "The beskar was contaminated - worthless." },
+            { "business_name": "Mandalorian Forge", "name": "Hunt Bounty", "type": "Work", "cooldown_seconds": 48000, "base_reward": 1200, "risk_rate": 0.3, "fine_amount": 500, "success_rate": 0.7, "success_message": "You captured the bounty - the Guild pays well!", "failure_message": "Your target escaped after a brutal gunfight." }
         ]
     }
 }
