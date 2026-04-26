@@ -26,9 +26,7 @@ from .models.action_log import ActionLog
 from .models.point_of_interest import PointOfInterest
 from .models.location import Location
 
-from .models.unit import Unit
-from .models.unit_stat import UnitStat
-from .models.unit_equipment import UnitEquipment
+from .models.player_unit import PlayerUnit
 from .models.unit_garrison import UnitGarrison
 
 from .models.transaction import Transaction
@@ -75,9 +73,7 @@ __all__ = [
     "ActionLog",
     "PointOfInterest",
     "Location",
-    "Unit",
-    "UnitStat",
-    "UnitEquipment",
+    "PlayerUnit",
     "UnitGarrison",
     "Transaction",
     "Faction",

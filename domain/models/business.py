@@ -9,7 +9,8 @@ class Business:
         self.name: str|None = kwargs.get('name')
         self.description: str|None = kwargs.get('description')
         self.type: str|None = kwargs.get('type')
-        self.location: str|None = kwargs.get('location')
+        self.x: int|None = kwargs.get('x')
+        self.y: int|None = kwargs.get('y')
         self.range: int|None = kwargs.get('range')
         self.metadata: dict = kwargs.get('metadata', {})  # flexible traits
 
@@ -21,7 +22,8 @@ class Business:
             'name': self.name,
             'description': self.description,
             'type': self.type,
-            'location': self.location,
+            'x': self.x,
+            'y': self.y,
             'range': self.range,
             'metadata': self.metadata
         }

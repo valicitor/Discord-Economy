@@ -9,7 +9,8 @@ from .dtos.player_profile import (
     PlayerBalancesCollection, 
     PlayerBankAccountsCollection, 
     PlayerInventoryCollection,
-    PlayerActionsCollection
+    PlayerActionsCollection,
+    PlayerUnitCollection
 )
 
 # Admin
@@ -45,6 +46,7 @@ __all__ = [
     "PlayerBankAccountsCollection",
     "PlayerInventoryCollection",
     "PlayerActionsCollection",
+    "PlayerUnitCollection",
     "SetupServerCommand",
     "SetupServerCommandRequest",
     "SetupServerCommandResponse",

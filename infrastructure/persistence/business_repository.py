@@ -23,7 +23,8 @@ class BusinessRepository(BaseRepository, IRepository):
                 name TEXT NOT NULL,
                 description TEXT,
                 type TEXT NOT NULL,
-                location TEXT,
+                x REAL NOT NULL,
+                y REAL NOT NULL,
                 range INTEGER,
                 metadata TEXT,
                 FOREIGN KEY(server_id) REFERENCES servers(server_id),
@@ -89,26 +90,28 @@ class BusinessRepository(BaseRepository, IRepository):
 
     async def insert(self, business: Business) -> int:
         return await super().insert(
-            "INSERT INTO businesses (server_id, owner_id, name, description, type, location, range, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO businesses (server_id, owner_id, name, description, type, x, y, range, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
             business.server_id,
             business.owner_id,
             business.name,
             business.description,
             business.type,
-            business.location,
+            business.x,
+            business.y,
             business.range,
             json.dumps(business.metadata)
         )
     
     async def update(self, business: Business) -> bool:
         affected = await super().update(
-            "UPDATE businesses SET server_id = ?, owner_id = ?, name = ?, description = ?, type = ?, location = ?, range = ?, metadata = ? WHERE business_id = ?",
+            "UPDATE businesses SET server_id = ?, owner_id = ?, name = ?, description = ?, type = ?, x = ?, y = ?, range = ?, metadata = ? WHERE business_id = ?",
             business.server_id,
             business.owner_id,
             business.name,
             business.description,
             business.type,
-            business.location,
+            business.x,
+            business.y,
             business.range,
             json.dumps(business.metadata),
             business.business_id

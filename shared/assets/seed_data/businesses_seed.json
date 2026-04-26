@@ -2,12 +2,12 @@
     "version": "1.0",
     "businesses": {
         "data": [
-            { "name": "Mos Eisley Cantina",     "description": "A bustling cantina on Tatooine", "type": "Entertainment", "location": "Tatooine", "range": null, "metadata": {} },
-            { "name": "Kuat Drive Yards",       "description": "A starship manufacturing facility", "type": "Manufacturing", "location": "Kuat", "range": null, "metadata": {} },
-            { "name": "Cloud City Mining",      "description": "A tibanna gas mining operation", "type": "Mining", "location": "Bespin", "range": null, "metadata": {} },
-            { "name": "Jedi Temple Archives",   "description": "A repository of Jedi knowledge", "type": "Education", "location": "Coruscant", "range": null, "metadata": {} },
-            { "name": "Death Star Construction", "description": "A secretive imperial project", "type": "Construction", "location": "Endor", "range": null, "metadata": {} },
-            { "name": "Hoth Rebel Base",        "description": "A hidden rebel outpost", "type": "Military", "location": "Hoth", "range": null, "metadata": {} }
+            { "name": "Mos Eisley Cantina",     "description": "A bustling cantina on Tatooine", "type": "Entertainment", "x": 3060,  "y": 3122, "range": null, "metadata": {} },
+            { "name": "Kuat Drive Yards",       "description": "A starship manufacturing facility", "type": "Manufacturing", "x": 3060,  "y": 3122, "range": null, "metadata": {} },
+            { "name": "Cloud City Mining",      "description": "A tibanna gas mining operation", "type": "Mining", "x": 3060,  "y": 3122, "range": null, "metadata": {} },
+            { "name": "Jedi Temple Archives",   "description": "A repository of Jedi knowledge", "type": "Education", "x": 3060,  "y": 3122, "range": null, "metadata": {} },
+            { "name": "Death Star Construction", "description": "A secretive imperial project", "type": "Construction", "x": 3060,  "y": 3122, "range": null, "metadata": {} },
+            { "name": "Hoth Rebel Base",        "description": "A hidden rebel outpost", "type": "Military", "x": 3060,  "y": 3122, "range": null, "metadata": {} }
         ]
     },
     "actions": {

@@ -49,7 +49,7 @@ class SetupServerCommand:
                     if not faction_id:
                         raise CreateFailedException(f"Failed to create default faction for guild ID {self.request.guild.guild_id}.")
 
-                    new_bank = Bank(server_id=server_id, poi_id=None, name="Bank", interest_rate=0.01, max_accounts=None, range=None)
+                    new_bank = Bank(server_id=server_id, name="Bank", interest_rate=0.01, max_accounts=None, x=0, y=0, range=None)
                     bank_id = await bank_repo.insert(new_bank)
                     if not bank_id:
                         raise CreateFailedException(f"Failed to create bank for guild ID {self.request.guild.guild_id}.")

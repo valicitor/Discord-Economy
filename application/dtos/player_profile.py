@@ -3,6 +3,7 @@ from domain import (
     PlayerBalance,
     PlayerInventory,
     PlayerAction,
+    PlayerUnit,
     BankAccount
 )
 from application import BaseCollection
@@ -24,6 +25,13 @@ class PlayerInventoryCollection(BaseCollection):
 
     def get_by_item_id(self, item_id: int) -> tuple[int, PlayerInventory|None]:
         return next(((idx, obj) for idx, obj in enumerate(self._items) if obj.item_id == item_id), (None, None))
+
+class PlayerUnitCollection(BaseCollection):
+    def __init__(self, items: list[PlayerUnit]):
+        super().__init__(items)
+
+    def get_by_item_id(self, unit_id: int) -> tuple[int, PlayerUnit|None]:
+        return next(((idx, obj) for idx, obj in enumerate(self._items) if obj.unit_id == unit_id), (None, None))
 
 class PlayerBankAccountsCollection(BaseCollection):
     def __init__(self, items: list[BankAccount]):
@@ -59,4 +67,5 @@ class PlayerProfile:
     balances: PlayerBalancesCollection
     bank_accounts: PlayerBankAccountsCollection
     inventory: PlayerInventoryCollection
+    units: PlayerUnitCollection
     actions: PlayerActionsCollection
