@@ -4,7 +4,7 @@ from discord import Interaction
 from application import (
     WorkCommandResponse
 )
-from application.helpers.helpers import Helpers
+from application.services.helpers import Helpers
 
 class DiscordWorkEmbed:
 

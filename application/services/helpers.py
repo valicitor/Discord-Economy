@@ -25,6 +25,8 @@ class Helpers:
     
     @staticmethod
     def format_cash_amount(cash_amount: int) -> str:
+        if cash_amount < 0:
+            return f"-{Helpers.format_cash_amount(-cash_amount)}"
         if cash_amount >= 1_000_000_000:
             return f"{cash_amount / 1_000_000_000:.0f}B"
         elif cash_amount >= 1_000_000:
@@ -70,8 +72,8 @@ class Helpers:
         return server_config, player_profile
 
     @staticmethod
-    async def ensure_users(server_config: ServerConfig, discord_users: list[DiscordUser] = []) -> list[PlayerProfile]:
-        if len(discord_users) == 0:
+    async def ensure_users(server_config: ServerConfig, discord_users: list[DiscordUser] | None = None) -> list[PlayerProfile]:
+        if not discord_users:
             return []
         
         player_profiles = []

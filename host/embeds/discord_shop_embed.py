@@ -6,7 +6,11 @@ from application import (
     BuyItemCommand,
     BuyItemCommandRequest,
     GetShopQueryResponse,
-    GetCatalogueQueryResponse
+    GetCatalogueQueryResponse,
+    SellItemCommandResponse,
+    CreateCustomUnitCommandResponse,
+    UnassignEquipmentCommandResponse,
+    AssignPlayerEquipmentCommandResponse,
 )
 import json
 
@@ -63,7 +67,8 @@ class DiscordShopEmbed:
                             guild=guild,
                             user=user,
                             item_id=item.item_id,
-                            item_name=None
+                            item_name=None,
+                            quantity=1
                         )
 
                         response = await BuyItemCommand(request).execute()
@@ -241,5 +246,133 @@ class DiscordShopEmbed:
     @staticmethod
     async def get_catalogue_block_embed(interaction: discord.Interaction, response: GetCatalogueQueryResponse):
         view = DiscordShopEmbed.GetCatalogueLayoutView()
+        view = await view.create(response=response)
+        return view
+
+    class SellLayoutView(discord.ui.LayoutView):
+        def __init__(self, response: SellItemCommandResponse | None = None):
+            self.response = response
+            super().__init__()
+
+        @classmethod
+        async def create(cls, response: SellItemCommandResponse):
+            view = cls(response)
+            await view._build()
+            return view
+
+        async def _build(self):
+            currency = await self.response.server_config.get_default_currency_symbol()
+            item = self.response.shop_item
+            self.add_item(
+                discord.ui.Container(
+                    discord.ui.TextDisplay(content="## Sold"),
+                    discord.ui.Separator(),
+                    discord.ui.TextDisplay(content=f"**{item.icon + ' ' if item.icon else ''}{item.name}** x{self.response.shop_item.price and self.response.sell_amount // (self.response.shop_item.price // 2 or 1) or 1}"),
+                    discord.ui.TextDisplay(content=f"You received {currency} **{self.response.sell_amount:,}**"),
+                    discord.ui.Separator(),
+                    discord.ui.TextDisplay(content=f"-# New balance: {currency} {self.response.player.balances.total_balance():,}"),
+                    accent_color=discord.Color.green(),
+                    spoiler=False
+                )
+            )
+
+    @staticmethod
+    async def get_sell_view(interaction: discord.Interaction, response: SellItemCommandResponse):
+        view = DiscordShopEmbed.SellLayoutView()
+        view = await view.create(response=response)
+        return view
+
+    class CreateUnitLayoutView(discord.ui.LayoutView):
+        def __init__(self, response: CreateCustomUnitCommandResponse | None = None):
+            self.response = response
+            super().__init__()
+
+        @classmethod
+        async def create(cls, response: CreateCustomUnitCommandResponse):
+            view = cls(response)
+            await view._build()
+            return view
+
+        async def _build(self):
+            unit = self.response.unit
+            metadata = unit.metadata if isinstance(unit.metadata, dict) else json.loads(unit.metadata)
+            assigned = metadata.get("assigned", {})
+
+            assigned_lines = [f"- **{slot}:** {item}" for slot, item in assigned.items()] if assigned else ["-# No equipment assigned"]
+
+            self.add_item(
+                discord.ui.Container(
+                    discord.ui.TextDisplay(content="## Unit Created"),
+                    discord.ui.Separator(),
+                    discord.ui.TextDisplay(content=f"**{unit.name}** (Custom)"),
+                    discord.ui.TextDisplay(content="\n".join(assigned_lines)),
+                    accent_color=discord.Color.blue(),
+                    spoiler=False
+                )
+            )
+
+    @staticmethod
+    async def get_create_unit_view(interaction: discord.Interaction, response: CreateCustomUnitCommandResponse):
+        view = DiscordShopEmbed.CreateUnitLayoutView()
+        view = await view.create(response=response)
+        return view
+
+    class UnassignEquipmentLayoutView(discord.ui.LayoutView):
+        def __init__(self, response: UnassignEquipmentCommandResponse | None = None):
+            self.response = response
+            super().__init__()
+
+        @classmethod
+        async def create(cls, response: UnassignEquipmentCommandResponse):
+            view = cls(response)
+            await view._build()
+            return view
+
+        async def _build(self):
+            unit = self.response.unit
+            self.add_item(
+                discord.ui.Container(
+                    discord.ui.TextDisplay(content="## Equipment Unassigned"),
+                    discord.ui.Separator(),
+                    discord.ui.TextDisplay(content=f"**{self.response.unassigned_item}** removed from **{unit.name}** and returned to inventory."),
+                    accent_color=discord.Color.orange(),
+                    spoiler=False
+                )
+            )
+
+    @staticmethod
+    async def get_unassign_equipment_view(interaction: discord.Interaction, response: UnassignEquipmentCommandResponse):
+        view = DiscordShopEmbed.UnassignEquipmentLayoutView()
+        view = await view.create(response=response)
+        return view
+
+    class EquipLayoutView(discord.ui.LayoutView):
+        def __init__(self, response: AssignPlayerEquipmentCommandResponse | None = None):
+            self.response = response
+            super().__init__()
+
+        @classmethod
+        async def create(cls, response: AssignPlayerEquipmentCommandResponse):
+            view = cls(response)
+            await view._build()
+            return view
+
+        async def _build(self):
+            item = self.response.item
+            action = "Equipped" if self.response.equipped else "Unequipped"
+            color = discord.Color.blue() if self.response.equipped else discord.Color.light_grey()
+            self.add_item(
+                discord.ui.Container(
+                    discord.ui.TextDisplay(content=f"## {action}"),
+                    discord.ui.Separator(),
+                    discord.ui.TextDisplay(content=f"**{item.icon + ' ' if item.icon else ''}{item.name}** has been {action.lower()} on your character."),
+                    accent_color=color,
+                    spoiler=False
+                )
+            )
+
+    @staticmethod
+    async def get_equip_view(interaction: discord.Interaction, response: AssignPlayerEquipmentCommandResponse):
+        view = DiscordShopEmbed.EquipLayoutView()
         view = await view.create(response=response)
         return view

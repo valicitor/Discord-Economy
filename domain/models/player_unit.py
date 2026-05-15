@@ -6,6 +6,7 @@ class PlayerUnit:
         self.player_id: int|None = kwargs.get('player_id')
         self.name: str|None = kwargs.get('name')
         self.quantity: int|None = kwargs.get('quantity')
+        self.custom: bool|None = kwargs.get('custom')
         self.metadata: dict = kwargs.get('metadata', {})
 
     def to_dict(self):
@@ -14,5 +15,6 @@ class PlayerUnit:
             'player_id': self.player_id,
             'name': self.name,
             'quantity': self.quantity,
+            'custom': self.custom,
             'metadata': self.metadata
         }

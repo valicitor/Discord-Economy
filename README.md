@@ -51,12 +51,23 @@ Edit `config.py` and add your bot token and settings.
 python main.py
 ```
 
-## Project Structure (recommended section once stable)
+## Project Structure
 ```
-/commands
-/events
-/models
-/services
+/application
+    /dtos
+    /helpers
+    /*
+        /commnads
+        /queries
+/domain
+    /exceptions
+    /models
+/host
+    /cogs
+    /embeds
+/infrastructure
+    /persistence
+    /seeders
 ```
 
 ## Roadmap

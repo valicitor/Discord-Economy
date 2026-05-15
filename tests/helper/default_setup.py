@@ -24,7 +24,7 @@ from infrastructure import (
     PlayerUnitRepository
 )
 from application import DiscordGuild, DiscordUser
-from application.helpers.helpers import Helpers
+from application.services.helpers import Helpers
 
 class DefaultSetup:
 
@@ -127,38 +127,27 @@ class DefaultSetup:
 
         enemy_faction_id = await self.faction_repository.insert(Faction(name="Enemy Faction", description="Enemy", color="#FF0000", owner_id=self.player_profile3.player.player_id, server_id=self.server_config.server.server_id))
         await self.faction_member_repository.delete_by_player_id(self.player_profile3.player.player_id)  # Remove existing faction membership
-        member_id = await  self.faction_member_repository.insert(FactionMember(faction_id=enemy_faction_id, player_id=self.player_profile3.player.player_id, role="Leader"))
+        await  self.faction_member_repository.insert(FactionMember(faction_id=enemy_faction_id, player_id=self.player_profile3.player.player_id, role="Leader"))
 
         ally_faction_id = await self.faction_repository.insert(Faction(name="Ally Faction", description="Ally", color="#00FF00", owner_id=self.player_profile2.player.player_id, server_id=self.server_config.server.server_id))
         await self.faction_member_repository.delete_by_player_id(self.player_profile2.player.player_id)  # Remove existing faction membership
-        member_id = await self.faction_member_repository.insert(FactionMember(faction_id=ally_faction_id, player_id=self.player_profile2.player.player_id, role="Leader"))
+        await self.faction_member_repository.insert(FactionMember(faction_id=ally_faction_id, player_id=self.player_profile2.player.player_id, role="Leader"))
 
         ally_faction_id = await self.faction_repository.insert(Faction(name="Third Faction", description="Someone else", color="#0000FF", owner_id=self.player_profile1.player.player_id, server_id=self.server_config.server.server_id))
         await self.faction_member_repository.delete_by_player_id(self.player_profile1.player.player_id)  # Remove existing faction membership
-        member_id = await self.faction_member_repository.insert(FactionMember(faction_id=ally_faction_id, player_id=self.player_profile1.player.player_id, role="Leader"))
+        await self.faction_member_repository.insert(FactionMember(faction_id=ally_faction_id, player_id=self.player_profile1.player.player_id, role="Leader"))
 
-        locations = await self.location_repository.get_all()
-
-        location = locations[2]
-        location.owner_player_id = self.player_profile1.player.player_id
-        await self.location_repository.update(location)
-
-        location = locations[7]
-        location.owner_player_id = self.player_profile1.player.player_id
-        await self.location_repository.update(location)
-
-        location = locations[3]
-        location.owner_player_id = self.player_profile2.player.player_id
-        await self.location_repository.update(location)
-
-        location = locations[5]
-        location.owner_player_id = self.player_profile2.player.player_id
-        await self.location_repository.update(location)
-
-        location = locations[0]
-        location.owner_player_id = self.player_profile3.player.player_id
-        await self.location_repository.update(location)
-
-        location = locations[8]
-        location.owner_player_id = self.player_profile3.player.player_id
-        await self.location_repository.update(location)
+        server_id = self.server_config.server.server_id
+        location_assignments = [
+            ("Alderaan",    self.player_profile1.player.player_id),
+            ("Belsavis",    self.player_profile1.player.player_id),
+            ("Balmorra",    self.player_profile2.player.player_id),
+            ("& Nar Shaddaa", self.player_profile2.player.player_id),
+            ("Tython",      self.player_profile3.player.player_id),
+            ("Hoth",        self.player_profile3.player.player_id),
+        ]
+        for location_name, player_id in location_assignments:
+            location = await self.location_repository.get_by_name(location_name, server_id)
+            if location:
+                location.owner_player_id = player_id
+                await self.location_repository.update(location)

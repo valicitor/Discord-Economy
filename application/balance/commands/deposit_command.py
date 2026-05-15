@@ -3,7 +3,7 @@ from attr import dataclass
 from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
 from domain import InsufficientFundsException, UpdateFailedException
 from infrastructure import  PlayerBalanceRepository, BankAccountRepository
-from application.helpers.helpers import Helpers
+from application.services.helpers import Helpers
 
 @dataclass
 class DepositCommandRequest:
@@ -22,8 +22,6 @@ class DepositCommand:
 
     def __init__(self, request: DepositCommandRequest):
         self.request = request
-
-        return
 
     async def execute(self) -> DepositCommandResponse:
         self.player_balance_repository = await PlayerBalanceRepository().get_instance()
