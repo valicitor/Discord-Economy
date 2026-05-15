@@ -1,7 +1,7 @@
 import discord
 from discord import Interaction
 
-from application.helpers.helpers import Helpers
+from application.services.helpers import Helpers
 from application import (
     SetupServerCommandResponse,
     GetServerQueryResponse,

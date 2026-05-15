@@ -4,7 +4,7 @@ from attr import dataclass
 
 from infrastructure import ItemRepository
 from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
-from application.helpers.helpers import Helpers
+from application.services.helpers import Helpers
 from domain import Item
 
 @dataclass

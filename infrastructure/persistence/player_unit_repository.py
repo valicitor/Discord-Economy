@@ -21,6 +21,7 @@ class PlayerUnitRepository(BaseRepository, IRepository):
                 player_id INTEGER NOT NULL,
                 name TEXT NOT NULL,
                 quantity INTEGER NOT NULL,
+                custom BOOLEAN NOT NULL DEFAULT 1,
                 metadata TEXT,
                 FOREIGN KEY(player_id) REFERENCES players(player_id),
                 UNIQUE(name, player_id)
@@ -97,19 +98,21 @@ class PlayerUnitRepository(BaseRepository, IRepository):
 
     async def insert(self, unit: PlayerUnit) -> int:
         return await super().insert(
-            "INSERT INTO player_units (player_id, name, quantity, metadata) VALUES (?, ?, ?, ?)",
+            "INSERT INTO player_units (player_id, name, quantity, custom, metadata) VALUES (?, ?, ?, ?, ?)",
             unit.player_id,
             unit.name,
             unit.quantity,
+            unit.custom,
             json.dumps(unit.metadata) if isinstance(unit.metadata, dict) else unit.metadata
         )
 
     async def update(self, unit: PlayerUnit) -> bool:
         affected = await super().update(
-            "UPDATE player_units SET player_id = ?, name = ?, quantity = ?, metadata = ? WHERE unit_id = ?",
+            "UPDATE player_units SET player_id = ?, name = ?, quantity = ?, custom = ?, metadata = ? WHERE unit_id = ?",
             unit.player_id,
             unit.name,
             unit.quantity,
+            unit.custom,
             json.dumps(unit.metadata) if isinstance(unit.metadata, dict) else unit.metadata,
             unit.unit_id
         )
@@ -122,10 +125,6 @@ class PlayerUnitRepository(BaseRepository, IRepository):
         )
         return affected > 0
     
-    async def delete_all(self, unit_id: int) -> bool:
-        # Delete_all and clear_all do the same in this repository since there are no environment variables to restrict by.
-        affected = await super().delete(
-            "DELETE FROM player_units WHERE unit_id = ?",
-            unit_id
-        )
+    async def delete_all(self) -> bool:
+        affected = await super().delete("DELETE FROM player_units")
         return affected > 0

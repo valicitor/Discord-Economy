@@ -7,7 +7,7 @@ from domain import RecordNotFoundException, InvalidDataException
 from infrastructure import CatalogueRepository, KeywordRepository
 
 from application import DiscordGuild, ServerConfig
-from application.helpers.helpers import Helpers
+from application.services.helpers import Helpers
 
 @dataclass
 class GetCatalogueQueryRequest:

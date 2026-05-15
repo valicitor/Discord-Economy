@@ -31,6 +31,10 @@ from .balance.commands.deposit_command import DepositCommand, DepositCommandRequ
 from .work.commands.work_command import WorkCommand, WorkCommandRequest, WorkCommandResponse
 # Shop
 from .shop.commands.buy_item_command import BuyItemCommand, BuyItemCommandRequest, BuyItemCommandResponse
+from .shop.commands.sell_item_command import SellItemCommand, SellItemCommandRequest, SellItemCommandResponse
+from .shop.commands.create_custom_unit_command import CreateCustomUnitCommand, CreateCustomUnitCommandRequest, CreateCustomUnitCommandResponse
+from .shop.commands.unassign_equipment_command import UnassignEquipmentCommand, UnassignEquipmentCommandRequest, UnassignEquipmentCommandResponse
+from .shop.commands.assign_player_equipment_command import AssignPlayerEquipmentCommand, AssignPlayerEquipmentCommandRequest, AssignPlayerEquipmentCommandResponse
 from .shop.queries.get_shop_query import GetShopQuery, GetShopQueryRequest, GetShopQueryResponse
 from .shop.queries.get_catalogue_query import GetCatalogueQuery, GetCatalogueQueryRequest, GetCatalogueQueryResponse
 
@@ -92,6 +96,18 @@ __all__ = [
     "BuyItemCommand",
     "BuyItemCommandRequest",
     "BuyItemCommandResponse",
+    "SellItemCommand",
+    "SellItemCommandRequest",
+    "SellItemCommandResponse",
+    "CreateCustomUnitCommand",
+    "CreateCustomUnitCommandRequest",
+    "CreateCustomUnitCommandResponse",
+    "UnassignEquipmentCommand",
+    "UnassignEquipmentCommandRequest",
+    "UnassignEquipmentCommandResponse",
+    "AssignPlayerEquipmentCommand",
+    "AssignPlayerEquipmentCommandRequest",
+    "AssignPlayerEquipmentCommandResponse",
     "GetCatalogueQuery",
     "GetCatalogueQueryRequest",
     "GetCatalogueQueryResponse"

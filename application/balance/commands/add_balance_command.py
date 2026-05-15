@@ -2,7 +2,7 @@ from attr import dataclass
 
 from infrastructure import  PlayerBalanceRepository, BankAccountRepository
 from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
-from application.helpers.helpers import Helpers
+from application.services.helpers import Helpers
 from domain import UpdateFailedException
 
 @dataclass
@@ -24,8 +24,6 @@ class AddBalanceCommand:
 
     def __init__(self, request: AddBalanceCommandRequest):
         self.request = request
-
-        return
 
     async def execute(self) -> AddBalanceCommandResponse:
         self.player_balance_repository = await PlayerBalanceRepository().get_instance()

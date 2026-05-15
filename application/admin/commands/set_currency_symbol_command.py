@@ -6,9 +6,9 @@ from domain import UpdateFailedException
 from infrastructure import CurrencyRepository
 from application import DiscordGuild, ServerConfig
 
-from domain import Currency, RecordNotFoundException
+from domain import Currency
 
-from application.helpers.helpers import Helpers
+from application.services.helpers import Helpers
 
 @dataclass
 class SetCurrencySymbolCommandRequest:
@@ -25,7 +25,6 @@ class SetCurrencySymbolCommand:
 
     def __init__(self, request: SetCurrencySymbolCommandRequest):
         self.request = request
-        return
 
     async def execute(self) -> SetCurrencySymbolCommandResponse:
         self.currency_repository = await CurrencyRepository().get_instance()

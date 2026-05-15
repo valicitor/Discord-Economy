@@ -2,7 +2,7 @@ from attr import dataclass
 
 from infrastructure import  PlayerBalanceRepository, BankAccountRepository
 from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
-from application.helpers.helpers import Helpers
+from application.services.helpers import Helpers
 from domain import InsufficientFundsException, UpdateFailedException
 
 @dataclass
@@ -22,8 +22,6 @@ class WithdrawCommand:
 
     def __init__(self, request: WithdrawCommandRequest):
         self.request = request
-
-        return
 
     async def execute(self) -> WithdrawCommandResponse:
         self.player_balance_repository = await PlayerBalanceRepository().get_instance()

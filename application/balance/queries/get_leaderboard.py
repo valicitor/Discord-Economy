@@ -4,7 +4,7 @@ import math
 from infrastructure import PlayerRepository
 
 from application import DiscordGuild, ServerConfig, PlayerProfile
-from application.helpers.helpers import Helpers
+from application.services.helpers import Helpers
 
 @dataclass
 class GetLeaderboardQueryRequest:

@@ -1,7 +1,7 @@
 from attr import dataclass
 
 from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
-from application.helpers.helpers import Helpers
+from application.services.helpers import Helpers
 
 @dataclass
 class GetBalanceQueryRequest:
