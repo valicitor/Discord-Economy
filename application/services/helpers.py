@@ -1,13 +1,11 @@
-from application import (
-    DiscordGuild, 
-    DiscordUser, 
-    ServerConfig,
-    PlayerProfile,
-)
-from application import SetupServerCommand, SetupServerCommandRequest
-from application import SetupPlayerCommand, SetupPlayerCommandRequest
-from application import GetPlayerQuery, GetPlayerQueryRequest
-from application import GetServerQuery, GetServerQueryRequest
+from application.dtos.discord_user import DiscordUser
+from application.dtos.discord_guild import DiscordGuild
+from application.dtos.server_config import ServerConfig
+from application.dtos.player_profile import PlayerProfile
+from application.admin.commands.setup_server_command import SetupServerCommand, SetupServerCommandRequest
+from application.player.commands.setup_player_command import SetupPlayerCommand, SetupPlayerCommandRequest
+from application.player.queries.get_player_query import GetPlayerQuery, GetPlayerQueryRequest
+from application.admin.queries.get_server_query import GetServerQuery, GetServerQueryRequest
 
 class Helpers:
     @staticmethod
@@ -89,3 +87,11 @@ class Helpers:
         player_profiles = await Helpers.ensure_users(server_config, discord_users)
 
         return server_config, player_profiles
+
+    @staticmethod
+    def is_in_range(entity_x: int, entity_y: int, entity_range: int, player_x: int, player_y: int) -> bool:
+        if entity_range is None:
+            return True
+        dx = player_x - entity_x
+        dy = player_y - entity_y
+        return (dx * dx + dy * dy) <= (entity_range * entity_range)

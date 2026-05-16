@@ -1,15 +1,19 @@
+import os
+
 from attr import dataclass
 
+from config import BASE_DIR
 from domain import Server, Currency, ServerSetting, Faction, Bank
 from domain import CreateFailedException, SeederErrorException, RecordNotFoundException
 from infrastructure import ServerRepository, CurrencyRepository, ServerSettingRepository, FactionRepository, BankRepository
-from infrastructure import BusinessesSeeder, ActionsSeeder, PointOfInterestSeeder, LocationsSeeder, CatalogueSeeder, KeywordsSeeder, ShopItemsSeeder
+from infrastructure import BusinessesSeeder, ActionsSeeder, PointOfInterestSeeder, LocationsSeeder, CatalogueSeeder, KeywordsSeeder, ShopItemsSeeder, ResourceNodesSeeder, RecipesSeeder
 from application import DiscordGuild, ServerConfig, ServerSettingsCollection
 
 @dataclass
 class SetupServerCommandRequest:
     guild: DiscordGuild
     seed_data: bool = False
+    theme: str = "star_wars"
 
 @dataclass
 class SetupServerCommandResponse:
@@ -68,48 +72,69 @@ class SetupServerCommand:
                     setting_id = await server_setting_repo.insert(new_server_setting)
                     if not setting_id:
                         raise CreateFailedException(f"Failed to create default faction setting for guild ID {self.request.guild.guild_id}.")
-                    
+
+                    new_server_setting = ServerSetting(server_id=server_id, key="travel_speed", value="10")
+                    setting_id = await server_setting_repo.insert(new_server_setting)
+                    if not setting_id:
+                        raise CreateFailedException(f"Failed to create travel_speed setting for guild ID {self.request.guild.guild_id}.")
+
                 except Exception as e:
                     raise CreateFailedException(f"Failed to to initialize server data for guild ID {self.request.guild.guild_id}: {str(e)}")
 
         # Don't wrap in a transaction since seeders may create their own transactions
-        if create_new_server and self.request.seed_data:
+        if create_new_server and self.request.seed_data and self.request.theme != "none":
+            theme_dir = os.path.join(BASE_DIR, "shared", "assets", "seed_data", self.request.theme)
+
+            def seed_path(filename: str) -> str:
+                themed = os.path.join(theme_dir, filename)
+                return themed if os.path.exists(themed) else None
+
             try:
                 businesses_seeder = BusinessesSeeder()
-                result = await businesses_seeder.seed(server_id=server_id)
+                result = await businesses_seeder.seed(server_id=server_id, seed_file=seed_path("businesses_seed.json"))
                 if not result.status == "completed":
                     raise SeederErrorException(f"Failed to seed businesses for guild ID {self.request.guild.guild_id}.")
-                
+
                 actions_seeder = ActionsSeeder()
-                result = await actions_seeder.seed(server_id=server_id)
+                result = await actions_seeder.seed(server_id=server_id, seed_file=seed_path("businesses_seed.json"))
                 if not result.status == "completed":
                     raise SeederErrorException(f"Failed to seed actions for guild ID {self.request.guild.guild_id}.")
 
                 point_of_interest_seeder = PointOfInterestSeeder()
-                result = await point_of_interest_seeder.seed(server_id=server_id)
+                result = await point_of_interest_seeder.seed(server_id=server_id, seed_file=seed_path("point_of_interest_seed.json"))
                 if not result.status == "completed":
                     raise SeederErrorException(f"Failed to seed point of interest for guild ID {self.request.guild.guild_id}.")
-                
+
                 locations_seeder = LocationsSeeder()
-                result = await locations_seeder.seed(server_id=server_id)
+                result = await locations_seeder.seed(server_id=server_id, seed_file=seed_path("point_of_interest_seed.json"))
                 if not result.status == "completed":
                     raise SeederErrorException(f"Failed to seed locations for guild ID {self.request.guild.guild_id}.")
 
                 catalogue_seeder = CatalogueSeeder()
-                result = await catalogue_seeder.seed(server_id=server_id)
+                result = await catalogue_seeder.seed(server_id=server_id, seed_file=seed_path("catalogue_seed.json"))
                 if not result.status == "completed":
                     raise SeederErrorException(f"Failed to seed catalogue items for guild ID {self.request.guild.guild_id}.")
-                
+
                 keyword_seeder = KeywordsSeeder()
-                result = await keyword_seeder.seed(server_id=server_id)
+                result = await keyword_seeder.seed(server_id=server_id, seed_file=seed_path("keywords_seed.json"))
                 if not result.status == "completed":
                     raise SeederErrorException(f"Failed to seed keywords for guild ID {self.request.guild.guild_id}.")
 
                 items_seeder = ShopItemsSeeder()
-                result = await items_seeder.seed(server_id=server_id)
+                result = await items_seeder.seed(server_id=server_id, seed_file=seed_path("shop_items_seed.json"))
                 if not result.status == "completed":
                     raise SeederErrorException(f"Failed to seed shop items for guild ID {self.request.guild.guild_id}.")
-                
+
+                resource_nodes_seeder = ResourceNodesSeeder()
+                result = await resource_nodes_seeder.seed(server_id=server_id, seed_file=seed_path("resource_nodes_seed.json"))
+                if not result.status == "completed":
+                    raise SeederErrorException(f"Failed to seed resource nodes for guild ID {self.request.guild.guild_id}.")
+
+                recipes_seeder = RecipesSeeder()
+                result = await recipes_seeder.seed(server_id=server_id, seed_file=seed_path("recipes_seed.json"))
+                if not result.status == "completed":
+                    raise SeederErrorException(f"Failed to seed recipes for guild ID {self.request.guild.guild_id}.")
+
             except Exception as e:
                 raise SeederErrorException(f"Failed to to seed server data for guild ID {self.request.guild.guild_id}: {str(e)}")
 

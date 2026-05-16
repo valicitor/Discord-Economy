@@ -2,10 +2,10 @@ import json
 
 from attr import dataclass
 
-from infrastructure import ItemRepository, PlayerBalanceRepository, PlayerInventoryRepository, CatalogueRepository, PlayerUnitRepository
+from infrastructure import ItemRepository, PlayerBalanceRepository, PlayerInventoryRepository, CatalogueRepository, PlayerUnitRepository, BusinessRepository
 from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
 from application.services.helpers import Helpers
-from domain import Item, PlayerInventory, PlayerUnit, Catalogue, InvalidDataException, RecordNotFoundException, InsufficientFundsException, UpdateFailedException
+from domain import Item, PlayerInventory, PlayerUnit, Catalogue, InvalidDataException, RecordNotFoundException, InsufficientFundsException, UpdateFailedException, PermissionDeniedException
 
 @dataclass
 class BuyItemCommandRequest:
@@ -33,6 +33,7 @@ class BuyItemCommand:
         self.player_inventory_repository = await PlayerInventoryRepository().get_instance()
         self.catalogue_repository = await CatalogueRepository().get_instance()
         self.player_unit_repository = await PlayerUnitRepository().get_instance()
+        self.business_repository = await BusinessRepository().get_instance()
 
         if self.request.item_id is None and self.request.item_name is None:
             raise InvalidDataException("Either item_id or item_name must be provided.")
@@ -51,6 +52,11 @@ class BuyItemCommand:
 
             if shop_item is None:
                 raise RecordNotFoundException("Item does not exist.")
+
+            if shop_item.business_id is not None:
+                business = await self.business_repository.get_by_id(shop_item.business_id)
+                if business and not Helpers.is_in_range(business.x, business.y, business.range, player_profile.player.x, player_profile.player.y):
+                    raise PermissionDeniedException("You are not close enough to this shop to buy this item.")
 
             # Pay for shop item
             _, default_currency = server_config.server_settings.get_by_key("default_currency_id")
@@ -72,7 +78,9 @@ class BuyItemCommand:
             if not catalogue_item:
                 raise RecordNotFoundException(f"Catalogue item with id '{shop_item.catalogue_id}' not found in guild '{self.request.guild.guild_id}'")
 
-            if catalogue_item.type != "Unit":
+            if catalogue_item.type == "Vehicle":
+                success = await self._add_vehicle_to_player(player_profile, catalogue_item)
+            elif catalogue_item.type != "Unit":
                 success = await self._add_item_to_inventory(player_profile, catalogue_item, False)
             else:
                 if not isinstance(catalogue_item.metadata, str):
@@ -147,4 +155,31 @@ class BuyItemCommand:
         success = await self.player_unit_repository.insert(new_unit)
         if not success:
             raise UpdateFailedException("Failed to update player units. Please try again.")
+        return success
+
+    async def _add_vehicle_to_player(self, player_profile: PlayerProfile, vehicle_item: Catalogue) -> bool:
+        vehicle = await self.player_unit_repository.get_by_name(vehicle_item.name, player_profile.player.player_id)
+        if vehicle:
+            vehicle.quantity += self.request.quantity
+            return await self.player_unit_repository.update(vehicle)
+
+        if isinstance(vehicle_item.metadata, str):
+            try:
+                vehicle_metadata = json.loads(vehicle_item.metadata)
+            except json.JSONDecodeError:
+                raise InvalidDataException("Vehicle catalogue metadata is not valid JSON.")
+        else:
+            vehicle_metadata = vehicle_item.metadata or {}
+
+        crew_raw = vehicle_metadata.get("crew", {})
+        if isinstance(crew_raw, int):
+            crew_slots = {f"Crew {i + 1}": "Unit" for i in range(crew_raw)}
+        elif isinstance(crew_raw, dict):
+            crew_slots = crew_raw
+        else:
+            crew_slots = {}
+        new_vehicle = PlayerUnit(player_id=player_profile.player.player_id, name=vehicle_item.name, quantity=self.request.quantity, custom=0, metadata={"slots": crew_slots, "assigned": {}})
+        success = await self.player_unit_repository.insert(new_vehicle)
+        if not success:
+            raise UpdateFailedException("Failed to add vehicle. Please try again.")
         return success

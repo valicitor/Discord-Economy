@@ -21,7 +21,11 @@ class CurrencyRepository(BaseRepository, IRepository):
                 name TEXT NOT NULL,
                 emoji TEXT,
                 symbol TEXT NOT NULL,
-                FOREIGN KEY(server_id) REFERENCES servers(server_id)
+                faction_id INTEGER,
+                location_id INTEGER,
+                FOREIGN KEY(server_id) REFERENCES servers(server_id),
+                FOREIGN KEY(faction_id) REFERENCES factions(faction_id),
+                FOREIGN KEY(location_id) REFERENCES locations(location_id)
             )
         """)
 
@@ -81,23 +85,25 @@ class CurrencyRepository(BaseRepository, IRepository):
 
     # ---------- Mutations ----------
 
+    async def get_all_by_server(self, server_id: int) -> list:
+        rows = await super().fetch(
+            "SELECT * FROM currencies WHERE server_id = ? AND faction_id IS NULL AND location_id IS NULL",
+            server_id
+        )
+        return [Currency(data=dict(row)) for row in rows]
+
     async def insert(self, currency: Currency) -> int:
         return await super().insert(
-            "INSERT INTO currencies (server_id, name, emoji, symbol) VALUES (?, ?, ?, ?)",
-            currency.server_id,
-            currency.name,
-            currency.emoji,
-            currency.symbol
+            "INSERT INTO currencies (server_id, name, emoji, symbol, faction_id, location_id) VALUES (?, ?, ?, ?, ?, ?)",
+            currency.server_id, currency.name, currency.emoji, currency.symbol,
+            currency.faction_id, currency.location_id
         )
-    
+
     async def update(self, currency: Currency) -> bool:
         affected = await super().update(
-            "UPDATE currencies SET server_id = ?, name = ?, emoji = ?, symbol = ? WHERE currency_id = ?",
-            currency.server_id,
-            currency.name,
-            currency.emoji,
-            currency.symbol,
-            currency.currency_id
+            "UPDATE currencies SET server_id = ?, name = ?, emoji = ?, symbol = ?, faction_id = ?, location_id = ? WHERE currency_id = ?",
+            currency.server_id, currency.name, currency.emoji, currency.symbol,
+            currency.faction_id, currency.location_id, currency.currency_id
         )
         return affected > 0
 

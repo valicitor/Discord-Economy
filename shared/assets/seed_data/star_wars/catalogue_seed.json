@@ -43,7 +43,11 @@
         { "name": "STAP",                       "type": "Vehicle",    "description": "Single Trooper Aerial Platform - scout speeder",      "status":"disabled", "metadata": { "stats": { "WS": "3+", "BS": "3+", "T": "3", "W": "3", "Attacks": "4", "S": "5", "AP": "-1", "D": "1", "Range": "Far", "Sv": "4+" }, "crew": 1, "keywords": ["Scout", "Flyer"] } },
         { "name": "AAT",                        "type": "Vehicle",    "description": "Armored Assault Tank - main battle tank",             "status":"disabled", "metadata": { "stats": { "WS": "3+", "BS": "3+", "T": "3", "W": "3", "Attacks": "4", "S": "5", "AP": "-1", "D": "1", "Range": "Far", "Sv": "4+" }, "crew": 1, "keywords": ["Heavy Armor", "Artillery"] } },
         { "name": "HMP Droid Gunship",          "type": "Vehicle",    "description": "Heavy Missile Platform - droid gunship",              "status":"disabled", "metadata": { "stats": { "WS": "3+", "BS": "3+", "T": "3", "W": "3", "Attacks": "4", "S": "5", "AP": "-1", "D": "1", "Range": "Far", "Sv": "4+" }, "crew": 1, "keywords": ["Heavy Weapons", "Droid"] } },
-        { "name": "C-9979 Landing Craft",       "type": "Vehicle",    "description": "CIS troop transport and landing ship",                "status":"disabled", "metadata": { "stats": { "WS": "3+", "BS": "3+", "T": "3", "W": "3", "Attacks": "4", "S": "5", "AP": "-1", "D": "1", "Range": "Far", "Sv": "4+" }, "crew": 1, "keywords": ["Huge", "Transport"] } }
+        { "name": "C-9979 Landing Craft",       "type": "Vehicle",    "description": "CIS troop transport and landing ship",                "status":"disabled", "metadata": { "stats": { "WS": "3+", "BS": "3+", "T": "3", "W": "3", "Attacks": "4", "S": "5", "AP": "-1", "D": "1", "Range": "Far", "Sv": "4+" }, "crew": 1, "keywords": ["Huge", "Transport"] } },
+
+        { "name": "Durasteel Ingot",            "type": "Material",   "description": "Refined durasteel alloy smelted from Mustafar ore, used in starship construction and heavy armor", "status": "active", "metadata": {} },
+        { "name": "Sith Poison",                "type": "Material",   "description": "A potent alchemical toxin synthesised from Quesh venom in Sith laboratories", "status": "active", "metadata": {} },
+        { "name": "Refined Kyber Crystal",      "type": "Material",   "description": "A precisely cut Kyber crystal from Ilum, highly sought after by Force users and weapons manufacturers", "status": "active", "metadata": {} }
     ]
   }
 }

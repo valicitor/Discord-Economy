@@ -36,6 +36,16 @@ from .models.faction_member import FactionMember
 
 from .models.keyword import Keyword
 
+from .models.business_stock import BusinessStock
+from .models.player_stock import PlayerStock
+from .models.loan import Loan
+from .models.resource_node import ResourceNode
+from .models.business_resource import BusinessResource
+from .models.exchange_rate import ExchangeRate
+from .models.transport import Transport
+from .models.recipe import Recipe
+from .models.recipe_ingredient import RecipeIngredient
+
 # --- Exceptions ---
 from .exceptions.record_not_found_exception import RecordNotFoundException
 from .exceptions.create_failed_exception import CreateFailedException
@@ -79,6 +89,15 @@ __all__ = [
     "Faction",
     "FactionMember",
     "Keyword",
+    "BusinessStock",
+    "PlayerStock",
+    "Loan",
+    "ResourceNode",
+    "BusinessResource",
+    "ExchangeRate",
+    "Transport",
+    "Recipe",
+    "RecipeIngredient",
     "RecordNotFoundException",
     "CreateFailedException",
     "InsertFailedException",

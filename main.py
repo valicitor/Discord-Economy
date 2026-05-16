@@ -96,6 +96,10 @@ class MyClient(commands.Bot):
             "host.cogs.balance",
             "host.cogs.work",
             "host.cogs.shop",
+            "host.cogs.economy",
+            "host.cogs.faction",
+            "host.cogs.logistics",
+            "host.cogs.help",
         ],
         # "merchant": [
         #     "host.cogs.balance",

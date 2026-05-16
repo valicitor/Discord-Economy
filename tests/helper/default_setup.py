@@ -21,7 +21,9 @@ from infrastructure import (
     KeywordRepository,
     ItemRepository,
     PlayerInventoryRepository,
-    PlayerUnitRepository
+    PlayerUnitRepository,
+    BusinessResourceRepository,
+    BusinessStockRepository
 )
 from application import DiscordGuild, DiscordUser
 from application.services.helpers import Helpers
@@ -45,6 +47,8 @@ class DefaultSetup:
         cls.player_unit_repository = await PlayerUnitRepository().get_instance(db_path=":memory:")
 
         cls.business_repository = await BusinessRepository().get_instance(db_path=":memory:")
+        cls.business_stock_repository = await BusinessStockRepository().get_instance(db_path=":memory:")
+        cls.business_resource_repository = await BusinessResourceRepository().get_instance(db_path=":memory:")
         cls.action_repository = await ActionRepository().get_instance(db_path=":memory:")
         cls.POI_repository = await PointOfInterestRepository().get_instance(db_path=":memory:")
         cls.location_repository = await LocationRepository().get_instance(db_path=":memory:")
@@ -70,6 +74,8 @@ class DefaultSetup:
         await cls.player_unit_repository.close_all()
 
         await cls.business_repository.close_all()
+        await cls.business_stock_repository.close_all()
+        await cls.business_resource_repository.close_all()
         await cls.action_repository.close_all()
         await cls.POI_repository.close_all()
         await cls.location_repository.close_all()
@@ -94,6 +100,8 @@ class DefaultSetup:
         await self.player_unit_repository.clear_all()
 
         await self.business_repository.clear_all()
+        await self.business_stock_repository.clear_all()
+        await self.business_resource_repository.clear_all()
         await self.action_repository.clear_all()
         await self.POI_repository.clear_all()
         await self.location_repository.clear_all()

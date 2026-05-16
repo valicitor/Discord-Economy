@@ -1,0 +1,35 @@
+{
+    "version": "1.0",
+    "keywords": {
+        "data": [
+            { "name": "Fearless",        "description": "Immune to morale checks and suppression effects.",                                          "metadata": {} },
+            { "name": "Lone Wolf",       "description": "Receives no penalty when operating without support units.",                                  "metadata": {} },
+            { "name": "Energy Shield(1)","description": "Absorbs the first 1 point of damage from each attack before armor saves apply.",             "metadata": {} },
+            { "name": "Energy Shield(2)","description": "Absorbs the first 2 points of damage from each attack before armor saves apply.",            "metadata": {} },
+            { "name": "Swarm",           "description": "Can ignore terrain penalties. Enemy blast weapons gain +1 Attack against this unit.",        "metadata": {} },
+            { "name": "Berserk",         "description": "When below half wounds, gains +1 Attack and +1 Strength but cannot fall back.",              "metadata": {} },
+            { "name": "Rapid Fire",      "description": "Can fire twice if the unit did not move this turn.",                                         "metadata": {} },
+            { "name": "Accurate",        "description": "Re-roll one failed hit die per activation.",                                                 "metadata": {} },
+            { "name": "Sidearm",         "description": "Can be used in addition to another weapon in the same activation.",                          "metadata": {} },
+            { "name": "Heavy",           "description": "Cannot move and shoot in the same activation unless mounted in a vehicle.",                  "metadata": {} },
+            { "name": "Blast",           "description": "Hits all models within 2 inches of the target on a 4+.",                                    "metadata": {} },
+            { "name": "Anti-Vehicle",    "description": "+1 Damage against Vehicle type units.",                                                      "metadata": {} },
+            { "name": "Melee",           "description": "This weapon can only be used in close combat.",                                             "metadata": {} },
+            { "name": "Rending",         "description": "Each unmodified hit roll of 6 causes one additional mortal wound.",                          "metadata": {} },
+            { "name": "Unwieldy",        "description": "Unit strikes last in close combat unless it charged this turn.",                             "metadata": {} },
+            { "name": "Overcharge",      "description": "Can be fired in overcharge mode: double Attacks but gains Unreliable for the activation.",   "metadata": {} },
+            { "name": "EMP",             "description": "On a successful hit, Vehicles lose their special abilities for one round.",                   "metadata": {} },
+            { "name": "Homing",          "description": "Re-roll all failed hit rolls against Infantry targets.",                                     "metadata": {} },
+            { "name": "Sticky",          "description": "On a hit, the grenade attaches and cannot be avoided — defender takes full Blast hits.",    "metadata": {} },
+            { "name": "One Use",         "description": "This weapon may only be used once per battle.",                                             "metadata": {} },
+            { "name": "Scout",           "description": "Can deploy outside normal deployment zone.",                                                 "metadata": {} },
+            { "name": "Fast",            "description": "May move an additional 3 inches per activation.",                                           "metadata": {} },
+            { "name": "Flyer",           "description": "Can only be hit on 6+ by non-AA weapons. Moves double speed.",                              "metadata": {} },
+            { "name": "Transport",       "description": "Can carry X infantry models (specified in description).",                                   "metadata": {} },
+            { "name": "Heavy Armor",     "description": "Reduces AP of all incoming attacks by 1.",                                                   "metadata": {} },
+            { "name": "Artillery",       "description": "Can shoot at targets not visible to the firer.",                                            "metadata": {} },
+            { "name": "Huge",            "description": "Blocks line of sight. Can be targeted by any weapon regardless of range.",                  "metadata": {} },
+            { "name": "AA",              "description": "Can target flyers. Non-flyers can only target this unit with AA weapons.",                  "metadata": {} }
+        ]
+    }
+}
