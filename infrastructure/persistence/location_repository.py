@@ -66,6 +66,17 @@ class LocationRepository(BaseRepository, IRepository):
     
     # ---------- Additional Queries ----------
 
+    async def get_by_coordinates(self, x: float, y: float, server_id: int) -> Optional[Location]:
+        row = await super().fetchrow(
+            """
+            SELECT l.* FROM locations l
+            LEFT JOIN points_of_interest p ON l.poi_id = p.poi_id
+            WHERE l.x = ? AND l.y = ? AND p.server_id = ?
+            """,
+            x, y, server_id
+        )
+        return Location(data=dict(row)) if row else None
+
     async def get_by_name(self, name: str, server_id: int) -> Optional[Location]:
         row = await super().fetchrow(
             """

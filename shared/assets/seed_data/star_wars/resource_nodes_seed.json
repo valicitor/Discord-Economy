@@ -1,0 +1,14 @@
+{
+    "version": "1.0",
+    "resource_nodes": {
+        "data": [
+            { "location_name": "Mustafar", "resource_type": "Durasteel Ore",  "quantity": 100, "max_quantity": 100, "regen_rate": 5, "discovered": false },
+            { "location_name": "Mustafar", "resource_type": "Durasteel Ore",  "quantity": 80,  "max_quantity": 100, "regen_rate": 5, "discovered": false },
+            { "location_name": "Mustafar", "resource_type": "Durasteel Ore",  "quantity": 60,  "max_quantity": 100, "regen_rate": 5, "discovered": false },
+            { "location_name": "Quesh",    "resource_type": "Quesh Venom",     "quantity": 50,  "max_quantity": 50,  "regen_rate": 2, "discovered": false },
+            { "location_name": "Quesh",    "resource_type": "Quesh Venom",     "quantity": 35,  "max_quantity": 50,  "regen_rate": 2, "discovered": false },
+            { "location_name": "Mygeeto",  "resource_type": "Kyber Crystal",   "quantity": 75,  "max_quantity": 75,  "regen_rate": 3, "discovered": false },
+            { "location_name": "Mygeeto",  "resource_type": "Kyber Crystal",   "quantity": 50,  "max_quantity": 75,  "regen_rate": 3, "discovered": false }
+        ]
+    }
+}

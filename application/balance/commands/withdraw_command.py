@@ -1,9 +1,9 @@
 from attr import dataclass
 
-from infrastructure import  PlayerBalanceRepository, BankAccountRepository
+from infrastructure import PlayerBalanceRepository, BankAccountRepository, BankRepository
 from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
 from application.services.helpers import Helpers
-from domain import InsufficientFundsException, UpdateFailedException
+from domain import InsufficientFundsException, UpdateFailedException, PermissionDeniedException
 
 @dataclass
 class WithdrawCommandRequest:
@@ -26,6 +26,7 @@ class WithdrawCommand:
     async def execute(self) -> WithdrawCommandResponse:
         self.player_balance_repository = await PlayerBalanceRepository().get_instance()
         self.bank_account_repository = await BankAccountRepository().get_instance()
+        self.bank_repository = await BankRepository().get_instance()
 
         if self.request.amount is None or self.request.amount <= 0:
             raise ValueError("Withdrawal amount must be greater than zero.")
@@ -36,6 +37,10 @@ class WithdrawCommand:
         async with self.player_balance_repository.transaction():
             _, default_currency = server_config.server_settings.get_by_key("default_currency_id")
             _, default_bank = server_config.server_settings.get_by_key("default_bank_id")
+
+            bank = await self.bank_repository.get_by_id(int(default_bank.value))
+            if bank and not Helpers.is_in_range(bank.x, bank.y, bank.range, player_profile.player.x, player_profile.player.y):
+                raise PermissionDeniedException("You are not close enough to the bank to make a withdrawal.")
 
             i, balance = player_profile.balances.get_by_currency_id(int(default_currency.value))
             j, bank_account = player_profile.bank_accounts.get_by_bank_id(int(default_bank.value))

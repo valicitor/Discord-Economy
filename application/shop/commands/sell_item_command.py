@@ -1,9 +1,9 @@
 from attr import dataclass
 
-from infrastructure import ItemRepository, PlayerBalanceRepository, PlayerInventoryRepository, CatalogueRepository, PlayerUnitRepository
+from infrastructure import ItemRepository, PlayerBalanceRepository, PlayerInventoryRepository, CatalogueRepository, PlayerUnitRepository, BusinessRepository
 from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
 from application.services.helpers import Helpers
-from domain import Item, PlayerInventory, InvalidDataException, RecordNotFoundException, UpdateFailedException
+from domain import Item, PlayerInventory, InvalidDataException, RecordNotFoundException, UpdateFailedException, PermissionDeniedException
 
 _SELL_RATE = 0.5
 
@@ -34,6 +34,7 @@ class SellItemCommand:
         self.player_inventory_repository = await PlayerInventoryRepository().get_instance()
         self.catalogue_repository = await CatalogueRepository().get_instance()
         self.player_unit_repository = await PlayerUnitRepository().get_instance()
+        self.business_repository = await BusinessRepository().get_instance()
 
         if self.request.item_id is None and self.request.item_name is None:
             raise InvalidDataException("Either item_id or item_name must be provided.")
@@ -56,6 +57,11 @@ class SellItemCommand:
 
             if not shop_item.sellable:
                 raise InvalidDataException(f"'{shop_item.name}' cannot be sold.")
+
+            if shop_item.business_id is not None:
+                business = await self.business_repository.get_by_id(shop_item.business_id)
+                if business and not Helpers.is_in_range(business.x, business.y, business.range, player_profile.player.x, player_profile.player.y):
+                    raise PermissionDeniedException("You are not close enough to this shop to sell this item.")
 
             catalogue_item = await self.catalogue_repository.get_by_id(shop_item.catalogue_id)
             if not catalogue_item:

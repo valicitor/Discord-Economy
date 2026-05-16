@@ -35,6 +35,16 @@ from .persistence.faction_member_repository import FactionMemberRepository
 
 from .persistence.keyword_repository import KeywordRepository
 
+from .persistence.business_stock_repository import BusinessStockRepository
+from .persistence.player_stock_repository import PlayerStockRepository
+from .persistence.loan_repository import LoanRepository
+from .persistence.resource_node_repository import ResourceNodeRepository
+from .persistence.business_resource_repository import BusinessResourceRepository
+from .persistence.exchange_rate_repository import ExchangeRateRepository
+from .persistence.transport_repository import TransportRepository
+from .persistence.recipe_repository import RecipeRepository
+from .persistence.recipe_ingredient_repository import RecipeIngredientRepository
+
 # --- Seeders ---
 from .seeders.base_seeder import BaseSeeder, SeederResult
 
@@ -49,6 +59,8 @@ from .seeders.keywords_seeder import KeywordsSeeder
 from .seeders.catalogue_seeder import CatalogueSeeder
 
 from .seeders.shop_items_seeder import ShopItemsSeeder
+from .seeders.resource_nodes_seeder import ResourceNodesSeeder
+from .seeders.recipes_seeder import RecipesSeeder
 
 __all__ = [
     "BaseRepository",
@@ -69,12 +81,21 @@ __all__ = [
     "ActionLogRepository",
     "PointOfInterestRepository",
     "LocationRepository",
-    "UnitRepository",
+    "PlayerUnitRepository",
     "UnitGarrisonRepository",
     "TransactionRepository",
     "FactionRepository",
     "FactionMemberRepository",
     "KeywordRepository",
+    "BusinessStockRepository",
+    "PlayerStockRepository",
+    "LoanRepository",
+    "ResourceNodeRepository",
+    "BusinessResourceRepository",
+    "ExchangeRateRepository",
+    "TransportRepository",
+    "RecipeRepository",
+    "RecipeIngredientRepository",
     "BaseSeeder",
     "SeederResult",
     "BusinessesSeeder",
@@ -83,5 +104,7 @@ __all__ = [
     "LocationsSeeder",
     "KeywordsSeeder",
     "CatalogueSeeder",
-    "ShopItemsSeeder"
+    "ShopItemsSeeder",
+    "ResourceNodesSeeder",
+    "RecipesSeeder"
 ]

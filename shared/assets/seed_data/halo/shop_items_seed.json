@@ -1,0 +1,22 @@
+{
+    "version": "1.0",
+    "items": {
+        "data": [
+            { "name": "SPARTAN-II",        "catalogue_id": 1,  "icon": "🛡️", "price": 5000,  "description": "An augmented SPARTAN-II supersoldier clad in MJOLNIR Mark VI armor.",           "stock": null, "inventory": true, "usable": true, "sellable": true },
+            { "name": "SPARTAN-IV",        "catalogue_id": 2,  "icon": "🛡️", "price": 3500,  "description": "A SPARTAN-IV volunteer supersoldier equipped with MJOLNIR Gen2 armor.",         "stock": null, "inventory": true, "usable": true, "sellable": true },
+            { "name": "ODST",              "catalogue_id": 3,  "icon": "🪂", "price": 1500,  "description": "An Orbital Drop Shock Trooper equipped with battle rifle and ODST suit.",        "stock": null, "inventory": true, "usable": true, "sellable": true },
+            { "name": "Marine",            "catalogue_id": 4,  "icon": "🪖", "price": 600,   "description": "A standard UNSC Marine Corps soldier armed with an assault rifle.",              "stock": null, "inventory": true, "usable": true, "sellable": true },
+            { "name": "Elite",             "catalogue_id": 5,  "icon": "⚔️", "price": 2500,  "description": "A Sangheili warrior bearing plasma weapons and an energy sword.",               "stock": null, "inventory": true, "usable": true, "sellable": true },
+            { "name": "Grunt",             "catalogue_id": 6,  "icon": "💨", "price": 300,   "description": "An Unggoy shock trooper armed with a plasma pistol.",                          "stock": null, "inventory": true, "usable": true, "sellable": true },
+            { "name": "Brute",             "catalogue_id": 7,  "icon": "🦁", "price": 2000,  "description": "A Jiralhanae warrior carrying a gravity hammer and spiker.",                    "stock": null, "inventory": true, "usable": true, "sellable": true },
+            { "name": "MA5C Assault Rifle","catalogue_id": 13, "icon": "🔫", "price": 400,   "description": "Standard UNSC fully automatic 7.62mm assault rifle.",                          "stock": null, "inventory": true, "usable": false, "sellable": true },
+            { "name": "BR85 Battle Rifle", "catalogue_id": 14, "icon": "🔫", "price": 600,   "description": "Three-round burst battle rifle — accurate at medium range.",                   "stock": null, "inventory": true, "usable": false, "sellable": true },
+            { "name": "Energy Sword",      "catalogue_id": 19, "icon": "⚡", "price": 1200,  "description": "Ceremonial Sangheili plasma blade of legendary lethality.",                    "stock": null, "inventory": true, "usable": false, "sellable": true },
+            { "name": "Gravity Hammer",    "catalogue_id": 20, "icon": "🔨", "price": 1500,  "description": "Jiralhanae gravity-shockwave melee weapon of immense destructive power.",                                "stock": null, "inventory": true, "usable": false, "sellable": true },
+
+            { "name": "Titanium Alloy",  "catalogue_name": "Titanium Alloy",  "business_name": "Kig-Yar Trading Post", "icon": "🔩", "price": 800,  "description": "Reinforced titanium alloy plating forged at the UNSC Titanium Forge — sold at a Kig-Yar markup.",  "stock": 0, "inventory": true, "usable": false, "sellable": true },
+            { "name": "Bioweapon Agent", "catalogue_name": "Bioweapon Agent", "business_name": "Kig-Yar Trading Post", "icon": "🧪", "price": 1500, "description": "Classified ONI biological agent of questionable legality — the Jackals don't ask questions.",          "stock": 0, "inventory": true, "usable": false, "sellable": true },
+            { "name": "Refined Crystal", "catalogue_name": "Refined Crystal", "business_name": "Kig-Yar Trading Post", "icon": "💎", "price": 1200, "description": "High-grade Covenant crystals refined at Doisac — prized by collectors and Covenant weapon-smiths.",    "stock": 0, "inventory": true, "usable": false, "sellable": true }
+        ]
+    }
+}

@@ -14,6 +14,7 @@ class Item:
         self.inventory: bool|None = kwargs.get('inventory', True)
         self.usable: bool|None = kwargs.get('usable', True)
         self.sellable: bool|None = kwargs.get('sellable', True)
+        self.business_id: int|None = kwargs.get('business_id')
 
     def to_dict(self):
         return {
@@ -27,5 +28,6 @@ class Item:
             'stock': self.stock,
             'inventory': self.inventory,
             'usable': self.usable,
-            'sellable': self.sellable
+            'sellable': self.sellable,
+            'business_id': self.business_id,
         }

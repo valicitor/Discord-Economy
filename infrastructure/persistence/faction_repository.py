@@ -68,9 +68,17 @@ class FactionRepository(BaseRepository, IRepository):
     
     # ---------- Additional Queries ----------
 
+    async def get_by_name(self, name: str, server_id: int) -> Optional[Faction]:
+        row = await super().fetchrow(
+            "SELECT * FROM factions WHERE name = ? AND server_id = ?",
+            name,
+            server_id
+        )
+        return Faction(data=dict(row)) if row else None
+
     async def get_by_owner_id(self, owner_id: int, server_id: int) -> Optional[Faction]:
         row = await super().fetchrow(
-            "SELECT * FROM factions WHERE owner_id = ? AND server_id = ?", 
+            "SELECT * FROM factions WHERE owner_id = ? AND server_id = ?",
             owner_id,
             server_id
         )

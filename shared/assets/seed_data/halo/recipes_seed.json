@@ -1,0 +1,44 @@
+{
+    "version": "1.0",
+    "recipes": {
+        "data": [
+            {
+                "business_name": "UNSC Titanium Forge",
+                "name": "Titanium Alloy Production",
+                "output_type": "resource",
+                "output_resource_type": "Titanium Alloy",
+                "output_quantity": 1,
+                "ingredients": [
+                    { "resource_type": "Titanium", "quantity": 3 }
+                ]
+            },
+            {
+                "business_name": "ONI Bioweapons Lab",
+                "name": "Bioweapon Synthesis",
+                "output_type": "resource",
+                "output_resource_type": "Bioweapon Agent",
+                "output_quantity": 1,
+                "ingredients": [
+                    { "resource_type": "Flood Biomass", "quantity": 2 }
+                ]
+            },
+            {
+                "business_name": "Covenant Refinery",
+                "name": "Crystal Refinement",
+                "output_type": "resource",
+                "output_resource_type": "Refined Crystal",
+                "output_quantity": 1,
+                "ingredients": [
+                    { "resource_type": "Rare Minerals", "quantity": 2 }
+                ]
+            }
+        ]
+    },
+    "business_resources": {
+        "data": [
+            { "business_name": "Kig-Yar Trading Post", "resource_type": "Titanium Alloy",  "quantity": 0, "required_quantity": 10 },
+            { "business_name": "Kig-Yar Trading Post", "resource_type": "Bioweapon Agent", "quantity": 0, "required_quantity": 5  },
+            { "business_name": "Kig-Yar Trading Post", "resource_type": "Refined Crystal", "quantity": 0, "required_quantity": 5  }
+        ]
+    }
+}

@@ -1,0 +1,14 @@
+{
+    "version": "1.0",
+    "resource_nodes": {
+        "data": [
+            { "location_name": "Reach",           "resource_type": "Titanium",      "quantity": 100, "max_quantity": 100, "regen_rate": 5, "discovered": false },
+            { "location_name": "Reach",           "resource_type": "Titanium",      "quantity": 80,  "max_quantity": 100, "regen_rate": 5, "discovered": false },
+            { "location_name": "Reach",           "resource_type": "Titanium",      "quantity": 60,  "max_quantity": 100, "regen_rate": 5, "discovered": false },
+            { "location_name": "Installation 05", "resource_type": "Flood Biomass", "quantity": 50,  "max_quantity": 50,  "regen_rate": 2, "discovered": false },
+            { "location_name": "Installation 05", "resource_type": "Flood Biomass", "quantity": 35,  "max_quantity": 50,  "regen_rate": 2, "discovered": false },
+            { "location_name": "Eridanus II",     "resource_type": "Rare Minerals", "quantity": 75,  "max_quantity": 75,  "regen_rate": 3, "discovered": false },
+            { "location_name": "Eridanus II",     "resource_type": "Rare Minerals", "quantity": 50,  "max_quantity": 75,  "regen_rate": 3, "discovered": false }
+        ]
+    }
+}

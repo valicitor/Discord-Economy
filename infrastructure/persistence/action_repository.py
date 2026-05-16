@@ -65,12 +65,18 @@ class ActionRepository(BaseRepository, IRepository):
     
     # ---------- Additional Queries ----------
 
-    async def get_all_by_business_id(self, action_type: str, business_id: int) -> List[Action]:
-        rows = await super().fetch(
-            "SELECT * FROM actions WHERE type =? AND business_id = ?",
-            action_type,
-            business_id
-        )
+    async def get_all_by_business_id(self, action_type: str | list, business_id: int) -> List[Action]:
+        if isinstance(action_type, list):
+            placeholders = ",".join("?" * len(action_type))
+            rows = await super().fetch(
+                f"SELECT * FROM actions WHERE type IN ({placeholders}) AND business_id = ?",
+                *action_type, business_id
+            )
+        else:
+            rows = await super().fetch(
+                "SELECT * FROM actions WHERE type = ? AND business_id = ?",
+                action_type, business_id
+            )
         return [Action(data=dict(row)) for row in rows]
     
     # ---------- Existence Checks ----------

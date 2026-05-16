@@ -7,6 +7,8 @@ class Currency:
         self.name: str|None = kwargs.get('name')
         self.emoji: str|None = kwargs.get('emoji')
         self.symbol: str|None = kwargs.get('symbol')
+        self.faction_id: int|None = kwargs.get('faction_id')
+        self.location_id: int|None = kwargs.get('location_id')
 
     def to_dict(self):
         return {
@@ -14,5 +16,7 @@ class Currency:
             'server_id': self.server_id,
             'name': self.name,
             'emoji': self.emoji,
-            'symbol': self.symbol
+            'symbol': self.symbol,
+            'faction_id': self.faction_id,
+            'location_id': self.location_id,
         }

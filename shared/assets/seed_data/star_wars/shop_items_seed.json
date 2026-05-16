@@ -1,0 +1,13 @@
+{
+    "version": "1.0",
+    "items": {
+        "data": [
+            { "name": "Clone Trooper", "catalogue_id": 1, "icon": "<:dragon_coin:1432690013614899220>", "price": 1000, "description": "A standard clone trooper unit, trained for combat and loyalty to the Republic.", "stock": null, "inventory": true, "usable": true, "sellable": true },
+            { "name": "B1 Battle Droid", "catalogue_id": 4, "icon": "<:dragon_coin:1432690013614899220>", "price": 800, "description": "A basic battle droid unit, mass-produced for the Separatist forces.", "stock": null, "inventory": true, "usable": true, "sellable": true },
+            { "name": "DC-15A Blaster Rifle",   "catalogue_id": 15,   "icon": "<:dragon_coin:1432690013614899220>",   "price": 500,  "description": "",    "stock": null,   "inventory": true,   "usable": false,  "sellable": true },
+            { "name": "Durasteel Ingot",         "catalogue_name": "Durasteel Ingot",   "business_name": "Nar Shaddaa Syndicate", "icon": "<:dragon_coin:1432690013614899220>", "price": 800,  "description": "Refined durasteel alloy smelted from Mustafar's volcanic ore fields.",            "stock": 0, "inventory": true, "usable": false, "sellable": true },
+            { "name": "Sith Poison",             "catalogue_name": "Sith Poison",       "business_name": "Nar Shaddaa Syndicate", "icon": "<:dragon_coin:1432690013614899220>", "price": 1200, "description": "A deadly alchemical compound synthesised from Quesh venom in Sith labs.",       "stock": 0, "inventory": true, "usable": false, "sellable": true },
+            { "name": "Refined Kyber Crystal",   "catalogue_name": "Refined Kyber Crystal", "business_name": "Nar Shaddaa Syndicate", "icon": "<:dragon_coin:1432690013614899220>", "price": 1500, "description": "A precisely cut Kyber crystal from Ilum, highly sought after by Force users.", "stock": 0, "inventory": true, "usable": false, "sellable": true }
+        ]
+    }
+}

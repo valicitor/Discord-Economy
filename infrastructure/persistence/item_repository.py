@@ -26,8 +26,10 @@ class ItemRepository(BaseRepository, IRepository):
                 inventory BOOLEAN NOT NULL DEFAULT 1,
                 usable BOOLEAN NOT NULL DEFAULT 1,
                 sellable BOOLEAN NOT NULL DEFAULT 1,
+                business_id INTEGER,
                 FOREIGN KEY(server_id) REFERENCES servers(server_id),
-                FOREIGN KEY(catalogue_id) REFERENCES catalogue(catalogue_id)
+                FOREIGN KEY(catalogue_id) REFERENCES catalogue(catalogue_id),
+                FOREIGN KEY(business_id) REFERENCES businesses(business_id)
             )
         """)
 
@@ -67,6 +69,13 @@ class ItemRepository(BaseRepository, IRepository):
         )
         return Item(data=dict(row)) if row else None
 
+    async def get_by_name_and_business(self, name: str, business_id: int) -> Optional[Item]:
+        row = await super().fetchrow(
+            "SELECT * FROM items WHERE name = ? AND business_id = ?",
+            name, business_id
+        )
+        return Item(data=dict(row)) if row else None
+
     async def get_all(self, server_id: int) -> List[Item]:
         rows = await super().fetch("SELECT * FROM items WHERE server_id = ?", server_id)
         return [Item(data=dict(row)) for row in rows]
@@ -95,33 +104,16 @@ class ItemRepository(BaseRepository, IRepository):
 
     async def insert(self, item: Item) -> int:
         return await super().insert(
-            "INSERT INTO items (server_id, name, catalogue_id, icon, price, description, stock, inventory, usable, sellable) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            item.server_id,
-            item.name,
-            item.catalogue_id,
-            item.icon,
-            item.price,
-            item.description,
-            item.stock,
-            item.inventory,
-            item.usable,
-            item.sellable
+            "INSERT INTO items (server_id, name, catalogue_id, icon, price, description, stock, inventory, usable, sellable, business_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            item.server_id, item.name, item.catalogue_id, item.icon, item.price,
+            item.description, item.stock, item.inventory, item.usable, item.sellable, item.business_id
         )
 
     async def update(self, item: Item) -> bool:
         affected = await super().update(
-            "UPDATE items SET server_id = ?, name = ?, catalogue_id = ?, icon = ?, price = ?, description = ?, stock = ?, inventory = ?, usable = ?, sellable = ? WHERE item_id = ?",
-            item.server_id,
-            item.name,
-            item.catalogue_id,
-            item.icon,
-            item.price,
-            item.description,
-            item.stock,
-            item.inventory,
-            item.usable,
-            item.sellable,
-            item.item_id
+            "UPDATE items SET server_id = ?, name = ?, catalogue_id = ?, icon = ?, price = ?, description = ?, stock = ?, inventory = ?, usable = ?, sellable = ?, business_id = ? WHERE item_id = ?",
+            item.server_id, item.name, item.catalogue_id, item.icon, item.price,
+            item.description, item.stock, item.inventory, item.usable, item.sellable, item.business_id, item.item_id
         )
         return affected > 0
 
@@ -153,6 +145,43 @@ class ItemRepository(BaseRepository, IRepository):
             raise ValueError(f"Invalid sort_by value: {sort_by}")
 
         return mapping[sort_by]
+
+    async def get_shop_items_in_range(self, server_id: int, business_ids: list[int], page: int, sort_by: str = "Cost", limit: int = 10) -> List[Item]:
+        if not business_ids:
+            query = "SELECT * FROM items WHERE server_id = ? AND business_id IS NULL GROUP BY item_id"
+            query += self._get_sort_column(sort_by)
+            params: list = [server_id]
+            if page is not None:
+                offset = (page - 1) * limit
+                query += f" LIMIT {limit} OFFSET ?"
+                params.append(offset)
+            rows = await super().fetch(query, *params)
+            return [Item(data=dict(row)) for row in rows]
+        placeholders = ",".join("?" for _ in business_ids)
+        query = f"""
+            SELECT * FROM items
+            WHERE server_id = ? AND (business_id IN ({placeholders}) OR business_id IS NULL)
+            GROUP BY item_id
+        """
+        query += self._get_sort_column(sort_by)
+        params = [server_id, *business_ids]
+        if page is not None:
+            offset = (page - 1) * limit
+            query += f" LIMIT {limit} OFFSET ?"
+            params.append(offset)
+        rows = await super().fetch(query, *params)
+        return [Item(data=dict(row)) for row in rows]
+
+    async def get_count_in_range(self, server_id: int, business_ids: list[int]) -> int:
+        if not business_ids:
+            row = await super().fetchrow("SELECT COUNT(*) FROM items WHERE server_id = ? AND business_id IS NULL", server_id)
+            return row[0] if row else 0
+        placeholders = ",".join("?" for _ in business_ids)
+        row = await super().fetchrow(
+            f"SELECT COUNT(*) FROM items WHERE server_id = ? AND (business_id IN ({placeholders}) OR business_id IS NULL)",
+            server_id, *business_ids
+        )
+        return row[0] if row else 0
 
     async def get_shop_items(self, server_id: int, page: int, sort_by: str = "Cost", limit: int = 10) -> List[Item]:
         query = f"""
