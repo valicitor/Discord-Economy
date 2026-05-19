@@ -80,6 +80,17 @@ class ItemRepository(BaseRepository, IRepository):
         rows = await super().fetch("SELECT * FROM items WHERE server_id = ?", server_id)
         return [Item(data=dict(row)) for row in rows]
     
+    async def get_all_by_business(self, business_id: int) -> List[Item]:
+        rows = await super().fetch("SELECT * FROM items WHERE business_id = ?", business_id)
+        return [Item(data=dict(row)) for row in rows]
+
+    async def get_by_catalogue_and_business(self, catalogue_id: int, business_id: int) -> Optional[Item]:
+        row = await super().fetchrow(
+            "SELECT * FROM items WHERE catalogue_id = ? AND business_id = ?",
+            catalogue_id, business_id
+        )
+        return Item(data=dict(row)) if row else None
+
     # ---------- Additional Queries ----------
 
     async def get_count(self, server_id: int) -> int:

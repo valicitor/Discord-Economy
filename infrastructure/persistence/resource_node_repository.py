@@ -17,6 +17,7 @@ class ResourceNodeRepository(BaseRepository, IRepository):
                 max_quantity INTEGER NOT NULL DEFAULT 100,
                 regen_rate INTEGER NOT NULL DEFAULT 5,
                 discovered INTEGER NOT NULL DEFAULT 0,
+                last_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY(location_id) REFERENCES locations(location_id)
             )
         """)
@@ -67,13 +68,13 @@ class ResourceNodeRepository(BaseRepository, IRepository):
 
     async def insert(self, node: ResourceNode) -> int:
         return await super().insert(
-            "INSERT INTO resource_nodes (server_id, location_id, resource_type, quantity, max_quantity, regen_rate, discovered) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO resource_nodes (server_id, location_id, resource_type, quantity, max_quantity, regen_rate, discovered, last_updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)",
             node.server_id, node.location_id, node.resource_type, node.quantity, node.max_quantity, node.regen_rate, int(node.discovered)
         )
 
     async def update(self, node: ResourceNode) -> bool:
         affected = await super().update(
-            "UPDATE resource_nodes SET server_id = ?, location_id = ?, resource_type = ?, quantity = ?, max_quantity = ?, regen_rate = ?, discovered = ? WHERE node_id = ?",
+            "UPDATE resource_nodes SET server_id = ?, location_id = ?, resource_type = ?, quantity = ?, max_quantity = ?, regen_rate = ?, discovered = ?, last_updated_at = CURRENT_TIMESTAMP WHERE node_id = ?",
             node.server_id, node.location_id, node.resource_type, node.quantity, node.max_quantity, node.regen_rate, int(node.discovered), node.node_id
         )
         return affected > 0

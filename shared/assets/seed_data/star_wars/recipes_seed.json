@@ -1,44 +1,34 @@
 {
-    "version": "1.0",
+    "version": "2.0",
     "recipes": {
         "data": [
             {
-                "business_name": "Imperial Smelting Works",
                 "name": "Durasteel Alloy Smelting",
-                "output_type": "resource",
-                "output_resource_type": "Durasteel Ingot",
-                "output_quantity": 1,
-                "ingredients": [
-                    { "resource_type": "Durasteel Ore", "quantity": 3 }
+                "inputs": [
+                    { "catalogue_name": "Durasteel Ore", "quantity": 3 }
+                ],
+                "outputs": [
+                    { "catalogue_name": "Durasteel Ingot", "quantity": 1 }
                 ]
             },
             {
-                "business_name": "Sith Alchemy Laboratory",
                 "name": "Sith Poison Synthesis",
-                "output_type": "resource",
-                "output_resource_type": "Sith Poison",
-                "output_quantity": 1,
-                "ingredients": [
-                    { "resource_type": "Quesh Venom", "quantity": 2 }
+                "inputs": [
+                    { "catalogue_name": "Quesh Venom", "quantity": 2 }
+                ],
+                "outputs": [
+                    { "catalogue_name": "Sith Poison", "quantity": 1 }
                 ]
             },
             {
-                "business_name": "Ilum Crystal Workshop",
                 "name": "Kyber Crystal Refinement",
-                "output_type": "resource",
-                "output_resource_type": "Refined Kyber Crystal",
-                "output_quantity": 1,
-                "ingredients": [
-                    { "resource_type": "Kyber Crystal", "quantity": 2 }
+                "inputs": [
+                    { "catalogue_name": "Kyber Crystal", "quantity": 2 }
+                ],
+                "outputs": [
+                    { "catalogue_name": "Refined Kyber Crystal", "quantity": 1 }
                 ]
             }
-        ]
-    },
-    "business_resources": {
-        "data": [
-            { "business_name": "Nar Shaddaa Syndicate", "resource_type": "Durasteel Ingot",        "quantity": 0, "required_quantity": 10 },
-            { "business_name": "Nar Shaddaa Syndicate", "resource_type": "Sith Poison",             "quantity": 0, "required_quantity": 5  },
-            { "business_name": "Nar Shaddaa Syndicate", "resource_type": "Refined Kyber Crystal",   "quantity": 0, "required_quantity": 5  }
         ]
     }
 }

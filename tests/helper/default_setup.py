@@ -3,9 +3,9 @@ from domain import (
     FactionMember
 )
 from infrastructure import (
-    PlayerRepository, 
+    PlayerRepository,
     PlayerBalanceRepository,
-    ServerRepository, 
+    ServerRepository,
     ServerSettingRepository,
     CurrencyRepository,
     BankRepository,
@@ -22,8 +22,18 @@ from infrastructure import (
     ItemRepository,
     PlayerInventoryRepository,
     PlayerUnitRepository,
-    BusinessResourceRepository,
-    BusinessStockRepository
+    UnitGarrisonRepository,
+    BusinessInventoryRepository,
+    BusinessStockRepository,
+    PlayerStockRepository,
+    LoanRepository,
+    ExchangeRateRepository,
+    TransportRepository,
+    ResourceNodeRepository,
+    RecipeRepository,
+    RecipeInputRepository,
+    RecipeOutputRepository,
+    LocationPolicyRepository,
 )
 from application import DiscordGuild, DiscordUser
 from application.services.helpers import Helpers
@@ -45,10 +55,15 @@ class DefaultSetup:
         cls.player_action_repository = await PlayerActionRepository().get_instance(db_path=":memory:")
         cls.player_inventory_repository = await PlayerInventoryRepository().get_instance(db_path=":memory:")
         cls.player_unit_repository = await PlayerUnitRepository().get_instance(db_path=":memory:")
+        cls.unit_garrison_repository = await UnitGarrisonRepository().get_instance(db_path=":memory:")
 
         cls.business_repository = await BusinessRepository().get_instance(db_path=":memory:")
         cls.business_stock_repository = await BusinessStockRepository().get_instance(db_path=":memory:")
-        cls.business_resource_repository = await BusinessResourceRepository().get_instance(db_path=":memory:")
+        cls.player_stock_repository = await PlayerStockRepository().get_instance(db_path=":memory:")
+        cls.business_inventory_repository = await BusinessInventoryRepository().get_instance(db_path=":memory:")
+        cls.loan_repository = await LoanRepository().get_instance(db_path=":memory:")
+        cls.exchange_rate_repository = await ExchangeRateRepository().get_instance(db_path=":memory:")
+        cls.transport_repository = await TransportRepository().get_instance(db_path=":memory:")
         cls.action_repository = await ActionRepository().get_instance(db_path=":memory:")
         cls.POI_repository = await PointOfInterestRepository().get_instance(db_path=":memory:")
         cls.location_repository = await LocationRepository().get_instance(db_path=":memory:")
@@ -56,6 +71,12 @@ class DefaultSetup:
         cls.catalogue_repository = await CatalogueRepository().get_instance(db_path=":memory:")
         cls.keyword_repository = await KeywordRepository().get_instance(db_path=":memory:")
         cls.items_repository = await ItemRepository().get_instance(db_path=":memory:")
+
+        cls.resource_node_repository = await ResourceNodeRepository().get_instance(db_path=":memory:")
+        cls.recipe_repository = await RecipeRepository().get_instance(db_path=":memory:")
+        cls.recipe_input_repository = await RecipeInputRepository().get_instance(db_path=":memory:")
+        cls.recipe_output_repository = await RecipeOutputRepository().get_instance(db_path=":memory:")
+        cls.location_policy_repository = await LocationPolicyRepository().get_instance(db_path=":memory:")
 
     @classmethod
     async def tearDownClass(cls):
@@ -72,10 +93,15 @@ class DefaultSetup:
         await cls.player_action_repository.close_all()
         await cls.player_inventory_repository.close_all()
         await cls.player_unit_repository.close_all()
+        await cls.unit_garrison_repository.close_all()
 
         await cls.business_repository.close_all()
         await cls.business_stock_repository.close_all()
-        await cls.business_resource_repository.close_all()
+        await cls.player_stock_repository.close_all()
+        await cls.business_inventory_repository.close_all()
+        await cls.loan_repository.close_all()
+        await cls.exchange_rate_repository.close_all()
+        await cls.transport_repository.close_all()
         await cls.action_repository.close_all()
         await cls.POI_repository.close_all()
         await cls.location_repository.close_all()
@@ -83,6 +109,12 @@ class DefaultSetup:
         await cls.catalogue_repository.close_all()
         await cls.keyword_repository.close_all()
         await cls.items_repository.close_all()
+
+        await cls.resource_node_repository.close_all()
+        await cls.recipe_repository.close_all()
+        await cls.recipe_input_repository.close_all()
+        await cls.recipe_output_repository.close_all()
+        await cls.location_policy_repository.close_all()
 
     async def setUp(self):
         await self.server_repository.clear_all()
@@ -98,10 +130,15 @@ class DefaultSetup:
         await self.player_action_repository.clear_all()
         await self.player_inventory_repository.clear_all()
         await self.player_unit_repository.clear_all()
+        await self.unit_garrison_repository.clear_all()
 
         await self.business_repository.clear_all()
         await self.business_stock_repository.clear_all()
-        await self.business_resource_repository.clear_all()
+        await self.player_stock_repository.clear_all()
+        await self.business_inventory_repository.clear_all()
+        await self.loan_repository.clear_all()
+        await self.exchange_rate_repository.clear_all()
+        await self.transport_repository.clear_all()
         await self.action_repository.clear_all()
         await self.POI_repository.clear_all()
         await self.location_repository.clear_all()
@@ -109,6 +146,12 @@ class DefaultSetup:
         await self.catalogue_repository.clear_all()
         await self.keyword_repository.clear_all()
         await self.items_repository.clear_all()
+
+        await self.resource_node_repository.clear_all()
+        await self.recipe_repository.clear_all()
+        await self.recipe_input_repository.clear_all()
+        await self.recipe_output_repository.clear_all()
+        await self.location_policy_repository.clear_all()
 
     async def setupData(self):
         self.discord_guild = DiscordGuild(guild_id=12345, name="TestGuild")
@@ -150,7 +193,7 @@ class DefaultSetup:
             ("Alderaan",    self.player_profile1.player.player_id),
             ("Belsavis",    self.player_profile1.player.player_id),
             ("Balmorra",    self.player_profile2.player.player_id),
-            ("& Nar Shaddaa", self.player_profile2.player.player_id),
+            ("Nar Shaddaa", self.player_profile2.player.player_id),
             ("Tython",      self.player_profile3.player.player_id),
             ("Hoth",        self.player_profile3.player.player_id),
         ]

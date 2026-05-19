@@ -904,6 +904,259 @@ class DiscordAdminEmbed:
 
 
     # =========================================================================
+    # Resource node views
+    # =========================================================================
+
+    class ResourceNodeLayoutView(discord.ui.LayoutView):
+        def __init__(self, node=None):
+            self.node = node
+            super().__init__()
+
+        @classmethod
+        async def create(cls, node):
+            view = cls(node)
+            await view._build()
+            return view
+
+        async def _build(self):
+            status = "🔍 Discoverable" if not self.node.discovered else "✅ Available"
+            self.add_item(
+                discord.ui.Container(
+                    discord.ui.TextDisplay(content="## 🪨 Resource Node"),
+                    discord.ui.Separator(),
+                    discord.ui.TextDisplay(content=f"**Node ID:** {self.node.node_id}"),
+                    discord.ui.TextDisplay(content=f"**Location ID:** {self.node.location_id}"),
+                    discord.ui.TextDisplay(content=f"**Resource:** {self.node.resource_type}"),
+                    discord.ui.TextDisplay(content=f"**Max Quantity:** {self.node.max_quantity}"),
+                    discord.ui.TextDisplay(content=f"**Regen Rate:** {self.node.regen_rate}/tick"),
+                    discord.ui.TextDisplay(content=f"**Status:** {status}"),
+                    accent_color=discord.Color.green(),
+                    spoiler=False
+                )
+            )
+
+    class ResourceNodeDeleteLayoutView(discord.ui.LayoutView):
+        def __init__(self, node_id=None):
+            self.node_id = node_id
+            super().__init__()
+
+        @classmethod
+        async def create(cls, node_id):
+            view = cls(node_id)
+            await view._build()
+            return view
+
+        async def _build(self):
+            self.add_item(
+                discord.ui.Container(
+                    discord.ui.TextDisplay(content="## 🗑️ Resource Node Deleted"),
+                    discord.ui.Separator(),
+                    discord.ui.TextDisplay(content=f"**Node ID {self.node_id}** has been removed."),
+                    accent_color=discord.Color.red(),
+                    spoiler=False
+                )
+            )
+
+    # =========================================================================
+    # Recipe views
+    # =========================================================================
+
+    class RecipeLayoutView(discord.ui.LayoutView):
+        def __init__(self, recipe=None):
+            self.recipe = recipe
+            super().__init__()
+
+        @classmethod
+        async def create(cls, recipe):
+            view = cls(recipe)
+            await view._build()
+            return view
+
+        async def _build(self):
+            self.add_item(
+                discord.ui.Container(
+                    discord.ui.TextDisplay(content="## 📋 Recipe"),
+                    discord.ui.Separator(),
+                    discord.ui.TextDisplay(content=f"**Recipe ID:** {self.recipe.recipe_id}"),
+                    discord.ui.TextDisplay(content=f"**Server ID:** {self.recipe.server_id}"),
+                    discord.ui.TextDisplay(content=f"**Name:** {self.recipe.name}"),
+                    accent_color=discord.Color.blue(),
+                    spoiler=False
+                )
+            )
+
+    class RecipeDeleteLayoutView(discord.ui.LayoutView):
+        def __init__(self, recipe_id=None):
+            self.recipe_id = recipe_id
+            super().__init__()
+
+        @classmethod
+        async def create(cls, recipe_id):
+            view = cls(recipe_id)
+            await view._build()
+            return view
+
+        async def _build(self):
+            self.add_item(
+                discord.ui.Container(
+                    discord.ui.TextDisplay(content="## 🗑️ Recipe Deleted"),
+                    discord.ui.Separator(),
+                    discord.ui.TextDisplay(content=f"**Recipe ID {self.recipe_id}** and all its inputs/outputs have been removed."),
+                    accent_color=discord.Color.red(),
+                    spoiler=False
+                )
+            )
+
+    class RecipeInputLayoutView(discord.ui.LayoutView):
+        def __init__(self, recipe_input=None):
+            self.recipe_input = recipe_input
+            super().__init__()
+
+        @classmethod
+        async def create(cls, recipe_input):
+            view = cls(recipe_input)
+            await view._build()
+            return view
+
+        async def _build(self):
+            self.add_item(
+                discord.ui.Container(
+                    discord.ui.TextDisplay(content="## 🧪 Recipe Input"),
+                    discord.ui.Separator(),
+                    discord.ui.TextDisplay(content=f"**Recipe ID:** {self.recipe_input.recipe_id}"),
+                    discord.ui.TextDisplay(content=f"**Catalogue ID:** {self.recipe_input.catalogue_id}"),
+                    discord.ui.TextDisplay(content=f"**Quantity:** {self.recipe_input.quantity}"),
+                    accent_color=discord.Color.blue(),
+                    spoiler=False
+                )
+            )
+
+    class RecipeInputDeleteLayoutView(discord.ui.LayoutView):
+        def __init__(self, recipe_id=None, catalogue_id=None):
+            self.recipe_id = recipe_id
+            self.catalogue_id = catalogue_id
+            super().__init__()
+
+        @classmethod
+        async def create(cls, recipe_id, catalogue_id):
+            view = cls(recipe_id, catalogue_id)
+            await view._build()
+            return view
+
+        async def _build(self):
+            self.add_item(
+                discord.ui.Container(
+                    discord.ui.TextDisplay(content="## 🗑️ Recipe Input Removed"),
+                    discord.ui.Separator(),
+                    discord.ui.TextDisplay(content=f"Catalogue ID **{self.catalogue_id}** removed from recipe **{self.recipe_id}**."),
+                    accent_color=discord.Color.red(),
+                    spoiler=False
+                )
+            )
+
+    class RecipeOutputLayoutView(discord.ui.LayoutView):
+        def __init__(self, recipe_output=None):
+            self.recipe_output = recipe_output
+            super().__init__()
+
+        @classmethod
+        async def create(cls, recipe_output):
+            view = cls(recipe_output)
+            await view._build()
+            return view
+
+        async def _build(self):
+            self.add_item(
+                discord.ui.Container(
+                    discord.ui.TextDisplay(content="## 📦 Recipe Output"),
+                    discord.ui.Separator(),
+                    discord.ui.TextDisplay(content=f"**Recipe ID:** {self.recipe_output.recipe_id}"),
+                    discord.ui.TextDisplay(content=f"**Catalogue ID:** {self.recipe_output.catalogue_id}"),
+                    discord.ui.TextDisplay(content=f"**Quantity:** {self.recipe_output.quantity}"),
+                    accent_color=discord.Color.green(),
+                    spoiler=False
+                )
+            )
+
+    class RecipeOutputDeleteLayoutView(discord.ui.LayoutView):
+        def __init__(self, recipe_id=None, catalogue_id=None):
+            self.recipe_id = recipe_id
+            self.catalogue_id = catalogue_id
+            super().__init__()
+
+        @classmethod
+        async def create(cls, recipe_id, catalogue_id):
+            view = cls(recipe_id, catalogue_id)
+            await view._build()
+            return view
+
+        async def _build(self):
+            self.add_item(
+                discord.ui.Container(
+                    discord.ui.TextDisplay(content="## 🗑️ Recipe Output Removed"),
+                    discord.ui.Separator(),
+                    discord.ui.TextDisplay(content=f"Catalogue ID **{self.catalogue_id}** removed from recipe **{self.recipe_id}**."),
+                    accent_color=discord.Color.red(),
+                    spoiler=False
+                )
+            )
+
+    # =========================================================================
+    # Location policy views
+    # =========================================================================
+
+    class LocationPolicyLayoutView(discord.ui.LayoutView):
+        def __init__(self, policy=None):
+            self.policy = policy
+            super().__init__()
+
+        @classmethod
+        async def create(cls, policy):
+            view = cls(policy)
+            await view._build()
+            return view
+
+        async def _build(self):
+            p = self.policy
+            self.add_item(
+                discord.ui.Container(
+                    discord.ui.TextDisplay(content="## 📜 Location Policy"),
+                    discord.ui.Separator(),
+                    discord.ui.TextDisplay(content=f"**Location ID:** {p.location_id}"),
+                    discord.ui.TextDisplay(content=f"**Tax Rate:** {p.tax_rate:.1%}"),
+                    discord.ui.TextDisplay(content=f"**Trade Tariff:** {p.trade_tariff:.1%}"),
+                    discord.ui.TextDisplay(content=f"**Imports:** {'🔒 Restricted' if p.import_restricted else '✅ Open'}"),
+                    discord.ui.TextDisplay(content=f"**Exports:** {'🔒 Restricted' if p.export_restricted else '✅ Open'}"),
+                    discord.ui.TextDisplay(content=f"**Interest Rate Modifier:** ×{p.interest_rate_modifier:.2f}"),
+                    discord.ui.TextDisplay(content=f"**Smuggling Risk Modifier:** ×{p.smuggling_risk_modifier:.2f}"),
+                    accent_color=discord.Color.gold(),
+                    spoiler=False
+                )
+            )
+
+    class LocationPolicyDeleteLayoutView(discord.ui.LayoutView):
+        def __init__(self, location_id=None):
+            self.location_id = location_id
+            super().__init__()
+
+        @classmethod
+        async def create(cls, location_id):
+            view = cls(location_id)
+            await view._build()
+            return view
+
+        async def _build(self):
+            self.add_item(
+                discord.ui.Container(
+                    discord.ui.TextDisplay(content="## 🗑️ Location Policy Removed"),
+                    discord.ui.Separator(),
+                    discord.ui.TextDisplay(content=f"Policy for **Location ID {self.location_id}** has been removed."),
+                    accent_color=discord.Color.red(),
+                    spoiler=False
+                )
+            )
+
+    # =========================================================================
     # Factory methods
     # =========================================================================
 
@@ -962,3 +1215,43 @@ class DiscordAdminEmbed:
     @staticmethod
     async def get_set_server_setting_view(interaction: Interaction, response: SetServerSettingCommandResponse):
         return await DiscordAdminEmbed.SetServerSettingLayoutView.create(response)
+
+    @staticmethod
+    async def get_resource_node_view(interaction: Interaction, response):
+        return await DiscordAdminEmbed.ResourceNodeLayoutView.create(response.node)
+
+    @staticmethod
+    async def get_resource_node_delete_view(interaction: Interaction, response):
+        return await DiscordAdminEmbed.ResourceNodeDeleteLayoutView.create(response.node_id)
+
+    @staticmethod
+    async def get_recipe_view(interaction: Interaction, response):
+        return await DiscordAdminEmbed.RecipeLayoutView.create(response.recipe)
+
+    @staticmethod
+    async def get_recipe_delete_view(interaction: Interaction, response):
+        return await DiscordAdminEmbed.RecipeDeleteLayoutView.create(response.recipe_id)
+
+    @staticmethod
+    async def get_recipe_input_view(interaction: Interaction, response):
+        return await DiscordAdminEmbed.RecipeInputLayoutView.create(response.recipe_input)
+
+    @staticmethod
+    async def get_recipe_input_delete_view(interaction: Interaction, response):
+        return await DiscordAdminEmbed.RecipeInputDeleteLayoutView.create(response.recipe_id, response.catalogue_id)
+
+    @staticmethod
+    async def get_recipe_output_view(interaction: Interaction, response):
+        return await DiscordAdminEmbed.RecipeOutputLayoutView.create(response.recipe_output)
+
+    @staticmethod
+    async def get_recipe_output_delete_view(interaction: Interaction, response):
+        return await DiscordAdminEmbed.RecipeOutputDeleteLayoutView.create(response.recipe_id, response.catalogue_id)
+
+    @staticmethod
+    async def get_location_policy_view(interaction: Interaction, response):
+        return await DiscordAdminEmbed.LocationPolicyLayoutView.create(response.policy)
+
+    @staticmethod
+    async def get_location_policy_delete_view(interaction: Interaction, response):
+        return await DiscordAdminEmbed.LocationPolicyDeleteLayoutView.create(response.location_id)

@@ -1,3 +1,5 @@
+import asyncio
+
 from attr import dataclass
 
 from domain import Player, PlayerBalance, BankAccount, FactionMember
@@ -26,10 +28,17 @@ class SetupPlayerCommand:
         return
 
     async def execute(self) -> SetupPlayerCommandResponse:
-        player_repo = await PlayerRepository().get_instance()
-        player_balance_repo = await PlayerBalanceRepository().get_instance()
-        bank_account_repo = await BankAccountRepository().get_instance()
-        faction_member_repo = await FactionMemberRepository().get_instance()
+        (
+            player_repo,
+            player_balance_repo,
+            bank_account_repo,
+            faction_member_repo,
+        ) = await asyncio.gather(
+            PlayerRepository().get_instance(),
+            PlayerBalanceRepository().get_instance(),
+            BankAccountRepository().get_instance(),
+            FactionMemberRepository().get_instance(),
+        )
 
         create_new_player = False
 

@@ -45,8 +45,8 @@ class TestSellItemCommand(unittest.TestCase):
         return asyncio.run(SellItemCommand(request).execute())
 
     def test_sell_weapon_item(self):
-        # Arrange — DC-15A Blaster Rifle (item_id=3) costs 500, player1 has 1500
-        buy_response = self._buy(self.default_setup.discord_user1, item_id=3)
+        # Arrange — DC-15A Blaster Rifle (item_id=8) costs 500, player1 has 1500
+        buy_response = self._buy(self.default_setup.discord_user1, item_id=8)
         balance_after_buy = buy_response.player.balances[0].balance
 
         # Act
@@ -91,10 +91,10 @@ class TestSellItemCommand(unittest.TestCase):
 
     def test_sell_partial_quantity(self):
         # Arrange — buy 2, sell 1, 1 should remain
-        self._buy(self.default_setup.discord_user1, item_id=3, quantity=2)
+        self._buy(self.default_setup.discord_user1, item_id=8, quantity=2)
         self._sell(self.default_setup.discord_user1, item_name="DC-15A Blaster Rifle", quantity=1)
 
-        buy_catalogue_id = asyncio.run(self.default_setup.items_repository.get_by_id(3)).catalogue_id
+        buy_catalogue_id = asyncio.run(self.default_setup.items_repository.get_by_id(8)).catalogue_id
         inventory = asyncio.run(self.default_setup.player_inventory_repository.get_by_player_catalogue_id(
             self.default_setup.player_profile1.player.player_id, buy_catalogue_id, status='stored'
         ))

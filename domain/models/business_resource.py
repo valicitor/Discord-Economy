@@ -1,18 +1,20 @@
-class BusinessResource:
+class BusinessInventory:
     def __init__(self, data: dict = None, **kwargs):
         if data:
             kwargs = {**data, **kwargs}
-        self.resource_id: int|None = kwargs.get('resource_id')
+        self.inventory_id: int|None = kwargs.get('inventory_id')
+        self.server_id: int|None = kwargs.get('server_id')
         self.business_id: int|None = kwargs.get('business_id')
-        self.resource_type: str|None = kwargs.get('resource_type')
+        self.catalogue_id: int|None = kwargs.get('catalogue_id')
         self.quantity: int = kwargs.get('quantity', 0)
-        self.required_quantity: int = kwargs.get('required_quantity', 0)
+        self.last_updated_at: str|None = kwargs.get('last_updated_at')
 
     def to_dict(self):
         return {
-            'resource_id': self.resource_id,
+            'inventory_id': self.inventory_id,
+            'server_id': self.server_id,
             'business_id': self.business_id,
-            'resource_type': self.resource_type,
+            'catalogue_id': self.catalogue_id,
             'quantity': self.quantity,
-            'required_quantity': self.required_quantity,
+            'last_updated_at': self.last_updated_at,
         }

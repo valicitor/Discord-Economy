@@ -2,7 +2,7 @@ import math
 from datetime import datetime, timezone, timedelta
 from attr import dataclass
 
-from infrastructure import TransportRepository, BusinessRepository, BusinessResourceRepository
+from infrastructure import TransportRepository, BusinessRepository, BusinessInventoryRepository
 from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
 from application.services.helpers import Helpers
 from domain import Transport, RecordNotFoundException, InvalidDataException, PermissionDeniedException, UpdateFailedException, CreateFailedException
@@ -13,7 +13,7 @@ class StartTransportCommandRequest:
     user: DiscordUser
     from_business_id: int
     to_business_id: int
-    resource_type: str
+    catalogue_id: int
     quantity: int
 
 @dataclass
@@ -31,7 +31,7 @@ class StartTransportCommand:
     async def execute(self) -> StartTransportCommandResponse:
         self.transport_repository = await TransportRepository().get_instance()
         self.business_repository = await BusinessRepository().get_instance()
-        self.business_resource_repository = await BusinessResourceRepository().get_instance()
+        self.business_inventory_repository = await BusinessInventoryRepository().get_instance()
 
         if self.request.quantity <= 0:
             raise InvalidDataException("Transport quantity must be greater than zero.")
@@ -50,14 +50,14 @@ class StartTransportCommand:
         if not Helpers.is_in_range(from_business.x, from_business.y, from_business.range, player_profile.player.x, player_profile.player.y):
             raise PermissionDeniedException("You are not close enough to the source business to start a transport.")
 
-        resource = await self.business_resource_repository.get_by_business_type(self.request.from_business_id, self.request.resource_type)
-        if not resource or resource.quantity < self.request.quantity:
-            raise InvalidDataException(f"Source business does not have {self.request.quantity}x '{self.request.resource_type}'.")
+        inventory = await self.business_inventory_repository.get_by_business_catalogue(self.request.from_business_id, self.request.catalogue_id)
+        if not inventory or inventory.quantity < self.request.quantity:
+            raise InvalidDataException(f"Source business does not have {self.request.quantity}x catalogue item {self.request.catalogue_id}.")
 
-        resource.quantity -= self.request.quantity
-        resource_updated = await self.business_resource_repository.update(resource)
-        if not resource_updated:
-            raise UpdateFailedException("Failed to deduct resources from source business.")
+        inventory.quantity -= self.request.quantity
+        inventory_updated = await self.business_inventory_repository.update(inventory)
+        if not inventory_updated:
+            raise UpdateFailedException("Failed to deduct inventory from source business.")
 
         _, speed_setting = server_config.server_settings.get_by_key("travel_speed")
         travel_speed = int(speed_setting.value) if speed_setting else 10
@@ -72,7 +72,7 @@ class StartTransportCommand:
             player_id=player_profile.player.player_id,
             from_business_id=self.request.from_business_id,
             to_business_id=self.request.to_business_id,
-            resource_type=self.request.resource_type,
+            catalogue_id=self.request.catalogue_id,
             quantity=self.request.quantity,
             status='in_transit',
             arrive_at=arrive_at

@@ -10,9 +10,11 @@ class PlayerStockRepository(BaseRepository, IRepository):
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS player_stocks (
                 player_stock_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                server_id INTEGER,
                 player_id INTEGER NOT NULL,
                 business_id INTEGER NOT NULL,
                 quantity INTEGER NOT NULL DEFAULT 0,
+                last_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY(player_id) REFERENCES players(player_id),
                 FOREIGN KEY(business_id) REFERENCES businesses(business_id),
                 UNIQUE(player_id, business_id)
@@ -57,14 +59,14 @@ class PlayerStockRepository(BaseRepository, IRepository):
 
     async def insert(self, stock: PlayerStock) -> int:
         return await super().insert(
-            "INSERT INTO player_stocks (player_id, business_id, quantity) VALUES (?, ?, ?)",
-            stock.player_id, stock.business_id, stock.quantity
+            "INSERT INTO player_stocks (server_id, player_id, business_id, quantity, last_updated_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)",
+            stock.server_id, stock.player_id, stock.business_id, stock.quantity
         )
 
     async def update(self, stock: PlayerStock) -> bool:
         affected = await super().update(
-            "UPDATE player_stocks SET player_id = ?, business_id = ?, quantity = ? WHERE player_stock_id = ?",
-            stock.player_id, stock.business_id, stock.quantity, stock.player_stock_id
+            "UPDATE player_stocks SET server_id = ?, player_id = ?, business_id = ?, quantity = ?, last_updated_at = CURRENT_TIMESTAMP WHERE player_stock_id = ?",
+            stock.server_id, stock.player_id, stock.business_id, stock.quantity, stock.player_stock_id
         )
         return affected > 0
 

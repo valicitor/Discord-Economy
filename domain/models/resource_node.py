@@ -10,6 +10,7 @@ class ResourceNode:
         self.max_quantity: int = kwargs.get('max_quantity', 100)
         self.regen_rate: int = kwargs.get('regen_rate', 5)
         self.discovered: bool = bool(kwargs.get('discovered', False))
+        self.last_updated_at: str|None = kwargs.get('last_updated_at')
 
     def to_dict(self):
         return {
@@ -21,4 +22,5 @@ class ResourceNode:
             'max_quantity': self.max_quantity,
             'regen_rate': self.regen_rate,
             'discovered': self.discovered,
+            'last_updated_at': self.last_updated_at,
         }

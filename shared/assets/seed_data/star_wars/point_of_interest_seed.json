@@ -18,7 +18,7 @@
       { "name": "Balmorra",                 "type": "Important World",  "x": 3598,  "y": 3288,   "owner_player_id": null },
 
       { "name": "Nal Hutta",                "type": "Capital World",   "x": 5014,   "y": 3700,   "owner_player_id": null },
-      { "name": "& Nar Shaddaa",            "type": "No Marker",       "x": 5014,   "y": 3740,   "owner_player_id": null },
+      { "name": "Nar Shaddaa",              "type": "No Marker",       "x": 5014,   "y": 3740,   "owner_player_id": null },
       { "name": "Ord Mantell",              "type": "Primary World",   "x": 3072,   "y": 2428,   "owner_player_id": null },
 
       { "name": "Belsavis",                 "type": "Important World", "x": 3176,   "y": 5406,    "owner_player_id": null },

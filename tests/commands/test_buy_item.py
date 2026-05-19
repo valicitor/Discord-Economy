@@ -55,7 +55,7 @@ class TestBuyItemCommand(unittest.TestCase):
         request = BuyItemCommandRequest(
             guild=self.default_setup.discord_guild,
             user=self.default_setup.discord_user1,
-            item_id=3,
+            item_id=8,
             item_name=None,
             quantity=1
         )
@@ -64,7 +64,7 @@ class TestBuyItemCommand(unittest.TestCase):
         response = asyncio.run(BuyItemCommand(request).execute())
 
         # Assert item returned
-        self.assertEqual(response.shop_item.item_id, 3)
+        self.assertEqual(response.shop_item.item_id, 8)
         self.assertTrue(response.success)
 
         # Assert balance was deducted by item price

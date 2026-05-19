@@ -1,91 +1,89 @@
-from domain import BusinessResource, IRepository
+from domain import BusinessInventory, IRepository
 from infrastructure import BaseRepository
 from typing import List, Optional
 
 
-class BusinessResourceRepository(BaseRepository, IRepository):
+class BusinessInventoryRepository(BaseRepository, IRepository):
 
     async def init_database(self):
         conn = await super().acquire_connection()
         await conn.execute("""
-            CREATE TABLE IF NOT EXISTS business_resources (
-                resource_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            CREATE TABLE IF NOT EXISTS business_inventory (
+                inventory_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                server_id INTEGER,
                 business_id INTEGER NOT NULL,
-                resource_type TEXT NOT NULL,
+                catalogue_id INTEGER NOT NULL,
                 quantity INTEGER NOT NULL DEFAULT 0,
-                required_quantity INTEGER NOT NULL DEFAULT 0,
+                last_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY(business_id) REFERENCES businesses(business_id),
-                UNIQUE(business_id, resource_type)
+                FOREIGN KEY(catalogue_id) REFERENCES catalogue(catalogue_id),
+                UNIQUE(business_id, catalogue_id)
             )
         """)
         await conn.commit()
 
     async def drop_table(self):
-        await super().execute("DROP TABLE IF EXISTS business_resources")
+        await super().execute("DROP TABLE IF EXISTS business_inventory")
 
     async def clear_all(self) -> bool:
-        affected = await super().delete("DELETE FROM business_resources")
-        await super().execute("DELETE FROM sqlite_sequence WHERE name = ?", "business_resources")
+        affected = await super().delete("DELETE FROM business_inventory")
+        await super().execute("DELETE FROM sqlite_sequence WHERE name = ?", "business_inventory")
         return affected > 0
 
-    async def get_by_id(self, resource_id: int) -> Optional[BusinessResource]:
-        row = await super().fetchrow("SELECT * FROM business_resources WHERE resource_id = ?", resource_id)
-        return BusinessResource(data=dict(row)) if row else None
+    async def get_by_id(self, inventory_id: int) -> Optional[BusinessInventory]:
+        row = await super().fetchrow("SELECT * FROM business_inventory WHERE inventory_id = ?", inventory_id)
+        return BusinessInventory(data=dict(row)) if row else None
 
-    async def get_all(self) -> List[BusinessResource]:
-        rows = await super().fetch("SELECT * FROM business_resources")
-        return [BusinessResource(data=dict(row)) for row in rows]
+    async def get_all(self) -> List[BusinessInventory]:
+        rows = await super().fetch("SELECT * FROM business_inventory")
+        return [BusinessInventory(data=dict(row)) for row in rows]
 
-    async def get_all_by_business(self, business_id: int) -> List[BusinessResource]:
-        rows = await super().fetch("SELECT * FROM business_resources WHERE business_id = ?", business_id)
-        return [BusinessResource(data=dict(row)) for row in rows]
+    async def get_all_by_business(self, business_id: int) -> List[BusinessInventory]:
+        rows = await super().fetch("SELECT * FROM business_inventory WHERE business_id = ?", business_id)
+        return [BusinessInventory(data=dict(row)) for row in rows]
 
-    async def get_by_business_type(self, business_id: int, resource_type: str) -> Optional[BusinessResource]:
+    async def get_by_business_catalogue(self, business_id: int, catalogue_id: int) -> Optional[BusinessInventory]:
         row = await super().fetchrow(
-            "SELECT * FROM business_resources WHERE business_id = ? AND resource_type = ?",
-            business_id, resource_type
+            "SELECT * FROM business_inventory WHERE business_id = ? AND catalogue_id = ?",
+            business_id, catalogue_id
         )
-        return BusinessResource(data=dict(row)) if row else None
+        return BusinessInventory(data=dict(row)) if row else None
 
-    async def get_demanded_by_server(self, server_id: int, exclude_business_id: int) -> List[BusinessResource]:
+    async def get_nonempty_by_server(self, server_id: int, exclude_business_id: int) -> List[BusinessInventory]:
         rows = await super().fetch(
             """
-            SELECT br.* FROM business_resources br
-            JOIN businesses b ON br.business_id = b.business_id
-            WHERE b.server_id = ? AND br.required_quantity > br.quantity AND br.business_id != ?
+            SELECT bi.* FROM business_inventory bi
+            JOIN businesses b ON bi.business_id = b.business_id
+            WHERE b.server_id = ? AND bi.quantity > 0 AND bi.business_id != ?
             """,
             server_id, exclude_business_id
         )
-        return [BusinessResource(data=dict(row)) for row in rows]
+        return [BusinessInventory(data=dict(row)) for row in rows]
 
-    async def get_requirements(self, business_id: int) -> List[BusinessResource]:
-        rows = await super().fetch(
-            "SELECT * FROM business_resources WHERE business_id = ? AND required_quantity > 0",
-            business_id
-        )
-        return [BusinessResource(data=dict(row)) for row in rows]
-
-    async def exists(self, resource_id: int) -> bool:
-        row = await super().fetchrow("SELECT 1 FROM business_resources WHERE resource_id = ?", resource_id)
+    async def exists(self, inventory_id: int) -> bool:
+        row = await super().fetchrow("SELECT 1 FROM business_inventory WHERE inventory_id = ?", inventory_id)
         return row is not None
 
-    async def insert(self, resource: BusinessResource) -> int:
+    async def insert(self, inventory: BusinessInventory) -> int:
         return await super().insert(
-            "INSERT INTO business_resources (business_id, resource_type, quantity, required_quantity) VALUES (?, ?, ?, ?)",
-            resource.business_id, resource.resource_type, resource.quantity, resource.required_quantity
+            "INSERT INTO business_inventory (server_id, business_id, catalogue_id, quantity, last_updated_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)",
+            inventory.server_id, inventory.business_id, inventory.catalogue_id, inventory.quantity
         )
 
-    async def update(self, resource: BusinessResource) -> bool:
+    async def update(self, inventory: BusinessInventory) -> bool:
         affected = await super().update(
-            "UPDATE business_resources SET business_id = ?, resource_type = ?, quantity = ?, required_quantity = ? WHERE resource_id = ?",
-            resource.business_id, resource.resource_type, resource.quantity, resource.required_quantity, resource.resource_id
+            "UPDATE business_inventory SET server_id = ?, business_id = ?, catalogue_id = ?, quantity = ?, last_updated_at = CURRENT_TIMESTAMP WHERE inventory_id = ?",
+            inventory.server_id, inventory.business_id, inventory.catalogue_id, inventory.quantity, inventory.inventory_id
         )
         return affected > 0
 
-    async def delete(self, resource: BusinessResource) -> bool:
-        affected = await super().delete("DELETE FROM business_resources WHERE resource_id = ?", resource.resource_id)
+    async def delete(self, inventory: BusinessInventory) -> bool:
+        affected = await super().delete("DELETE FROM business_inventory WHERE inventory_id = ?", inventory.inventory_id)
         return affected > 0
 
-    async def delete_all(self, business_id: int) -> bool:
-        affected = await super().delete("DELETE FROM business_resources WHERE business_id = ?", business_id)
+    async def delete_all(self, business_id: int = None) -> bool:
+        if business_id:
+            affected = await super().delete("DELETE FROM business_inventory WHERE business_id = ?", business_id)
+        else:
+            affected = await super().delete("DELETE FROM business_inventory")
         return affected > 0

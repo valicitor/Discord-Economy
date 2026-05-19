@@ -1,3 +1,5 @@
+import asyncio
+
 from attr import dataclass
 
 from infrastructure import ItemRepository, PlayerBalanceRepository, PlayerInventoryRepository, CatalogueRepository, PlayerUnitRepository, BusinessRepository
@@ -29,12 +31,21 @@ class SellItemCommand:
         self.request = request
 
     async def execute(self) -> SellItemCommandResponse:
-        self.item_repository = await ItemRepository().get_instance()
-        self.player_balance_repository = await PlayerBalanceRepository().get_instance()
-        self.player_inventory_repository = await PlayerInventoryRepository().get_instance()
-        self.catalogue_repository = await CatalogueRepository().get_instance()
-        self.player_unit_repository = await PlayerUnitRepository().get_instance()
-        self.business_repository = await BusinessRepository().get_instance()
+        (
+            self.item_repository,
+            self.player_balance_repository,
+            self.player_inventory_repository,
+            self.catalogue_repository,
+            self.player_unit_repository,
+            self.business_repository,
+        ) = await asyncio.gather(
+            ItemRepository().get_instance(),
+            PlayerBalanceRepository().get_instance(),
+            PlayerInventoryRepository().get_instance(),
+            CatalogueRepository().get_instance(),
+            PlayerUnitRepository().get_instance(),
+            BusinessRepository().get_instance(),
+        )
 
         if self.request.item_id is None and self.request.item_name is None:
             raise InvalidDataException("Either item_id or item_name must be provided.")

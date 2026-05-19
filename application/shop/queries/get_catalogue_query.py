@@ -3,7 +3,7 @@ import json
 from attr import dataclass
 
 from domain import Catalogue, Keyword
-from domain import RecordNotFoundException, InvalidDataException
+from domain import InvalidDataException
 from infrastructure import CatalogueRepository, KeywordRepository
 
 from application import DiscordGuild, ServerConfig
@@ -37,7 +37,7 @@ class GetCatalogueQuery:
         catalogue_item = await self.catalogue_repository.get_by_name(self.request.name, server_config.server.server_id)
         related_items = []
         if not catalogue_item:
-            raise RecordNotFoundException(f"Catalogue item with name '{self.request.name}' not found in guild '{self.request.guild.guild_id}'")
+            return GetCatalogueQueryResponse(success=True, server_config=server_config, catalogue_item=None, related_items=[], keywords=[])
     
         metadata = json.loads(catalogue_item.metadata)
         keywords = metadata.get("keywords", [])

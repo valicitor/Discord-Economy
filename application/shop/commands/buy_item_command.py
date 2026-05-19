@@ -1,3 +1,4 @@
+import asyncio
 import json
 
 from attr import dataclass
@@ -28,12 +29,21 @@ class BuyItemCommand:
         self.request = request
 
     async def execute(self) -> BuyItemCommandResponse:
-        self.item_repository = await ItemRepository().get_instance()
-        self.player_balance_repository = await PlayerBalanceRepository().get_instance()
-        self.player_inventory_repository = await PlayerInventoryRepository().get_instance()
-        self.catalogue_repository = await CatalogueRepository().get_instance()
-        self.player_unit_repository = await PlayerUnitRepository().get_instance()
-        self.business_repository = await BusinessRepository().get_instance()
+        (
+            self.item_repository,
+            self.player_balance_repository,
+            self.player_inventory_repository,
+            self.catalogue_repository,
+            self.player_unit_repository,
+            self.business_repository,
+        ) = await asyncio.gather(
+            ItemRepository().get_instance(),
+            PlayerBalanceRepository().get_instance(),
+            PlayerInventoryRepository().get_instance(),
+            CatalogueRepository().get_instance(),
+            PlayerUnitRepository().get_instance(),
+            BusinessRepository().get_instance(),
+        )
 
         if self.request.item_id is None and self.request.item_name is None:
             raise InvalidDataException("Either item_id or item_name must be provided.")
@@ -91,12 +101,15 @@ class BuyItemCommand:
                 if not isinstance(starting_gear, dict):
                     raise InvalidDataException("Catalogue item metadata is not valid.")
 
+                gear_names = list(starting_gear.values())
+                fetched = await asyncio.gather(*[
+                    self.catalogue_repository.get_by_name(name, server_config.server.server_id)
+                    for name in gear_names
+                ])
                 related_catalogue_items = []
-                for item_name in starting_gear.values():
-                    related_catalogue_item = await self.catalogue_repository.get_by_name(item_name, server_config.server.server_id)
+                for name, related_catalogue_item in zip(gear_names, fetched):
                     if not related_catalogue_item:
-                        raise RecordNotFoundException(f"Catalogue item with name '{item_name}' not found in guild '{self.request.guild.guild_id}'")
-
+                        raise RecordNotFoundException(f"Catalogue item with name '{name}' not found in guild '{self.request.guild.guild_id}'")
                     related_catalogue_items.append(related_catalogue_item)
                     success = await self._add_item_to_inventory(player_profile, related_catalogue_item, True)
 

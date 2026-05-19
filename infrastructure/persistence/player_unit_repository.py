@@ -18,11 +18,13 @@ class PlayerUnitRepository(BaseRepository, IRepository):
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS player_units (
                 unit_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                server_id INTEGER,
                 player_id INTEGER NOT NULL,
                 name TEXT NOT NULL,
                 quantity INTEGER NOT NULL,
                 custom BOOLEAN NOT NULL DEFAULT 1,
                 metadata TEXT,
+                last_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY(player_id) REFERENCES players(player_id),
                 UNIQUE(name, player_id)
             )
@@ -98,7 +100,8 @@ class PlayerUnitRepository(BaseRepository, IRepository):
 
     async def insert(self, unit: PlayerUnit) -> int:
         return await super().insert(
-            "INSERT INTO player_units (player_id, name, quantity, custom, metadata) VALUES (?, ?, ?, ?, ?)",
+            "INSERT INTO player_units (server_id, player_id, name, quantity, custom, metadata, last_updated_at) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)",
+            unit.server_id,
             unit.player_id,
             unit.name,
             unit.quantity,
@@ -108,7 +111,8 @@ class PlayerUnitRepository(BaseRepository, IRepository):
 
     async def update(self, unit: PlayerUnit) -> bool:
         affected = await super().update(
-            "UPDATE player_units SET player_id = ?, name = ?, quantity = ?, custom = ?, metadata = ? WHERE unit_id = ?",
+            "UPDATE player_units SET server_id = ?, player_id = ?, name = ?, quantity = ?, custom = ?, metadata = ?, last_updated_at = CURRENT_TIMESTAMP WHERE unit_id = ?",
+            unit.server_id,
             unit.player_id,
             unit.name,
             unit.quantity,

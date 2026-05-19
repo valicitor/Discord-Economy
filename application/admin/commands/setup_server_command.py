@@ -1,3 +1,4 @@
+import asyncio
 import os
 
 from attr import dataclass
@@ -6,13 +7,12 @@ from config import BASE_DIR
 from domain import Server, Currency, ServerSetting, Faction, Bank
 from domain import CreateFailedException, SeederErrorException, RecordNotFoundException
 from infrastructure import ServerRepository, CurrencyRepository, ServerSettingRepository, FactionRepository, BankRepository
-from infrastructure import BusinessesSeeder, ActionsSeeder, PointOfInterestSeeder, LocationsSeeder, CatalogueSeeder, KeywordsSeeder, ShopItemsSeeder, ResourceNodesSeeder, RecipesSeeder
+from infrastructure import BusinessesSeeder, ActionsSeeder, PointOfInterestSeeder, LocationsSeeder, CatalogueSeeder, KeywordsSeeder, ShopItemsSeeder, ResourceNodesSeeder, RecipesSeeder, LocationPoliciesSeeder
 from application import DiscordGuild, ServerConfig, ServerSettingsCollection
 
 @dataclass
 class SetupServerCommandRequest:
     guild: DiscordGuild
-    seed_data: bool = False
     theme: str = "star_wars"
 
 @dataclass
@@ -26,11 +26,19 @@ class SetupServerCommand:
         return
 
     async def execute(self) -> SetupServerCommandResponse:
-        server_repo = await ServerRepository().get_instance()
-        server_setting_repo = await ServerSettingRepository().get_instance()
-        currency_repo = await CurrencyRepository().get_instance()
-        faction_repo = await FactionRepository().get_instance()
-        bank_repo = await BankRepository().get_instance()
+        (
+            server_repo,
+            server_setting_repo,
+            currency_repo,
+            faction_repo,
+            bank_repo,
+        ) = await asyncio.gather(
+            ServerRepository().get_instance(),
+            ServerSettingRepository().get_instance(),
+            CurrencyRepository().get_instance(),
+            FactionRepository().get_instance(),
+            BankRepository().get_instance(),
+        )
 
         create_new_server = False
 
@@ -82,7 +90,7 @@ class SetupServerCommand:
                     raise CreateFailedException(f"Failed to to initialize server data for guild ID {self.request.guild.guild_id}: {str(e)}")
 
         # Don't wrap in a transaction since seeders may create their own transactions
-        if create_new_server and self.request.seed_data and self.request.theme != "none":
+        if create_new_server and self.request.theme != "none":
             theme_dir = os.path.join(BASE_DIR, "shared", "assets", "seed_data", self.request.theme)
 
             def seed_path(filename: str) -> str:
@@ -109,6 +117,11 @@ class SetupServerCommand:
                 result = await locations_seeder.seed(server_id=server_id, seed_file=seed_path("point_of_interest_seed.json"))
                 if not result.status == "completed":
                     raise SeederErrorException(f"Failed to seed locations for guild ID {self.request.guild.guild_id}.")
+
+                location_policies_seeder = LocationPoliciesSeeder()
+                result = await location_policies_seeder.seed(server_id=server_id)
+                if not result.status == "completed":
+                    raise SeederErrorException(f"Failed to seed location policies for guild ID {self.request.guild.guild_id}.")
 
                 catalogue_seeder = CatalogueSeeder()
                 result = await catalogue_seeder.seed(server_id=server_id, seed_file=seed_path("catalogue_seed.json"))
