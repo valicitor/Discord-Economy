@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.abspath(BASE_DIR))
 
 import unittest
 from application import DepositCommand, DepositCommandRequest
+from domain import InvalidDataException
 from tests.helper.default_setup import DefaultSetup
 
 class TestDepositCommand(unittest.TestCase):
@@ -55,7 +56,7 @@ class TestDepositCommand(unittest.TestCase):
         )
 
         # Act & Assert
-        with self.assertRaises(ValueError):  # Assuming ValueError is raised for invalid deposits
+        with self.assertRaises(InvalidDataException):
             asyncio.run(DepositCommand(deposit_request).execute())
 
     def test_zero_deposit(self):
@@ -68,7 +69,7 @@ class TestDepositCommand(unittest.TestCase):
         )
 
         # Act & Assert
-        with self.assertRaises(ValueError):  # Assuming ValueError is raised for invalid deposits
+        with self.assertRaises(InvalidDataException):
             asyncio.run(DepositCommand(deposit_request).execute())
 
 

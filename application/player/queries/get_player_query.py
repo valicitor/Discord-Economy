@@ -1,3 +1,5 @@
+import asyncio
+
 from attr import dataclass
 
 from domain import RecordNotFoundException
@@ -38,14 +40,25 @@ class GetPlayerQuery:
         return
 
     async def execute(self) -> GetPlayerQueryResponse:
-        player_repo = await PlayerRepository().get_instance()
-        player_balance_repo = await PlayerBalanceRepository().get_instance()
-        bank_account_repo = await BankAccountRepository().get_instance()
-        faction_member_repo = await FactionMemberRepository().get_instance()
-        faction_repo = await FactionRepository().get_instance()
-        player_action_repo = await PlayerActionRepository().get_instance()
-        player_inventory_repo = await PlayerInventoryRepository().get_instance()
-        player_units_repo = await PlayerUnitRepository().get_instance()
+        (
+            player_repo,
+            player_balance_repo,
+            bank_account_repo,
+            faction_member_repo,
+            faction_repo,
+            player_action_repo,
+            player_inventory_repo,
+            player_units_repo,
+        ) = await asyncio.gather(
+            PlayerRepository().get_instance(),
+            PlayerBalanceRepository().get_instance(),
+            BankAccountRepository().get_instance(),
+            FactionMemberRepository().get_instance(),
+            FactionRepository().get_instance(),
+            PlayerActionRepository().get_instance(),
+            PlayerInventoryRepository().get_instance(),
+            PlayerUnitRepository().get_instance(),
+        )
 
         player_exists = await player_repo.exists_by_discord_id(self.request.discord_user_id, self.request.discord_guild_id)
         if not player_exists:

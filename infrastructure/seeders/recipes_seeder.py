@@ -1,22 +1,22 @@
-from domain import Recipe, RecipeIngredient, BusinessResource, SeederErrorException
-from infrastructure import BaseSeeder, SeederResult, RecipeRepository, RecipeIngredientRepository, BusinessRepository, BusinessResourceRepository
+from domain import Recipe, RecipeInput, RecipeOutput, SeederErrorException
+from infrastructure import BaseSeeder, SeederResult, RecipeRepository, RecipeInputRepository, RecipeOutputRepository, CatalogueRepository
 
 
 class RecipesSeeder(BaseSeeder):
     def __init__(self, server_id: int|None = None):
         super().__init__(server_id=server_id)
         self.recipe_repo: RecipeRepository | None = None
-        self.ingredient_repo: RecipeIngredientRepository | None = None
-        self.business_repo: BusinessRepository | None = None
-        self.business_resource_repo: BusinessResourceRepository | None = None
+        self.input_repo: RecipeInputRepository | None = None
+        self.output_repo: RecipeOutputRepository | None = None
+        self.catalogue_repo: CatalogueRepository | None = None
 
     @classmethod
     async def seed(cls, server_id: int, seed_file: str | None = None) -> SeederResult:
         seeder = cls(server_id=server_id)
         seeder.recipe_repo = await RecipeRepository().get_instance()
-        seeder.ingredient_repo = await RecipeIngredientRepository().get_instance()
-        seeder.business_repo = await BusinessRepository().get_instance()
-        seeder.business_resource_repo = await BusinessResourceRepository().get_instance()
+        seeder.input_repo = await RecipeInputRepository().get_instance()
+        seeder.output_repo = await RecipeOutputRepository().get_instance()
+        seeder.catalogue_repo = await CatalogueRepository().get_instance()
 
         file_path = seeder._resolve_seed_file(seed_file, "recipes_seed.json")
         return await seeder._seed(file_path)
@@ -32,7 +32,7 @@ class RecipesSeeder(BaseSeeder):
         failed = 0
 
         async with self.recipe_repo.transaction():
-            existing = await self.recipe_repo.get_all()
+            existing = await self.recipe_repo.get_all_by_server(self.server_id)
             if existing:
                 return SeederResult(
                     status="skipped",
@@ -43,56 +43,40 @@ class RecipesSeeder(BaseSeeder):
 
             for r in data["recipes"]["data"]:
                 try:
-                    business = await self.business_repo.get_by_name(r["business_name"], self.server_id)
-                    if not business:
-                        skipped += 1
-                        continue
-
                     recipe = Recipe(
-                        business_id=business.business_id,
+                        server_id=self.server_id,
                         name=r["name"],
-                        output_type=r["output_type"],
-                        output_resource_type=r.get("output_resource_type"),
-                        output_catalogue_id=r.get("output_catalogue_id"),
-                        output_quantity=r.get("output_quantity", 1),
                     )
                     recipe_id = await self.recipe_repo.insert(recipe)
                     if not recipe_id:
                         failed += 1
                         continue
 
-                    for ing in r.get("ingredients", []):
-                        ingredient = RecipeIngredient(
+                    for inp in r.get("inputs", []):
+                        catalogue_entry = await self.catalogue_repo.get_by_name(inp["catalogue_name"], self.server_id)
+                        if not catalogue_entry:
+                            failed += 1
+                            continue
+                        recipe_input = RecipeInput(
                             recipe_id=recipe_id,
-                            resource_type=ing["resource_type"],
-                            quantity=ing.get("quantity", 1),
+                            catalogue_id=catalogue_entry.catalogue_id,
+                            quantity=inp.get("quantity", 1),
                         )
-                        await self.ingredient_repo.insert(ingredient)
+                        await self.input_repo.insert(recipe_input)
+
+                    for out in r.get("outputs", []):
+                        catalogue_entry = await self.catalogue_repo.get_by_name(out["catalogue_name"], self.server_id)
+                        if not catalogue_entry:
+                            failed += 1
+                            continue
+                        recipe_output = RecipeOutput(
+                            recipe_id=recipe_id,
+                            catalogue_id=catalogue_entry.catalogue_id,
+                            quantity=out.get("quantity", 1),
+                        )
+                        await self.output_repo.insert(recipe_output)
 
                     inserted += 1
-                except Exception:
-                    failed += 1
-
-            for br_data in data.get("business_resources", {}).get("data", []):
-                try:
-                    business = await self.business_repo.get_by_name(br_data["business_name"], self.server_id)
-                    if not business:
-                        skipped += 1
-                        continue
-
-                    existing_br = await self.business_resource_repo.get_by_business_type(
-                        business.business_id, br_data["resource_type"]
-                    )
-                    if existing_br:
-                        continue
-
-                    br = BusinessResource(
-                        business_id=business.business_id,
-                        resource_type=br_data["resource_type"],
-                        quantity=br_data.get("quantity", 0),
-                        required_quantity=br_data.get("required_quantity", 0),
-                    )
-                    await self.business_resource_repo.insert(br)
                 except Exception:
                     failed += 1
 

@@ -119,6 +119,18 @@ class DiscordShopEmbed:
             return view
 
         async def _build(self):
+            if not self.response.catalogue_item:
+                self.add_item(
+                    discord.ui.Container(
+                        discord.ui.TextDisplay(content="## Catalogue"),
+                        discord.ui.Separator(),
+                        discord.ui.TextDisplay(content="No catalogue item found."),
+                        accent_color=discord.Color.light_grey(),
+                        spoiler=False
+                    )
+                )
+                return
+
             slots_subtitle = None
             keywords_explanation_components = []
             related_items_components = []

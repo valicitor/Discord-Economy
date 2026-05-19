@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.abspath(BASE_DIR))
 
 import unittest
 from application import WithdrawCommand, WithdrawCommandRequest
+from domain import InvalidDataException
 from tests.helper.default_setup import DefaultSetup
 
 class TestWithdrawCommand(unittest.TestCase):
@@ -55,7 +56,7 @@ class TestWithdrawCommand(unittest.TestCase):
         )
 
         # Act & Assert
-        with self.assertRaises(ValueError):  # Assuming ValueError is raised for invalid withdrawals
+        with self.assertRaises(InvalidDataException):
             asyncio.run(WithdrawCommand(withdraw_request).execute())
 
     def test_zero_withdraw(self):
@@ -68,7 +69,7 @@ class TestWithdrawCommand(unittest.TestCase):
         )
 
         # Act & Assert
-        with self.assertRaises(ValueError):  # Assuming ValueError is raised for invalid withdrawals
+        with self.assertRaises(InvalidDataException):
             asyncio.run(WithdrawCommand(withdraw_request).execute())
 
 if __name__ == "__main__":

@@ -40,11 +40,13 @@ from .models.business_stock import BusinessStock
 from .models.player_stock import PlayerStock
 from .models.loan import Loan
 from .models.resource_node import ResourceNode
-from .models.business_resource import BusinessResource
+from .models.business_resource import BusinessInventory
 from .models.exchange_rate import ExchangeRate
 from .models.transport import Transport
 from .models.recipe import Recipe
-from .models.recipe_ingredient import RecipeIngredient
+from .models.recipe_ingredient import RecipeInput
+from .models.recipe_output import RecipeOutput
+from .models.location_policy import LocationPolicy
 
 # --- Exceptions ---
 from .exceptions.record_not_found_exception import RecordNotFoundException
@@ -93,11 +95,13 @@ __all__ = [
     "PlayerStock",
     "Loan",
     "ResourceNode",
-    "BusinessResource",
+    "BusinessInventory",
     "ExchangeRate",
     "Transport",
     "Recipe",
-    "RecipeIngredient",
+    "RecipeInput",
+    "RecipeOutput",
+    "LocationPolicy",
     "RecordNotFoundException",
     "CreateFailedException",
     "InsertFailedException",

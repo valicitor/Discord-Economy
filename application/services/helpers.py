@@ -56,7 +56,7 @@ class Helpers:
     
     @staticmethod
     async def ensure_guild(discord_guild: DiscordGuild) -> ServerConfig:
-        request = SetupServerCommandRequest(guild=discord_guild, seed_data=True)
+        request = SetupServerCommandRequest(guild=discord_guild)
         await SetupServerCommand(request).execute()
 
         return await Helpers.get_server_config(discord_guild_id=discord_guild.guild_id)
@@ -73,12 +73,9 @@ class Helpers:
     async def ensure_users(server_config: ServerConfig, discord_users: list[DiscordUser] | None = None) -> list[PlayerProfile]:
         if not discord_users:
             return []
-        
         player_profiles = []
         for discord_user in discord_users:
-            player_profile = await Helpers.ensure_user(server_config, discord_user)
-            player_profiles.append(player_profile)
-        
+            player_profiles.append(await Helpers.ensure_user(server_config, discord_user))
         return player_profiles
 
     @staticmethod

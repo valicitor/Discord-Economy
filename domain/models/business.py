@@ -12,6 +12,7 @@ class Business:
         self.x: int|None = kwargs.get('x')
         self.y: int|None = kwargs.get('y')
         self.range: int|None = kwargs.get('range')
+        self.recipe_id: int|None = kwargs.get('recipe_id')
         self.metadata: dict = kwargs.get('metadata', {})  # flexible traits
 
     def to_dict(self):
@@ -25,5 +26,6 @@ class Business:
             'x': self.x,
             'y': self.y,
             'range': self.range,
+            'recipe_id': self.recipe_id,
             'metadata': self.metadata
         }

@@ -1,9 +1,9 @@
 from attr import dataclass
 
-from infrastructure import TransportRepository, BusinessResourceRepository
+from infrastructure import TransportRepository, BusinessInventoryRepository
 from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
 from application.services.helpers import Helpers
-from domain import Transport, BusinessResource, RecordNotFoundException, UpdateFailedException
+from domain import Transport, BusinessInventory, RecordNotFoundException, UpdateFailedException
 
 @dataclass
 class CompleteTransportCommandRequest:
@@ -24,7 +24,7 @@ class CompleteTransportCommand:
 
     async def execute(self) -> CompleteTransportCommandResponse:
         self.transport_repository = await TransportRepository().get_instance()
-        self.business_resource_repository = await BusinessResourceRepository().get_instance()
+        self.business_inventory_repository = await BusinessInventoryRepository().get_instance()
 
         server_config = await Helpers.get_server_config(self.request.guild.guild_id)
         player_profile = await Helpers.get_player_profile(self.request.guild.guild_id, self.request.user.user_id)
@@ -33,23 +33,29 @@ class CompleteTransportCommand:
         if not arrived:
             raise RecordNotFoundException("No transports have arrived yet.")
 
+        # Bulk-load destination inventory for all arrived transports upfront
+        dest_business_ids = {t.to_business_id for t in arrived}
+        all_dest_inventory = []
+        for bid in dest_business_ids:
+            all_dest_inventory.extend(await self.business_inventory_repository.get_all_by_business(bid))
+        dest_inv_map = {(i.business_id, i.catalogue_id): i for i in all_dest_inventory}
+
         completed = []
         for transport in arrived:
-            resource = await self.business_resource_repository.get_by_business_type(transport.to_business_id, transport.resource_type)
-            if resource:
-                resource.quantity += transport.quantity
-                updated = await self.business_resource_repository.update(resource)
+            inventory = dest_inv_map.get((transport.to_business_id, transport.catalogue_id))
+            if inventory:
+                inventory.quantity += transport.quantity
+                updated = await self.business_inventory_repository.update(inventory)
             else:
-                new_resource = BusinessResource(
+                new_inventory = BusinessInventory(
                     business_id=transport.to_business_id,
-                    resource_type=transport.resource_type,
+                    catalogue_id=transport.catalogue_id,
                     quantity=transport.quantity,
-                    required_quantity=0
                 )
-                updated = await self.business_resource_repository.insert(new_resource)
+                updated = await self.business_inventory_repository.insert(new_inventory)
 
             if not updated:
-                raise UpdateFailedException(f"Failed to deliver resources for transport {transport.transport_id}.")
+                raise UpdateFailedException(f"Failed to deliver inventory for transport {transport.transport_id}.")
 
             transport.status = 'arrived'
             transport_updated = await self.transport_repository.update(transport)

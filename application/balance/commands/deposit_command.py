@@ -1,7 +1,7 @@
 from attr import dataclass
 
 from application import DiscordGuild, DiscordUser, ServerConfig, PlayerProfile
-from domain import InsufficientFundsException, UpdateFailedException, PermissionDeniedException
+from domain import InsufficientFundsException, UpdateFailedException, PermissionDeniedException, InvalidDataException
 from infrastructure import PlayerBalanceRepository, BankAccountRepository, BankRepository
 from application.services.helpers import Helpers
 
@@ -29,7 +29,7 @@ class DepositCommand:
         self.bank_repository = await BankRepository().get_instance()
 
         if self.request.amount is None or self.request.amount <= 0:
-            raise ValueError("Deposit amount must be greater than zero.")
+            raise InvalidDataException("Deposit amount must be greater than zero.")
 
         server_config = await Helpers.get_server_config(self.request.guild.guild_id)
         player_profile = await Helpers.get_player_profile(self.request.guild.guild_id, self.request.user.user_id)

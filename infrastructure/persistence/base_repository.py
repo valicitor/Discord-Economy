@@ -2,6 +2,7 @@ import aiosqlite
 import asyncio
 import os
 import contextvars
+from contextlib import asynccontextmanager
 
 
 # Per-coroutine transaction context
@@ -108,90 +109,58 @@ class BaseRepository:
 
     # ---------- Core Query Methods ----------
 
-    async def execute(self, query: str, *args):
+    @asynccontextmanager
+    async def _locked(self):
         conn, lock = await self._get_connection_and_lock()
-
         if lock:
             async with lock:
-                await conn.execute(query, args)
-                await conn.commit()
+                yield conn, True
         else:
+            yield conn, False
+
+    async def execute(self, query: str, *args):
+        async with self._locked() as (conn, commit):
             await conn.execute(query, args)
+            if commit:
+                await conn.commit()
 
     async def fetch(self, query: str, *args):
-        conn, lock = await self._get_connection_and_lock()
-
-        if lock:
-            async with lock:
-                cursor = await conn.execute(query, args)
-                rows = await cursor.fetchall()
-                await cursor.close()
-                return rows
-        else:
+        async with self._locked() as (conn, _):
             cursor = await conn.execute(query, args)
             rows = await cursor.fetchall()
             await cursor.close()
             return rows
 
     async def fetchrow(self, query: str, *args):
-        conn, lock = await self._get_connection_and_lock()
-
-        if lock:
-            async with lock:
-                cursor = await conn.execute(query, args)
-                row = await cursor.fetchone()
-                await cursor.close()
-                return row
-        else:
+        async with self._locked() as (conn, _):
             cursor = await conn.execute(query, args)
             row = await cursor.fetchone()
             await cursor.close()
             return row
 
     async def insert(self, query: str, *args) -> int:
-        conn, lock = await self._get_connection_and_lock()
-
-        if lock:
-            async with lock:
-                cursor = await conn.execute(query, args)
-                await conn.commit()
-                last_id = cursor.lastrowid
-                await cursor.close()
-                return last_id
-        else:
+        async with self._locked() as (conn, commit):
             cursor = await conn.execute(query, args)
+            if commit:
+                await conn.commit()
             last_id = cursor.lastrowid
             await cursor.close()
             return last_id
 
     async def update(self, query: str, *args) -> int:
-        conn, lock = await self._get_connection_and_lock()
-
-        if lock:
-            async with lock:
-                cursor = await conn.execute(query, args)
-                await conn.commit()
-                count = cursor.rowcount
-                await cursor.close()
-                return count
-        else:
+        async with self._locked() as (conn, commit):
             cursor = await conn.execute(query, args)
+            if commit:
+                await conn.commit()
             count = cursor.rowcount
             await cursor.close()
             return count
 
     async def delete(self, query: str, *args) -> int:
-        conn, lock = await self._get_connection_and_lock()
-
-        if lock:
-            async with lock:
-                cursor = await conn.execute(query, args)
-                await conn.commit()
-                count = cursor.rowcount
-                await cursor.close()
-                return count
-        else:
+        async with self._locked() as (conn, commit):
             cursor = await conn.execute(query, args)
+            if commit:
+                await conn.commit()
             count = cursor.rowcount
             await cursor.close()
             return count

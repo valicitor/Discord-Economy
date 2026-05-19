@@ -10,6 +10,7 @@ class LoanRepository(BaseRepository, IRepository):
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS loans (
                 loan_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                server_id INTEGER,
                 player_id INTEGER NOT NULL,
                 bank_id INTEGER NOT NULL,
                 principal INTEGER NOT NULL,
@@ -17,6 +18,7 @@ class LoanRepository(BaseRepository, IRepository):
                 balance_remaining INTEGER NOT NULL,
                 status TEXT NOT NULL DEFAULT 'active',
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                last_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY(player_id) REFERENCES players(player_id),
                 FOREIGN KEY(bank_id) REFERENCES banks(bank_id)
             )
@@ -61,14 +63,14 @@ class LoanRepository(BaseRepository, IRepository):
 
     async def insert(self, loan: Loan) -> int:
         return await super().insert(
-            "INSERT INTO loans (player_id, bank_id, principal, interest_rate, balance_remaining, status) VALUES (?, ?, ?, ?, ?, ?)",
-            loan.player_id, loan.bank_id, loan.principal, loan.interest_rate, loan.balance_remaining, loan.status
+            "INSERT INTO loans (server_id, player_id, bank_id, principal, interest_rate, balance_remaining, status, last_updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)",
+            loan.server_id, loan.player_id, loan.bank_id, loan.principal, loan.interest_rate, loan.balance_remaining, loan.status
         )
 
     async def update(self, loan: Loan) -> bool:
         affected = await super().update(
-            "UPDATE loans SET player_id = ?, bank_id = ?, principal = ?, interest_rate = ?, balance_remaining = ?, status = ? WHERE loan_id = ?",
-            loan.player_id, loan.bank_id, loan.principal, loan.interest_rate, loan.balance_remaining, loan.status, loan.loan_id
+            "UPDATE loans SET server_id = ?, player_id = ?, bank_id = ?, principal = ?, interest_rate = ?, balance_remaining = ?, status = ?, last_updated_at = CURRENT_TIMESTAMP WHERE loan_id = ?",
+            loan.server_id, loan.player_id, loan.bank_id, loan.principal, loan.interest_rate, loan.balance_remaining, loan.status, loan.loan_id
         )
         return affected > 0
 

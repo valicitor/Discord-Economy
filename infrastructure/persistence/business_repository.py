@@ -26,8 +26,10 @@ class BusinessRepository(BaseRepository, IRepository):
                 x REAL NOT NULL,
                 y REAL NOT NULL,
                 range INTEGER,
+                recipe_id INTEGER,
                 metadata TEXT,
                 FOREIGN KEY(server_id) REFERENCES servers(server_id),
+                FOREIGN KEY(recipe_id) REFERENCES recipes(recipe_id),
                 UNIQUE(name, server_id)
             )
         """)
@@ -103,7 +105,7 @@ class BusinessRepository(BaseRepository, IRepository):
 
     async def insert(self, business: Business) -> int:
         return await super().insert(
-            "INSERT INTO businesses (server_id, owner_id, name, description, type, x, y, range, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO businesses (server_id, owner_id, name, description, type, x, y, range, recipe_id, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             business.server_id,
             business.owner_id,
             business.name,
@@ -112,12 +114,13 @@ class BusinessRepository(BaseRepository, IRepository):
             business.x,
             business.y,
             business.range,
+            business.recipe_id,
             json.dumps(business.metadata) if isinstance(business.metadata, dict) else business.metadata
         )
     
     async def update(self, business: Business) -> bool:
         affected = await super().update(
-            "UPDATE businesses SET server_id = ?, owner_id = ?, name = ?, description = ?, type = ?, x = ?, y = ?, range = ?, metadata = ? WHERE business_id = ?",
+            "UPDATE businesses SET server_id = ?, owner_id = ?, name = ?, description = ?, type = ?, x = ?, y = ?, range = ?, recipe_id = ?, metadata = ? WHERE business_id = ?",
             business.server_id,
             business.owner_id,
             business.name,
@@ -126,6 +129,7 @@ class BusinessRepository(BaseRepository, IRepository):
             business.x,
             business.y,
             business.range,
+            business.recipe_id,
             json.dumps(business.metadata) if isinstance(business.metadata, dict) else business.metadata,
             business.business_id
         )

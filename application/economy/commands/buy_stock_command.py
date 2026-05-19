@@ -1,3 +1,5 @@
+import asyncio
+
 from attr import dataclass
 
 from infrastructure import BusinessStockRepository, PlayerStockRepository, PlayerBalanceRepository, BusinessRepository
@@ -27,10 +29,17 @@ class BuyStockCommand:
         self.request = request
 
     async def execute(self) -> BuyStockCommandResponse:
-        self.business_stock_repository = await BusinessStockRepository().get_instance()
-        self.player_stock_repository = await PlayerStockRepository().get_instance()
-        self.player_balance_repository = await PlayerBalanceRepository().get_instance()
-        self.business_repository = await BusinessRepository().get_instance()
+        (
+            self.business_stock_repository,
+            self.player_stock_repository,
+            self.player_balance_repository,
+            self.business_repository,
+        ) = await asyncio.gather(
+            BusinessStockRepository().get_instance(),
+            PlayerStockRepository().get_instance(),
+            PlayerBalanceRepository().get_instance(),
+            BusinessRepository().get_instance(),
+        )
 
         server_config = await Helpers.get_server_config(self.request.guild.guild_id)
         player_profile = await Helpers.get_player_profile(self.request.guild.guild_id, self.request.user.user_id)

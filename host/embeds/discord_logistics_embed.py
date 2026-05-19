@@ -127,7 +127,7 @@ class DiscordLogisticsEmbed:
                 discord.ui.Container(
                     discord.ui.TextDisplay(content="## 🚚 Transport Started"),
                     discord.ui.Separator(),
-                    discord.ui.TextDisplay(content=f"**Resource:** {transport.resource_type}"),
+                    discord.ui.TextDisplay(content=f"**Catalogue ID:** {transport.catalogue_id}"),
                     discord.ui.TextDisplay(content=f"**Quantity:** {transport.quantity}"),
                     discord.ui.TextDisplay(content=f"**Arrives At:** {transport.arrive_at}"),
                     discord.ui.Separator(),
@@ -166,7 +166,7 @@ class DiscordLogisticsEmbed:
             for transport in self.response.completed:
                 if transport_items:
                     transport_items.append(discord.ui.Separator())
-                transport_items.append(discord.ui.TextDisplay(content=f"**{transport.resource_type}**"))
+                transport_items.append(discord.ui.TextDisplay(content=f"**Catalogue ID {transport.catalogue_id}**"))
                 transport_items.append(discord.ui.TextDisplay(
                     content=f"Qty: **{transport.quantity}** → Business ID {transport.to_business_id}"
                 ))

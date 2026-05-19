@@ -1,3 +1,5 @@
+import asyncio
+
 from attr import dataclass
 
 from infrastructure import BusinessStockRepository, PlayerStockRepository, PlayerBalanceRepository, BusinessRepository
@@ -24,10 +26,17 @@ class PayDividendsCommand:
         self.request = request
 
     async def execute(self) -> PayDividendsCommandResponse:
-        self.business_stock_repository = await BusinessStockRepository().get_instance()
-        self.player_stock_repository = await PlayerStockRepository().get_instance()
-        self.player_balance_repository = await PlayerBalanceRepository().get_instance()
-        self.business_repository = await BusinessRepository().get_instance()
+        (
+            self.business_stock_repository,
+            self.player_stock_repository,
+            self.player_balance_repository,
+            self.business_repository,
+        ) = await asyncio.gather(
+            BusinessStockRepository().get_instance(),
+            PlayerStockRepository().get_instance(),
+            PlayerBalanceRepository().get_instance(),
+            BusinessRepository().get_instance(),
+        )
 
         server_config = await Helpers.get_server_config(self.request.guild.guild_id)
 
@@ -41,6 +50,18 @@ class PayDividendsCommand:
 
         player_stocks = await self.player_stock_repository.get_all_by_business_id(self.request.business_id)
 
+        _, default_currency = server_config.server_settings.get_by_key("default_currency_id")
+        default_currency_id = int(default_currency.value)
+
+        # Bulk-load balances for all shareholders at once
+        player_ids = list({ps.player_id for ps in player_stocks})
+        all_balances = []
+        for pid in player_ids:
+            all_balances.extend(await self.player_balance_repository.get_all(player_id=pid))
+        balances_by_player = {
+            b.player_id: b for b in all_balances if b.currency_id == default_currency_id
+        }
+
         total_paid = 0
         recipients = 0
         for ps in player_stocks:
@@ -48,9 +69,7 @@ class PayDividendsCommand:
             if payout <= 0:
                 continue
 
-            balance_rows = await self.player_balance_repository.get_all(player_id=ps.player_id)
-            _, default_currency = server_config.server_settings.get_by_key("default_currency_id")
-            balance = next((b for b in balance_rows if b.currency_id == int(default_currency.value)), None)
+            balance = balances_by_player.get(ps.player_id)
             if not balance:
                 continue
 

@@ -10,10 +10,11 @@ class TransportRepository(BaseRepository, IRepository):
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS transports (
                 transport_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                server_id INTEGER,
                 player_id INTEGER NOT NULL,
                 from_business_id INTEGER NOT NULL,
                 to_business_id INTEGER NOT NULL,
-                resource_type TEXT NOT NULL,
+                catalogue_id INTEGER NOT NULL,
                 quantity INTEGER NOT NULL,
                 status TEXT NOT NULL DEFAULT 'in_transit',
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -64,16 +65,16 @@ class TransportRepository(BaseRepository, IRepository):
 
     async def insert(self, transport: Transport) -> int:
         return await super().insert(
-            "INSERT INTO transports (player_id, from_business_id, to_business_id, resource_type, quantity, status, arrive_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            transport.player_id, transport.from_business_id, transport.to_business_id,
-            transport.resource_type, transport.quantity, transport.status, transport.arrive_at
+            "INSERT INTO transports (server_id, player_id, from_business_id, to_business_id, catalogue_id, quantity, status, arrive_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            transport.server_id, transport.player_id, transport.from_business_id, transport.to_business_id,
+            transport.catalogue_id, transport.quantity, transport.status, transport.arrive_at
         )
 
     async def update(self, transport: Transport) -> bool:
         affected = await super().update(
-            "UPDATE transports SET player_id = ?, from_business_id = ?, to_business_id = ?, resource_type = ?, quantity = ?, status = ?, arrive_at = ? WHERE transport_id = ?",
-            transport.player_id, transport.from_business_id, transport.to_business_id,
-            transport.resource_type, transport.quantity, transport.status, transport.arrive_at, transport.transport_id
+            "UPDATE transports SET server_id = ?, player_id = ?, from_business_id = ?, to_business_id = ?, catalogue_id = ?, quantity = ?, status = ?, arrive_at = ? WHERE transport_id = ?",
+            transport.server_id, transport.player_id, transport.from_business_id, transport.to_business_id,
+            transport.catalogue_id, transport.quantity, transport.status, transport.arrive_at, transport.transport_id
         )
         return affected > 0
 

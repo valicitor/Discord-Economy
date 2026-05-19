@@ -39,11 +39,13 @@ from .persistence.business_stock_repository import BusinessStockRepository
 from .persistence.player_stock_repository import PlayerStockRepository
 from .persistence.loan_repository import LoanRepository
 from .persistence.resource_node_repository import ResourceNodeRepository
-from .persistence.business_resource_repository import BusinessResourceRepository
+from .persistence.business_resource_repository import BusinessInventoryRepository
 from .persistence.exchange_rate_repository import ExchangeRateRepository
 from .persistence.transport_repository import TransportRepository
 from .persistence.recipe_repository import RecipeRepository
-from .persistence.recipe_ingredient_repository import RecipeIngredientRepository
+from .persistence.recipe_ingredient_repository import RecipeInputRepository
+from .persistence.recipe_output_repository import RecipeOutputRepository
+from .persistence.location_policy_repository import LocationPolicyRepository
 
 # --- Seeders ---
 from .seeders.base_seeder import BaseSeeder, SeederResult
@@ -61,6 +63,7 @@ from .seeders.catalogue_seeder import CatalogueSeeder
 from .seeders.shop_items_seeder import ShopItemsSeeder
 from .seeders.resource_nodes_seeder import ResourceNodesSeeder
 from .seeders.recipes_seeder import RecipesSeeder
+from .seeders.location_policies_seeder import LocationPoliciesSeeder
 
 __all__ = [
     "BaseRepository",
@@ -91,11 +94,13 @@ __all__ = [
     "PlayerStockRepository",
     "LoanRepository",
     "ResourceNodeRepository",
-    "BusinessResourceRepository",
+    "BusinessInventoryRepository",
     "ExchangeRateRepository",
     "TransportRepository",
     "RecipeRepository",
-    "RecipeIngredientRepository",
+    "RecipeInputRepository",
+    "RecipeOutputRepository",
+    "LocationPolicyRepository",
     "BaseSeeder",
     "SeederResult",
     "BusinessesSeeder",
@@ -106,5 +111,6 @@ __all__ = [
     "CatalogueSeeder",
     "ShopItemsSeeder",
     "ResourceNodesSeeder",
-    "RecipesSeeder"
+    "RecipesSeeder",
+    "LocationPoliciesSeeder"
 ]

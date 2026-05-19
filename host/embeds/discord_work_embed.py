@@ -32,16 +32,17 @@ class DiscordWorkEmbed:
                 node = self.response.discovered_node
                 extra_lines.append(f"You discovered a **{node.resource_type}** node! ({node.quantity}/{node.max_quantity} remaining)")
             elif self.response.extracted_resource:
-                res = self.response.extracted_resource
-                extra_lines.append(f"Extracted **1 {res.resource_type}** — business stock: {res.quantity}")
+                inv = self.response.extracted_resource
+                extra_lines.append(f"Extracted **1** catalogue item #{inv.catalogue_id} — business stock: {inv.quantity}")
             elif self.response.processed_output:
-                recipe, output = self.response.processed_output
-                extra_lines.append(f"Processed **{recipe.name}** — produced {output.quantity} {output.resource_type}")
+                recipe, outputs = self.response.processed_output
+                produced = ", ".join(f"{o.quantity}× #{o.catalogue_id}" for o in outputs)
+                extra_lines.append(f"Processed **{recipe.name}** — produced {produced}")
             elif self.response.hauled_transfer:
-                resource_type, dest = self.response.hauled_transfer
-                extra_lines.append(f"Hauled **1 {resource_type}** to {dest.name}")
+                catalogue_id, dest = self.response.hauled_transfer
+                extra_lines.append(f"Hauled **1** catalogue item #{catalogue_id} to {dest.name}")
             elif self.response.restocked_item:
-                res, item = self.response.restocked_item
+                _, item = self.response.restocked_item
                 extra_lines.append(f"Restocked **{item.name}** — shop stock now {item.stock}")
 
             items = [
